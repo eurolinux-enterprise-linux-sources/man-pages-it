@@ -1,0 +1,324 @@
+.\" Copyright (c) 1993 Michael Haardt (michael@cantor.informatik.rwth-aachen.de), Fri Apr  2 11:32:09 MET DST 1993
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public Licensès references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\"
+.\" Modified 1993-07-25 by Rik Faith (faith@cs.unc.edu)
+.\" Modified 1995-02-26 by Michael Haardt
+.\" Modified 1996-07-20 by Michael Haardt
+.\" Modified 1997-07-02 by Nicolás Lichtmaier <nick@debian.org>
+.\" Modified 2004-10-31 by aeb, following Gwenole Beauchesne
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Settembre 1996
+.\" Aggiornamento a man-pages-1.15 di Alessandro Rubini (rubini@linux.it)
+.\" Febbraio 1998
+.\" Aggiornamento a man-pages-1.20 di Ottavio G. Rizzo (otto@mast.queensu.ca)
+.\" Giugno 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.57 di Elisabetta Galli <lab@kkk.it>
+.\" luglio 2007
+.\"
+.TH UTMP 5 "25 novembre 2007" "Linux" "Linux Programmer's Manual"
+.SH NOME
+utmp, wtmp \- registri dei login
+.SH SINTASSI
+.B #include <utmp.h>
+.SH DESCRIZIONE
+Il file
+.I utmp
+permette di scoprire informazioni su chi sta usando attualmente il
+sistema.
+Ci possono essere più utenti che stanno usando il sistema di quelli riportati,
+poiché non tutti i programmi usano registrazioni utmp.
+.PP
+.B Attenzione:
+.I utmp
+non deve essere scrivibile, poiché molti programmi di sistema dipendono
+(stupidamente) dalla sua integrità.
+Si rischia di avere file di log contraffatti 
+e file del sistema modificati lasciando
+.I utmp
+scrivibile da qualsiasi utente.
+.PP
+Il file è una sequenza di voci con la seguente struttura dichiarata
+nel file di include (si noti che questa è solo una delle numerose
+definizioni in giro; i dettagli dipendono dalla versione di libc):
+.in +4n
+.nf
+.sp
+#define UT_UNKNOWN      0
+#define RUN_LVL         1
+#define BOOT_TIME       2
+#define NEW_TIME        3
+#define OLD_TIME        4
+#define INIT_PROCESS    5
+#define LOGIN_PROCESS   6
+#define USER_PROCESS    7
+#define DEAD_PROCESS    8
+#define ACCOUNTING      9
+
+#define UT_LINESIZE     12
+#define UT_NAMESIZE     32
+#define UT_HOSTSIZE     256
+
+struct exit_status {
+  short int e_termination;    /* stato di chiusura del processo */
+  short int e_exit;           /* stato di uscita del processo */
+};
+
+struct utmp {
+  short ut_type;              /* tipo di login */
+  pid_t ut_pid;               /* PID del processo di login */
+  char ut_line[UT_LINESIZE];  /* nome del dispositivo tty \- "/dev/" */
+  char ut_id[4];              /* identificativo di init o nome tty abbrev. */
+  char ut_user[UT_NAMESIZE];  /* nome utente */
+  char ut_host[UT_HOSTSIZE];  /* nome dell'host per il login remoto */
+  struct exit_status ut_exit; /* Lo stato di uscita di un processo
+                                 marcato come DEAD_PROCESS */
+  
+  /* I campi ut_session e ut_tv devono essere della stessa dimensione sia
+     compilati per 32 che per 64 bit. Ciò permette a file dati e memoria condivisa di essere condivisi tra
+     applicazioni 32-bit e applicazioni 64-bit. */
+#if __WORDSIZE == 64 && defined __WORDSIZE_COMPAT32
+  int32_t ut_session;         /* ID della sessione, usato per il windowing */
+  struct {
+    int32_t tv_sec;           /* Secondi */
+    int32_t tv_usec;          /* Microsecondi */
+  } ut_tv;                    /* Creata una voce Time */
+#else
+   long int ut_session;        /* ID della sessione, usato per il windowing */
+   struct timeval ut_tv;       /* Creata una voce Time */
+#endif
+
+  int32_t ut_addr_v6[4];       /* Indirizzo IP dell'host remoto */
+  char __unused[20];           /* Riservato per usi futuri */
+};
+
+/* Trucchi per la compatibilità all'indietro.  */
+#define ut_name ut_user
+#ifndef _NO_UT_TIME
+#define ut_time ut_tv.tv_sec
+#endif
+#define ut_xtime ut_tv.tv_sec
+#define ut_addr ut_addr_v6[0]
+.sp
+.fi
+.in
+Questa struttura dà il nome del file speciale associato con il
+terminale utente, il nome di login dell'utente, e l'ora di login
+nel formato di 
+.BR time (2).
+I campi stringa sono terminati con \fB'\e0'\fP se sono più corti della
+dimensione del campo.
+.PP
+Le prime voci del file sono il risultato di
+.BR init (8)
+quando processa
+.BR inittab (5).
+Prima che una voce sia eseguita, però,
+.BR init (8)
+pulisce il file utmp assegnando il valore di \fBDEAD_PROCESS\fP a \fIut_type\fP, pulendo
+\fIut_user\fP, \fIut_host\fP e \fIut_time\fP con byte nulli per ogni registrazione
+il cui \fIut_type\fP non sia \fIDEAD_PROCESS\fP o \fIRUN_LVL\fP, e
+quelle per cui non esistono processi con PID \fIut_pid\fP.
+Se non si trovano registrazioni vuote con la
+\fIut_id\fP necessaria, init ne crea una nuova.
+Poi assegna \fIut_id\fP dal file inittab, assegna i valori attuali a \fIut_pid\fP e \
+fIut_time\fP e assegna \fBINIT_PROCESS\fP a \fIut_type\fP.
+.PP
+.BR mingetty (8)
+(o
+.BR agetty (8))
+localizza le voci tramite il PID, cambia \fIut_type\fP perché
+contenga \fBLOGIN_PROCESS\fP, aggiorna \fIut_time\fP, assegna \fIut_line\fP e aspetta
+che venga stabilita una connessione.
+.BR login (1),
+dopo aver autenticato un utente,
+cambia \fIut_type\fP perché valga \fBUSER_PROCESS\fP, aggiorna
+\fIut_time\fP e imposta \fIut_host\fP e \fIut_addr\fP.
+In base al comportamento di
+.BR mingetty (8)
+(o
+.BR agetty (8))
+e
+.BR login (1),
+le registrazioni possono essere indirizzate da
+\fIut_line\fP invece del metodo preferibile, \fIut_pid\fP.
+.PP
+Quando
+.BR init (8)
+scopre che un processo è terminato, ricerca la sua voce utmp tramite
+\fIut_pid\fP, assegna il valore \fBDEAD_PROCESS\fP a \fIut_type\fP
+e pulisce \fIut_user\fP, \fIut_host\fP e \fIut_time\fP, assegnandogli dei byte nulli.
+.PP
+.BR xterm (1)
+e altri emulatori terminale creano direttamente un record
+\fBUSER_PROCESS\fP e generano il \fIut_id\fP usando le ultime due
+lettere di \fI/dev/ttyp\fP\fI%c\fP o usando \fIp\fP\fI%d\fP per
+\fI/dev/pts/\fP\fI%d\fP.
+Se essi trovano un \fBDEAD_PROCESS\fP per questo ID,
+lo riciclano, altrimenti creano una nuova voce.
+Se possono, lo
+marcheranno come \fBDEAD_PROCESS\fP all'uscita e si consiglia che
+azzerino anche \fIut_line\fP, \fIut_time\fP, \fIut_user\fP,
+e \fIut_host\fP.
+.PP
+.BR telnetd (8)
+imposta una voce \fBLOGIN_PROCESS\fP e lascia il resto a
+.BR login (1)
+come al solito.
+Dopo che la sessione telnet termina
+.BR telnetd (8)
+pulisce utmp nel modo descritto.
+.PP
+Il file \fIwtmp\fP registra tutti i login e logout.
+Il suo formato è esattamente come \fIutmp\fP tranne che un nome utente nullo
+indica un logout
+sul terminale associato.
+Inoltre il nome terminale \fB~\fP
+con nome utente \fBshutdown\fP o \fBreboot\fP indica uno spegnimento o
+riavvio del sistema e la coppia di nomi di terminale \fB|\fP/\fB}\fP
+fa il log della vecchia/nuova ora di sistema quando
+.BR date (1)
+la cambia.
+\fIwtmp\fP è mantenuto da
+.BR login (1),
+.BR init (8),
+e da alcune versioni di
+.BR getty (8)
+(cioè
+.BR mingetty (8)
+o
+.BR agetty (8)).
+Il file non è creato da nessuno di questi programmi, quindi se esso 
+viene rimosso la registrazione è disattivata.
+.PP
+Notare che su piattaforme \fIbiarch\fP, come sistemi che possono far 
+girare sia applicazioni 32-bit che 64-bit (x86-64, ppc64, s390x, etc.),
+\fIut_tv\fP è della stessa dimensione in modo 32-bit e in modo 64-bit.
+Lo stesso vale per \fIut_session\fP e \fIut_time\fP se sono presenti.
+Ciò permette a file dati e memoria condivisa di essere condivisi tra
+applicazioni 32-bit e applicazioni 64-bit.
+Poiché \fIut_tv\fP potrebbe non essere lo stesso di \fIstruct timeval\fP,
+allora, invece della chiamata:
+.in +4n
+.nf
+.sp
+gettimeofday((struct timeval *) &ut.ut_tv, NULL);
+.fi
+.RE
+
+si raccomanda il seguente metodo per impostare il campo:
+.in +4n
+.nf
+.sp
+struct utmp ut;
+struct timeval tv;
+
+gettimeofday(&tv, NULL);
+ut.ut_tv.tv_sec = tv.tv_sec;
+ut.ut_tv.tv_usec = tv.tv_usec;
+.fi
+.RE
+.SH FILE
+/var/run/utmp
+.br
+/var/log/wtmp
+.SH "CONFORME A"
+Le voci Linux utmp non sono conformi nè a v7/BSD nè a SYSV; esse sono un
+mix delle due. v7/BSD ha meno campi; più importante, esso non ha
+\fIut_type\fP, e ciò fa sì che programmi nativi v7/BSD visualizzino (per
+esempio) voci morte o di login.
+Inoltre, non c'è alcun file di configurazione
+che alloca slot alle sessioni.
+BSD fa questo perché non ha campi \fIut_id\fP.
+In Linux (come in System V), il campo \fIut_id\fP di un
+record non cambierà mai una volta che è stato impostato, e ciò riserva 
+questo spazio senza bisogno di un file di configurazione.
+Cancellare \fIut_id\fP può dar luogo a
+delle race condition che portano a voci utmp corrotte e a potenziali
+buchi di sicurezza.
+Cancellare i campi menzionati sopra riempiendoli
+con byte nulli non è richiesto dalla semantica System V, ma permette di eseguire
+molti programmi che assumono la semantica BSD e che non modificano utmp.
+Linux usa le convenzioni BSD per i contenuti di linea, come documentato in precedenza.
+.PP
+System V usa solo il campo type per marcare le righe e registra messaggi informativi
+come, per esempio, \fB"new time"\fP nel campo line.
+\fBUT_UNKNOWN\fP sembra essere
+una invenzione di Linux.
+System V non ha campi \fIut_host\fP o \fIut_addr_v6\fP.
+.PP
+A differenza di vari
+altri sistemi, dove la registrazione in utmp può essere disabilitata cancellando il file, utmp
+deve sempre esistere in Linux.
+Se si vuole disabilitare
+.BR who (1)
+basta togliere il permesso di lettura globale al file utmp.
+.PP
+Si noti che lo struct di \fIutmp\fP è cambiato tra libc5 e libc6.
+Di conseguenza, 
+un programma che usi il vecchio struct di libc5 altera
+.IR /var/run/utmp " e/o " /var/log/wtmp .
+.SH NOTE
+Il formato del file dipende dalla macchina, perciò si raccomanda di
+modificarlo solo macchine della stessa architettura di quella su cui il file è stato creato.
+.PP
+Si noti che su piattaforme che possono eseguire applicazioni sia a 32-bit che a 64-bit
+(x86-64, ppc64, s390x, etc.), le dimensioni dei campi di una struttura \fIutmp\fP
+devono essere le stesse in modalità 32-bit e in modalità 64-bit.
+Ciò è raggiunto cambiando il tipo di
+.I ut_session
+in
+.IR int32_t ,
+e quello di
+.I ut_tv
+in una struttura con due campi
+.I int32_t
+.I tv_sec
+e
+.IR tv_usec .
+(Quindi, per riempirlo,
+mettere l'ora in una reale \fIstruct timeval\fP,
+quindi copiare i due campi in
+.IR ut_tv .)
+.SH BACHI
+Questa pagina di manuale si basa su quella di libc5, ora le cose potrebbero funzionare diversamente.
+.SH "VEDERE ANCHE"
+.BR ac (1),
+.BR date (1),
+.BR last (1),
+.BR login (1),
+.BR who (1),
+.BR getutent (3),
+.BR updwtmp (3),
+.BR init (8)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.80 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

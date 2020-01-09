@@ -1,0 +1,127 @@
+.\" Copyright (c) 1983, 1990, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" Traduzione da inetutils-1.4.2 di Giulio Daprelà <giulio@pluto.it>
+.\" gennaio 2006
+.\"
+.\"     @(#)talk.1	8.1 (Berkeley) 6/6/93
+.\"
+.Dd 6 giugno 1993
+.Dt TALK 1
+.Os BSD 4.2
+.Sh NAME
+.Nm talk
+.Nd parla ad un altro utente
+.Sh SINTASSI
+.Nm talk
+.Ar persona
+.Op Ar ttyname
+.Sh DESCRIZIONE
+.Nm Talk
+è un programma visuale di comunicazione che copia linee dal proprio
+terminale a quello di un altro utente.
+.Pp
+Opzioni disponibili:
+.Bl -tag -width ttyname
+.It Ar persona
+Se si desidera parlare a qualcuno sulla sua machina, allora
+.Ar persona
+è semplicemente il nome di login della persona. Se si desidera parlare a 
+un utente su un altro host, allora
+.Ar persona
+è nella forma
+.Ql user@host .
+.It Ar ttyname
+Se si desidera parlare a un utente attivo su più macchine, l'argomento
+.Ar ttyname
+deve essere usato per indicare il nome del terminale appropriato,
+dove
+.Ar ttyname
+è nella forma
+.Ql ttyXX .
+.El
+.Pp
+Quando viene chiamato per la prima volta,
+.Nm talk
+invia il messaggio
+.Bd -literal -offset indent -compact
+Message from TalkDaemon@his_machine...
+talk: connection requested by your_name@your_machine.
+talk: respond with: talk your_name@your_machine
+.Ed
+.Pp
+all'utente a cui si vuole parlare. A questo punto il destinatario del
+messaggio può rispondere digitando
+.Pp
+.Dl talk \ your_name@your_machine
+.Pp
+Non importa da quale macchina risponde il destinatario, nel momento
+in cui il suo nome di login è lo stesso. Una volta che la comunicazione 
+è stabilita, le due parti possono scrivere simultaneamente, con il 
+proprio output che appare in finestre separate. Digitando control-L
+.Ql ^L
+lo schermo verrà ristampato, mentre i propri caratteri di
+erase, kill e word kill agiranno normalmente.
+Per uscire premere il proprio carattere di interruzione;
+.Nm talk
+quindi sposta il cursore nella parte bassa dello schermo e ripirstina il
+terminale nel suo stato precedente.
+.Pp
+Il permesso di parlare può essere negato o concesso usando il comando
+.Xr mesg 1 .
+All'inizio parlare è permesso. Certi comandi, in particolare
+.Xr nroff 1
+e
+.Xr pr 1 ,
+disabilitano i messaggo allo scopo di impedire
+un output disordinato.
+.Pp
+.Sh FILE
+.Bl -tag -width /var/run/utmp -compact
+.It Pa /etc/hosts
+per trovare la macchina destinataria
+.It Pa /var/run/utmp
+per trovare il tty del destinatario
+.El
+.Sh VEDERE ANCHE
+.Xr mail 1 ,
+.Xr mesg 1 ,
+.Xr who 1 ,
+.Xr write 1
+.Sh BUGS
+La versione di
+.Xr talk 1
+rilasciata con
+.Bx 4.3
+usa un protocollo incompatibile con il protocollo usato nella versione 
+rilasciata con la
+.Bx 4.2 .
+.Sh STORIA
+Il comando
+.Nm
+è apparso nella
+.Bx 4.2 .

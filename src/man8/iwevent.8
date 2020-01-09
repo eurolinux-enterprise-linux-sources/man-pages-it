@@ -1,0 +1,122 @@
+.\" Jean Tourrilhes - HPL - 2002 - 2004
+.\" iwevent.8
+.\"
+.TH IWEVENT 8 "23 June 2004" "net-tools" "Linux Programmer's Manual"
+.\"
+.\" NOME part
+.\"
+.SH NOME
+iwevent \- Stampa gli eventi Wireless generati dal driver e le modifiche alle impostazioni
+.\"
+.\" SINTASSI part
+.\"
+.SH SINTASSI
+.BI "iwevent "
+.br
+.\"
+.\" DESCRIZIONE part
+.\"
+.SH DESCRIZIONE
+.B iwevent
+Stampa gli eventi Wireless ricevuti attraverso il socket RTNetlink.
+Ogni linea mostra lo specifico evento Wireless e descrive cosa è
+successo sulla specifica interfaccia wireless.
+.br
+Questo comando non richiede alcun argomento.
+.\"
+.\" DISPLAY part
+.\"
+.SH DISPLAY
+Ci sono due classi di eventi Wireless.
+.PP
+La prima classe sono eventi relativi ad una modifica delle impostazioni
+sull'interfaccia wireless (generalmente fatti tramite
+.B iwconfig
+o con uno script chiamando
+.BR iwconfig ).
+Sono riportate solo le impostazioni che possono interessare una 
+interruzione di connessione. Gli eventi attualmente riportati
+stanno modificando alcune delle seguenti impostazioni :
+.br
+.I "	Network ID"
+.br
+.I "	ESSID"
+.br
+.I "	Frequency"
+.br
+.I "	Mode"
+.br
+.I "	Encryption"
+.br
+Tutti questi eventi vengono generati da tutte le interfacce wireless
+attraverso il sotto-sistema wireless del kernel (ma solo se il driver
+è stato convertito alle nuove API).
+.PP
+La seconda classe di eventi sono quelli generati dall'hardware, quando
+avviene qualcosa o quando un task è stato completato. Questi eventi includono :
+.TP
+.B New Access Point/Cell address
+L'interfaccia si è collegata ad un nuovo Access Point o ad una cella
+Ad-Hoc, o ha perso l'associazione con loro. Questo è lo stesso MAC address
+che viene riportato da
+.BR iwconfig .
+.TP
+.B Scan request completed
+La scansione richiesta è stata completata, e i risultati sono
+disponibili (vedi
+.BR iwlist ).
+.TP
+.B Tx packet dropped
+Un pacchetto diretto a questo indirizzo è stato eliminato perché
+l'interfaccia ritiene che questo nodo non debba ancora trasmettere (solitamente
+è stato raggiunto il limite massimo delle richieste a livello MAC). Questo
+è solitamente una indicazione veloce che il nodo sta per lasciare
+la cella o sia andato fuori dal range, ma può essere per fading
+("sbiadimento") o eccessivi conflitti.
+.TP
+.B Custom driver event
+Evento specifico del driver. Per favore riferirsi alla documentazione
+del driver.
+.TP
+.B Registered node
+L'interfaccia è riuscita a collegarsi ad un nuovo client/peer wireless.
+Verrà generato più spesso quando l'interfaccia farà da Access Point
+(modalità master).
+.TP
+.B Expired node
+La connessione del client/peer su questa interfaccia è terminata.
+Verrà generato più spesso quando l'interfaccia farà da Access Point
+(modalità master).
+.TP
+.B Spy threshold crossed
+La potenza del segnale di uno degli indirizzi nella spy list è sotto
+la soglia inferiore di ricezione o ha superato la soglia maggiore.
+.PP
+Molti driver wireless generano solo una parte di questi eventi, non
+tutti, la lista completa dipende dalla combinazione specifica
+hardware/driver. Per favore, riferirsi alla documentazione specifica
+del driver per dettagli su quali eventi siano generati, e utilizzare
+.IR iwlist (8)
+per controllare quali sono supportati dal driver.
+.\"
+.\" AUTORE part
+.\"
+.SH AUTORE
+Jean Tourrilhes \- jt[AT]hpl.hp.com
+.\"
+.\" TRADUZIONE part
+.\"
+.SH TRADUZIONE
+Traduzione dall'inglese: Ferronato Claudio (wireless_tools.27)
+.br
+Questa traduzione è migliorabile. Se hai migliorie da proporre, perfavore
+scrivimi all'indirizzo claiudio[AT]libero.it
+.\"
+.\" VEDERE ANCHE part
+.\"
+.SH VEDERE ANCHE
+.BR iwconfig (8),
+.BR iwlist (8),
+.BR iwspy (8),
+.BR iwpriv (8),
+.BR wireless (7).

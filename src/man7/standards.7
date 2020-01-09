@@ -1,0 +1,274 @@
+.\" Copyright (c) 2006, Michael Kerrisk <mtk-manpages@gmx.net>
+.\" includes some material by other authors that was formerly 
+.\" in intro.2.
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\"
+.\" Traduzione da man-pages-2.39 di Giulio Daprelà <giulio@pluto.it>
+.\" agosto 2006
+.\" Aggiornamento a man-pages-2.68 di Elisabetta Galli <lab@kkk.it>
+.\" novembre 2007
+.\"                                                                	
+.TH STANDARDS 7 15 novembre 2007 "Linux" "Linux Programmer's Manual"
+.SH NOME
+Standards \- Standard C e UNIX
+.SH DESCRIZIONE
+La sezione
+.B "CONFORME A"
+che appare in molte pagine di manuale identifica
+vari standard a cui si conformano le interfacce documentate.
+L'elenco seguente descrive brevemente questi standard.
+.TP
+.B V7
+Version 7, lo UNIX ancestrale dai Bell Labs.
+.TP
+.B 4.2BSD
+Questa è un'implementazione standard definita dal rilascio 4.2
+della
+.IR "Berkeley Software Distribution",
+rilasciata dalla University of California a Berkeley.
+Questo è stato il primo rilascio della Berkeley a contenere uno stack TCP/IP
+e le API dei socket.
+La 4.2BSD è stata rilasciata nel 1983.
+
+I principali rilasci precedenti di BSD inclusero \fI3BSD\fP (1980), \fI4BSD\fP (1980),
+e \fI4.1BSD\fP (1981).
+.TP
+.B 4.3BSD
+Il successore della 4.2BSD, rilasciato nel 1986.
+.TP
+.B 4.4BSD
+Il successore della 4.3BSD, rilasciato nel 1993.
+Questo è stato l'ultimo rilascio principale della Berkeley.
+.TP
+.B System V
+Questa è un'implementazione standard definita dalla AT&T con il rilascio
+del 1983, pietra miliare del suo rilascio commerciale System V (cinque).
+Il principale rilascio precedente della AT&T è stato
+.IR "System III" ,
+rilasciato nel 1981.
+.TP
+.B System V release 2 (SVr2)
+Questo fu il rilascio successivo di System V, uscito nel 1985.
+La SVr2 fu formalmente descritta in
+.IR "System V Interface Definition version 1"
+.RI ( "SVID 1" )
+pubblicato nel 1985.
+.TP
+.B System V release 3 (SVr3)
+Questa succedette alla SVr2, e fu rilasciata nel 1986.
+Questo rilascio fu formalmente descritto in
+.IR "System V Interface Definition version 2"
+.RI ( "SVID 2" ).
+.TP
+.B System V release 4 (SVr4)
+Questa succedette alla SVr3, e fu rilasciata nel 1989.
+Questa versione di System V è descritta nel "Programmer's Reference
+Manual: Operating System API (Intel processors)" (Prentice-Hall
+1992, ISBN 0-13-951294-2)
+Questo rilascio fu formalmente descritto in
+.IR "System V Interface Definition version 3"
+.RI ( "SVID 3" ),
+ed è considerato il rilascio definitivo di System V.
+.TP
+.B SVID 4
+System V Interface Definition versione 4, emesso nel 1995.
+Disponibile online presso http://www.sco.com/developers/devspecs/ .
+.TP
+.B C89
+Questo fu il primo linguaggio C standard, ratificato da ANSI
+(American National Standards Institute) nel 1989
+.RI ( X3.159-1989 ).
+Talvolta esso è noto come
+.IR "ANSI C" ,
+ma, poiché a partire da C99 è anche uno standard
+ANSI, questo termine è ambiguo.
+Questo standard fu anche ratificato da
+ISO (International Standards Organization) nel 1990
+.RI ( "ISO/IEC 9899:1990" ),
+e quindi occasionalmente si fa riferimento a esso come
+.IR "ISO C90" .
+.TP
+.B C99
+Questa revisione del linguaggio C standard fu ratificata da ISO nel 1999
+.RI ( "ISO/IEC 9899:1999" ).
+È disponibile online presso
+http://www.open-std.org/jtc1/sc22/wg14/www/standards.
+.TP
+.B POSIX.1-1990
+"Portable Operating System Interface for Computing Environments".
+IEEE 1003.1-1990 parte 1, ratificato da ISO nel 1990
+.RI ( "ISO/IEC 9945-1:1990" ).
+Ulteriori informazioni possono essere trovate nel libri
+di Donald Lewine "POSIX Programmer's Guide" (O'Reilly & Associates,
+Inc., 1991, ISBN 0-937175-73-0).
+Il termine "POSIX" è stato coniato da Richard Stallman.
+.TP
+.B POSIX.2
+IEEE Std 1003.2-1992,
+descrive comandi e utilità, ratificato da ISO nel 1993
+.RI ( "ISO/IEC 9945-2:1993" ).
+.TP
+.BR POSIX.1b " (precedentemente conosciuto come \fIPOSIX.4\fP)"
+IEEE Std 1003.1b-1993
+descrive i servizi real-time
+per sistemi operativi portabili, ratificato da ISO nel 1996
+.RI ( "ISO/IEC 9945-1:1996" ).
+Per ulteriori informazioni si veda
+"POSIX.4: Programming for the real world"
+di Bill O. Gallmeister (O'Reilly & Associates, Inc. ISBN 1-56592-074-0).
+.TP
+.B POSIX.1c
+IEEE Std 1003.1c-1995 descrive le interfacce thread POSIX.
+.TP
+.B POSIX.1d
+IEEE Std 1003.1c-1999 descrive estensioni real-time aggiuntive.
+.TP
+.B POSIX.1g
+IEEE Std 1003.1g-2000 descrive le API di rete (inclusi i socket).
+.TP
+.B POSIX.1j
+IEEE Std 1003.1j-2000 descrive estensioni real-time avanzate.
+.TP
+.B POSIX.1-1996
+Una revisione del 1996 di POSIX.1 che incorpora POSIX.1b e POSIX.1c.
+.TP
+.B XPG3
+Rilasciato nel 1989, questo fu il primo rilascio significativo della guida
+.IR "X/Open Portability Guide" ,
+prodotta da
+X/Open Company, un consorzio multi-vendor.
+Questa guida a più volumi si basò sugli standard POSIX.
+.TP
+.B XPG4
+Una revisione della X/Open Portability Guide, rilasciata nel 1992.
+.TP
+.B XPG4v2
+Una revisione del 1994 di XPG4.
+Ad essa si fa anche riferimento come
+.IR "Spec 1170" ,
+dove 1170 si riferisce al numero di interfacce
+definite da questo standard.
+.TP
+.B SUS  (SUSv1)
+Single UNIX Specification.
+Questo è un ripacchettamento di XPG4v2 e altri standard X/Open
+(X/Open Curses Issue 4 versione 2,
+X/Open Networking Service (XNS) Issue 4).
+I sistemi conformi a questo standard possono essere marcati
+.IR "UNIX 95" .
+.TP
+.B SUSv2
+Single UNIX Specification versione 2.
+Talvolta chiamata anche
+.IR XPG5 .
+Questo standard apparve nel 1997.
+I sistemi conformi a questo standard possono essere marcati
+.IR "UNIX 98" .
+Vedere anche
+http://www.UNIX-systems.org/version2/ .)
+.TP
+.B POSIX.1-2001, SUSv3
+Questa fu una revisione e consolidamento del 2001 degli standard
+POSIX.1, POSIX.2, e SUS in un singolo documento,
+condotta sotto gli auspici del gruppo Austin
+(http://www.opengroup.org/austin/ .)
+Lo standard è disponibile online all'indirizzo
+http://www.unix-systems.org/version3/ ,
+e le interfacce che descrive sono disponibili anche nel pacchetto di
+pagine di manuale di Linux nelle sezioni 1p e 3p (per esempio "man 3p open").
+
+Lo standard definisce due livelli di conformità:
+.IR "POSIX conformance" ,
+che è l'insieme di interfacce basilari necessarie per un sistema conforme;
+e
+.IR "XSI Conformance",
+che in aggiunta impone una serie di interfacce
+(le "XSI extension") che sono solo opzionali per la conformità POSIX.
+I sistemi conformi XSI possono essere marcati
+.IR "UNIX 03" .
+(La conformità a XSI costituisce la
+.I "Single UNIX Specification version 3"
+.RI ( SUSv3 ).)
+
+Il documento POSIX.1-2001 è diviso in quattro parti:
+
+.BR XBD :
+Definizioni, termini e concetti, specifiche dei file header.
+
+.BR XSH :
+Specifiche delle funzioni (cioè chiamate di sistema e funzioni di libreria
+nelle implementazioni reali).
+
+.BR XCU :
+Specifiche di comandi e utilità
+(cioè l'area un tempo descritta da POSIX.2).
+
+.BR XRAT :
+Testo informativo sulle altre parti dello standard.
+
+POSIX.1-2001 è allineato con C99, in questo modo tutte le
+funzioni di libreria standardizzate in C99 sono anche
+standardizzate in POSIX.1-2001.
+
+Ci sono stati due Technical Corrigenda (piccole correzioni e miglioramenti)
+dello standard originale del 2001:
+TC1 nel 2003 (chiamato anche
+.IR POSIX.1-2003 ),
+e TC2 nel 2004 (chiamato anche
+.IR POSIX.1-2004 ).           
+.\" FIXME . Alla fine bisognerà aggiornare il testo su POSIX.1-200[89]/SUSv4
+.TP
+.B POSIX.1-200x, SUSv4
+Sono in corso lavori sulla prossima revisione di POSIX.1/SUS.
+La votazione sulla revisione dovrebbe essere completata nel 2008,
+dunque la revisione probabilmente si chiamerà POSIX.1-2008.
+
+I cambiamenti in questa revisione non saranno tanti quanti quelli
+verificatisi per POSIX.1-2001/SUSv3,
+ma verrà aggiunto un buon numeri di nuove interfacce
+e verranno modificati vari dettagli di specifiche esistenti.
+Molte interfacce che in POSIX.1-2001 erano opzionali
+diventeranno obbligatorie nella prossima revisione dello standard.
+
+Lo standard rivisto è diviso nelle stesse quattro parti di POSIX.1-2001,
+e anche in questo caso di cono due livelli di conformità: la linea di fondo
+.IR "POSIX Conformance" ,
+e
+.IR "XSI Conformance" ,
+che rende obbligatorio un insieme di interfacce aggiuntive
+oltre a quelle delle specifiche di base.
+
+Si possono trovare ulteriori informazioni nel sito web del gruppo di Austin,
+http://www.opengroup.org/austin/ .
+.SH "VEDERE ANCHE"
+.BR feature_test_macros (7),
+.BR posixoptions (7)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.80 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

@@ -1,0 +1,172 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" This manpage is Copyright (C) 1992 Drew Eckhardt;
+.\"                               1993 Ian Jackson.
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Modified 1993-07-24 by Rik Faith <faith@cs.unc.edu>
+.\" Modified 1996-09-08 by Arnt Gulbrandsen <agulbra@troll.no>
+.\" Modified 1997-01-31 by Eric S. Raymond <esr@thyrsus.com>
+.\" Modified 2001-05-17 by aeb
+.\" Modified 2004-06-23 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\"
+.\" Tradotto da Goffredo Baroncelli 26-3-1998 <kreijack@usa.net>
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.26 di Giulio Daprelà <giulio@pluto.it>
+.\" aprile 2006
+.\" Aggiornamento a man-pages-2.38 di Giulio Daprelà - agosto 2006
+.\"
+.TH UNLINK 2 "23 giugno 2004" "Linux" "Linux Programmer's Manual"
+.SH NOME
+unlink \- Rimuove un nome ed eventualmente il file a cui si riferisce
+.SH SINTASSI
+.B #include <unistd.h>
+.sp
+.BI "int unlink(const char *" pathname );
+.SH DESCRIZIONE
+.BR unlink ()
+cancella un nome dal filesystem.
+Se il nome è l'ultimo link
+ad un file e nessun processo sta usando il file, allora
+viene cancellato anche il file stesso, e lo spazio occupato viene liberato.
+
+Se invece il nome è l'ultimo link ad un file, ma il file è correntemente
+usato da un processo, il file viene rimosso solo quando viene chiuso il
+file descriptor a cui fa riferimento.
+
+Se il nome si riferisce ad un link simbolico, il link viene rimosso.
+
+Se il nome si riferisce ad un socket, una fifo o un dispositivo, il nome viene
+rimosso, ma i processi che hanno l'oggetto aperto possono continuare ad 
+utilizzarlo.
+.SH "VALORE RESTITUITO"
+In caso di successo viene restituito zero; altrimenti viene
+restituito il valore \-1, e
+.I errno
+viene impostato di conseguenza.
+.SH ERRORI
+.TP
+.B EACCES
+L'accesso in scrittura alla directory contenente
+.I pathname
+non è permesso all'UID effettivo del processo, o una delle
+directory in
+.IR pathname
+non ha permesso la ricerca.
+(Vedere anche
+.BR path_resolution (7).)
+.TP
+.BR EBUSY " (not on Linux)"
+Il file
+.I pathname
+non può essere scollegato poiché è usato dal sistema o da un altro 
+processo, e l'implementazione considera questo un errore.
+.TP
+.B EFAULT
+.I pathname
+punta al di fuori del proprio spazio di indirizzamento accessibile.
+.TP
+.B EIO
+E' avvenuto un errore I/O.
+.TP
+.B EISDIR
+.I pathname
+fa riferimento a una directory.
+(Questo è il valore non-POSIX restituito da Linux a partire da 2.1.132.)
+.TP
+.B ELOOP
+Sono stati incontrati troppi link simbolici nel tradurre
+.IR pathname .
+.TP
+.B ENAMETOOLONG
+.IR pathname "era troppo lungo."
+.TP
+.B ENOENT
+Un componente in
+.I pathname
+non esiste o è un link simbolico scollegato, o
+.I pathname
+è vuoto.
+.TP
+.B ENOMEM
+Insufficiente memoria disponibile per il kernel.
+.TP
+.B ENOTDIR
+Un componente usato come directory in
+.I pathname
+non è, in effetti, una directory.
+.TP
+.B EPERM
+Il sistema non permette lo scollegamento di directory,
+o lo scollegamento di directory richiede privilegi che il processo 
+chiamante non ha.
+(Questo è l'errore restituito prescritto da POSIX:
+come notato in precedenza, Linux restituisce
+.B EISDIR
+in questo caso).
+.TP
+.BR EPERM " (solo Linux)"
+Il filesystem non permette lo scollegamento dei file.
+.TP
+.BR EPERM " o " EACCES
+La directory contenente
+.I pathname
+ha lo sticky bit
+.RB ( S_ISVTX )
+impostato e l'effettivo UID del processo non è nè l'UID del file da
+cancellare nè quello della directory che lo contiene, e il processo non
+ha privilegi (Linux non ha capacità
+.B CAP_FOWNER ).
+.TP
+.B EROFS
+.I pathname
+fa riferimento a un file su un filesystem in sola lettura.
+.SH "CONFORME A"
+SVr4, 4.3BSD, POSIX.1-2001.
+.\" SVr4 documenta condizioni di errore
+.\" aggiuntive EINTR, EMULTIHOP, ETXTBSY, ENOLINK.
+.SH BUG
+Alcune inpopportunità nel protocollo sottostante NFS possono causare 
+sparizioni inaspettate di file che sono ancora in uso.
+.SH "VEDERE ANCHE"
+.BR rm (1),
+.BR chmod (2),
+.BR link (2),
+.BR mknod (2),
+.BR open (2),
+.BR rename (2),
+.BR rmdir (2),
+.BR unlinkat (2),
+.BR mkfifo (3),
+.BR remove (3),
+.BR path_resolution (7)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.75 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

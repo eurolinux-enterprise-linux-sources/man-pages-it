@@ -1,0 +1,70 @@
+.\" Pagina di manuale minimale per slsc 
+.\" Copyright (C) 1996-98 Dirk Eddelbuettel <edd@debian.org> 
+.TH SLSC 1 "Novembre 1998" "Debian Project" "Debian GNU/Linux"
+.SH NOME
+slsc \- Port in S-Language del foglio di calcolo SC 
+.SH SINTASSI
+.B slsc 
+[
+.I file
+]
+.SH DESCRIZIONE
+.B slsc
+è un programma di foglio di calcolo basato su
+.B sc 
+che usa la libreria di terminale SLang. La principale differenza è che
+.B slsc 
+è molto più facile da usare.  
+.SH ULTERIORE DOCUMENTAZIONE
+Il programma
+.B slsc
+non è fornito di alcuna documentazione tranne l' 
+.I "aiuto in linea" ,
+che può essere avviato dall'interno di 
+.B slsc
+premendo il tasto 
+.I ?
+, o il 
+.I tutorial
+che può essere avviato con il comando
+.IR "slsc /usr/lib/slsc/tutorial.sc".
+Se si vogliono cambiare le associazioni dei tasti, copiare il file
+.I /usr/lib/slsc/slsc.rc
+nella propria home directory, rinominarlo in
+.I .slscrc 
+e modificarlo. Quando 
+.B slsc 
+viene avviato, carica il file 
+.IR /usr/lib/slsc/slsc.rc.  
+Poi, se il file 
+.I $HOME/.slscrc
+esiste, slsc lo carica così da permettere agli utenti di sovrascrivere 
+le impostazioni globali.
+.SH FILE
+.I /usr/lib/slsc/slsc.rc
+.RS
+Il file di configurazione dell'intero sistema. 
+.RE
+.I ~/.slsc
+.RS
+Il file di configurazione specifico dell'utente. 
+.RE
+.I /usr/lib/slsc/tutorial.sc
+.RS
+Tutorial su slsc.
+.SH BUG
+.B slsc
+non è più supportato da un autore originale.
+.SH AUTORE
+John E. Davis ha eseguito il port da
+.B sc 
+a
+.B slsc 
+ma non lo mantiene più. La precedente versione di sc è stata scritta da 
+James Gosling, Mark Weiser, Bruce Israel, Robert Bond e Alan Silverstein.
+Traduzione e adattamenti in italiano a cura di Hugh Hartmann <hhartmann@libero.it>.
+Revisione a cura di Elisabetta Galli <lab@kkk.it>
+.SH "VEDERE ANCHE"
+.BR vprint (1),
+.BR sc (1),
+.BR xspread (1x)

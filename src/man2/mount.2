@@ -1,0 +1,461 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" Copyright (C) 1993 Rickard E. Faith <faith@cs.unc.edu>
+.\" Copyright (C) 1994 Andries E. Brouwer <aeb@cwi.nl>
+.\" Copyright (C) 2002, 2005 Michael Kerrisk <mtk-manpages@gmx.net>
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Modified 1996-11-04 by Eric S. Raymond <esr@thyrsus.com>
+.\" Modified 2001-10-13 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\"	Added note on historical behaviour of MS_NOSUID
+.\" Modified 2002-05-16 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\"	Extensive changes and additions
+.\" Modified 2002-05-27 by aeb
+.\" Modified 2002-06-11 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\"	Enhanced descriptions of MS_MOVE, MS_BIND, and MS_REMOUNT
+.\" Modified 2004-06-17 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\" 2005-05-18, mtk, Added MNT_EXPIRE, plus a few other tidy-ups.
+.\"
+.\" Traduzione da man-pages-2.16 di Giulio Daprelà <giulio@pluto.it>
+.\" dicembre 2005
+.\" Aggiornamento a man pages 2.34 di Giulio Daprelà - giugno 2006
+.\" Aggiornamento a man pages 2.41 di Giulio Daprelà - ottobre 2006
+.\" Aggiornamento a man pages 2.44 di Giulio Daprelà - giugno 2007
+.\" Aggiornamento a man pages 2.51 di Giulio Daprelà - giugno 2007
+.\" Aggiornamento a man pages 2.80 di Elisabetta Galli - giugno 2008
+.\"
+.TH MOUNT 2 2007-12-17 "Linux 2.6.12" "Linux Programmer's Manual"
+.SH NOME
+mount, umount, umount2 \- monta e smonta i file system
+.SH SINTASSI
+.nf
+.B "#include <sys/mount.h>"
+.sp
+.BI "int mount(const char *" source ", const char *" target ,
+.BI "          const char *" filesystemtype ", unsigned long " mountflags ,
+.BI "          const void *" data );
+.sp
+.BI "int umount(const char *" target );
+.sp
+.BI "int umount2(const char *" target ", int " flags );
+.fi
+.SH DESCRIZIONE
+.\" FIXME . Questa pagina dovrebbe essere strutturata meglio
+.BR mount ()
+attacca il file system specificato da
+.I source
+(che è spesso un nome di dispositivo, ma può anche essere un nome di 
+directory o un dummy) alla directory specificata da
+.IR target .
+
+.BR umount ()
+e
+.BR umount2 ()
+rimuove l'attaccamento del (più alto) file system montato su
+.IR target .
+
+Sono necessari privilegi appropriati (Linux: capacità
+.B CAP_SYS_ADMIN)
+per montare e smontare i file system.
+
+A partire da Linux 2.4 un singolo file system può essere visibile su
+punti di mount multipli, e sullo stesso punto di mount possono essere 
+impilati mount multipli.
+.\" Multiple mounts on same mount point: since 2.3.99pre7.
+
+I valori dell'argomento
+.IR filesystemtype
+supportato dal kernel sono elencati in
+.I /proc/filesystems
+(come "minix", "ext2", "msdos", "proc", "nfs", "iso9660" etc.).
+Ulteriori tipi possono divenire disponibili quando vengono caricati 
+moduli appropriati.
+
+L'argomento
+.IR mountflags
+può avere il magic number 0xC0ED (\fBMS_MGC_VAL\fP)
+nei 16 bit più alti (questo era necessario nelle versioni di kernel 
+precedenti a 2.4, ma non è più necessario ed è ignorato se specificato),
+e vari flag di mount (come definito in <linux/fs.h> per libc4 e libc5
+e in <sys/mount.h> per glibc2) nei 16 bit di ordine basso:
+.\" FIXME 2.6.15 added flags for "shared sub-tree" functionality:
+.\" MS_UNBINDABLE, MS_PRIVATE, MS_SHARED, MS_SLAVE
+.\" These need to be documented on this page.
+.\" See:
+.\" Documentation/filesystems/sharedsubtree.txt
+.\"
+.\" http://lwn.net/Articles/159077/
+.\"
+.\" http://myweb.sudhaa.com:2022/~ram/sharedsubtree/paper/sharedsubtree.1.pdf
+.\" Shared-Subtree Concept, Implementation, and Applications in Linux
+.\" Al Viro viro@ftp.linux.org.uk
+.\" Ram Pai linuxram@us.ibm.com
+.\"
+.\" http://foss.in/2005/slides/sharedsubtree1.pdf
+.\" Shared Subtree Concept and Implementation in the Linux Kernel
+.\" Ram Pai
+.\"
+.TP
+.BR MS_BIND " (da Linux 2.4 in poi)"
+.\" since 2.4.0-test9
+Esegue un mount bind, rendendo un file o un sottoalbero di directory
+visibile a un altro punto dentro un file system.
+I mount bind possono attraversare i file system e oltrepassare
+le gabbie
+.BR chroot (2)
+Gli argomenti
+.IR filesystemtype ", " mountflags ", e " data
+sono ignorati.
+.\" with the exception of the "hidden" MS_REC mountflags bit
+.TP
+.BR MS_DIRSYNC " (a partire da Linux 2.5.19)"
+sincronizza i cambiamenti di directory in questo file system.
+(Questa proprietà può essere ottenuta per directory individuali
+o sottoalberi usando
+.BR chattr (1).)
+.TP
+.B MS_MANDLOCK
+Permette il blocco obbligatorio aui file in questo file system.
+(Il blocco obbligatorio deve ancora essere abilitato su una base per 
+file, come descritto in
+.BR fcntl (2).)
+.\" FIXME Say more about MS_MOVE
+.TP
+.B MS_MOVE
+Sposta un sottoalbero.
+.I source
+specifica un punto di mount esistente e
+.I target
+specifica la nuova locazione.
+Lo spostamento è atomico: il sottoalbero non viene smontato in nessun momento.
+Gli argomenti
+.IR filesystemtype ", " mountflags ", e " data
+sono ignorati.
+.TP
+.B MS_NOATIME
+Non aggiorna l'ora di accesso per (tutti i tipi di) file su questo file system.
+.TP
+.B MS_NODEV
+Non permette l'accesso a dispositivi (file speciali) in questo file system.
+.TP
+.B MS_NODIRATIME
+Non aggiorna l'ora di accesso per directory su questo file system.
+Questo flag fornisce un sottoinsieme di funzioni messe a disposizione da
+.BR MS_NOATIME ;
+vale a dire che
+.BR MS_NOATIME
+suggerisce
+.BR MS_NODIRATIME .
+.TP
+.B MS_NOEXEC
+Non permette ai programmi di essere eseguiti da questo file system.
+.\" (Possibly useful for a file system that contains non-Linux executables.
+.\" Often used as a security feature, e.g., to make sure that restricted
+.\" users cannot execute files uploaded using ftp or so.)
+.TP
+.B MS_NOSUID
+Non onora i bit set-user-ID e set-group-ID quando si eseguono programmi
+da questo file system.
+.\" (This is a security feature to prevent users executing set-user-ID and
+.\" set-group-ID programs from removable disk devices.)
+.TP
+.B MS_RDONLY
+Monta file system in sola lettura.
+.\"
+.\" FIXME Document MS_REC, available since 2.4.11.
+.\" This flag has meaning in conjunction with MS_BIND and
+.\" also with the shared sub-tree flags.
+.TP
+.BR MS_RELATIME " (A partire da Linux 2.6.20)"
+Quando si accede a un file in questo file system,
+aggiorna solo l'ora dell'ultimo accesso al file (atime) se il valore corrente di atime
+è minore o uguale a quello dell'ultima modifica del file (mtime)
+o all'ora dell'ultimo cambiamento di stato (ctime).
+Questa opzione è utile per programmi, come
+.BR mutt (1),
+che hanno bisogno di sapere quando un file è stato letto dall'ultima modifica.
+.TP
+.B MS_REMOUNT
+Monta di nuovo un mount esistente.
+Questo permette di cambiare i
+.I mountflag
+e
+.I dati
+di un mount esistente senza dover smontare e rimontare il file system.
+.I source
+e
+.I target
+devono essere gli stessi valori specificati nella chiamata
+.BR mount ()
+iniziale;
+.I filesystemtype
+è ignorato.
+
+I seguenti
+.I mountflag
+possono venire cambiati:
+.BR MS_RDONLY ,
+.BR MS_SYNCHRONOUS ,
+.BR MS_MANDLOCK ;
+prima del kernel 2.6.16, potevano essere cambiati anche i seguenti:
+.BR MS_NOATIME
+e
+.BR MS_NODIRATIME;
+e, in aggiunta, prima del kernel 2.4.10, potevano essere cambiati anche questi:
+.BR MS_NOSUID ,
+.BR MS_NODEV ,
+.BR MS_NOEXEC .
+.TP
+.B MS_SYNCHRONOUS
+Rende sincrone le scritture su questo file system (come se
+il flag
+.B O_SYNC
+a
+.BR open (2)
+fosse specificato per tutti i file aperti a questo file system).
+.PP
+Da Linux 2.4 in poi, i flag
+.BR MS_NODEV ", " MS_NOEXEC ", e " MS_NOSUID
+sono impostabili per l'intero punto di mount.
+Dal kernel 2.6.16 in poi,
+.B MS_NOATIME
+e
+.B MS_NODIRATIME
+possono essere impostati basandosi sui punti di mount.
+Anche il flag
+.B MS_RELATIME
+può essere impostato basandosi sui punti di mount.
+.PP
+L'argomento
+.IR data
+è interpretato da differenti file system.
+Tipicamente esso è una stringa di opzioni separate da virgole
+capita da questo file system.
+Vedere
+.BR mount (8)
+per dettagli delle opzioni disponibili per ciascun tipo di filesystem.
+.PP
+.\" Note: the kernel naming differs from the glibc naming
+.\" umount2 is the glibc name for what the kernel now calls umount
+.\" and umount is the glibc name for oldumount
+Linux 2.1.116 ha aggiunto la chiamata di sistema
+.BR umount2 (),
+la quale, come
+.BR umount (),
+smonta un target, ma permette
+.I flag
+aggiuntivi che controllano il comportamento dell'operazione:
+.TP
+.BR MNT_FORCE " (a partire da Linux 2.1.116)"
+Forza l'unmount anche se occupato.
+Questo può causare una perdita di dati.
+(solo per i mount NFS).
+.\" FIXME Can MNT_FORCE result in data loss?  According to
+.\" the Solaris manual page it can cause data loss on Solaris.
+.\" If the same holds on Linux, then this should be documented.
+.TP
+.BR MNT_DETACH " (a partire da Linux 2.4.11)"
+Esegue un unmount lento: rende il punto di mount non disponibile per i
+nuovi accessi, e attualmente esegue l'unmount quando il punto di mount
+smette di essere occupato.
+.TP
+.BR MNT_EXPIRE " (a partire da Linux 2.6.8)"
+Marca il punto di mount come scaduto.
+Se un punto di mount non è attualmente in uso, allora una chiamata iniziale a
+.BR umount2 ()
+con questo flag fallisce con l'errore
+.BR EAGAIN ,
+ma marca il punto di mount come scaduto.
+Il punto di mount rimane scaduto fino a quando non vi
+accede nessun processo.
+Una seconda chiamata
+.BR umount2 ()
+che specifica
+.B MNT_EXPIRE
+somnta un punto di mount scaduto.
+Questo flag non può essere specificato con
+.B MNT_FORCE
+o
+.BR MNT_DETACH .
+.SH VALORE RESTITUITO
+In caso di successo viene restituito zero.
+In caso di errore viene restituito \-1 , e
+.I errno
+viene impostato di conseguenza.
+.SH ERRORI
+I valori di errore dati di seguito vengono da errori indipendenti dal 
+tipo di file system.
+Ciascun tipo di file system può avere i propri errori 
+speciali e il suo comportamento speciale.
+Vedere il codice sorgente del kernel per dettagli.
+.TP
+.B EACCES
+Un componente di un non poteva essere cercato.
+(Vedere anche
+.BR path_resolution (2).)
+Oppure è stato tentato il mount di un filesystem in sola lettura senza dare
+il flag
+.B MS_RDONLY .
+Oppure il dispositivo a blocchi
+.I source
+si trova su un filesystem montato con
+l'opzione
+.B MS_NODEV
+.\" mtk: Probably: write permission is required for MS_BIND, with
+.\" the error EPERM if not present; CAP_DAC_OVERRIDE is required.
+.TP
+.B EAGAIN
+Una chiamata a
+.BR umount2 ()
+che specifica
+.B MNT_EXPIRE
+ha marcato con successo un file system non occupato come scaduto.
+.TP
+.B EBUSY
+.I source
+è già montato.
+Oppure non può essere rimontato in sola lettura,
+perché contiene ancora file aperti in scrittura.
+Oppure non può essere montato sul
+.I target
+perché
+.I target
+è ancora occupato (è la directory di lavoro di qualche task,
+il punto di mount di un altro dispositivo, ha file aperti, ecc.).
+Oppure non può essere smontato perché è occupato.
+.TP
+.B EFAULT
+Uno degli argomanti puntatori punta fuori dallo spazio di indirizzamento dell'utente.
+.TP
+.B EINVAL
+.I source
+ha un superblock non valido.
+Oppure è stato tentato un remount
+.RB ( MS_REMOUNT ),
+ma
+.I source
+non era ancora montato su
+.IR target .
+Oppure è stato tentato uno spostamento
+.RB ( MS_MOVE ),
+ma
+.I source
+non era un mount point, o era '/'.
+Oppure è stato tentato un unmount, ma
+.I target
+non era un mount point.
+Oppure
+.BR umount2 ()
+è stato chiamato con
+.B MNT_EXPIRE
+e uno tra
+.B MNT_DETACH
+o
+.BR MNT_FORCE .
+.TP
+.B ELOOP
+Troppi link incontrati durante la risoluzione di un percorso.
+Oppure è stato tentato uno spostamento, mentre
+.I target
+è discendente di
+.IR source .
+.TP
+.B EMFILE
+(Nel caso non sia necessario un dispositivo a blocchi):
+La tabella dei dispositivi fasulli è piena.
+.TP
+.B ENAMETOOLONG
+Un nome di percorso è più lungo di
+.BR MAXPATHLEN .
+.TP
+.B ENODEV
+.I filesystemtype
+non configurato nel kernel.
+.TP
+.B ENOENT
+Un nome di percorso era vuoto o aveva un componente inesistente.
+.TP
+.B ENOMEM
+Il kernel non può allocare una pagina libera in cui copiare nomi di file o dati.
+.TP
+.B ENOTBLK
+.I source
+non è un dispositivo a blocchi (ed era necessario un dispositivo).
+.TP
+.B ENOTDIR
+Il secondo argomento, o un prefisso del primo argomento, non è una
+directory.
+.TP
+.B ENXIO
+Il major number del dispositivo a blocchi
+.I source
+è fuori limite.
+.TP
+.B EPERM
+Il chiamante non ha i privilegi necessari.
+.SH CONFORME A
+Queste funzioni sono specifiche di Linux e non devono essere usate in 
+programmi pensati per essere portabili.
+.SH NOTE
+.SS Note Linux
+La funzione originale
+.BR umount ()
+era chiamata come \fIumount(device)\fP e restituiva
+.B ENOTBLK
+quando non veniva chiamata con un dispositivo a blocchi.
+In Linux 0.98p4 fu aggiunta una chiamata \fIumount(dir)\fP, per poter
+supportate dispositivi anonimi.
+In Linux 2.3.99-pre7 la chiamata \fIumount(device)\fP fu rimossa,
+lasciando solo \fIumount(dir)\fP (poiché ora i dispositivi possono 
+essere montati in più di un posto, così specificare il dispositivo non è sufficiente).
+.LP
+Il flag originale
+.B MS_SYNC
+fu rinominato
+.B MS_SYNCHRONOUS
+in 1.1.69
+quando fu aggiunto un diverso
+.B MS_SYNC
+a \fI<mman.h>\fP.
+.LP
+Prima di Linux 2.4 un tentativo di eseguire un programma set-user-ID o set-group-ID
+su un file system montato con
+.B MS_NOSUID
+falliva con
+.BR EPERM .
+A partire da Linux 2.4 i bit set-user-ID e set-group-ID in questo caso 
+sono igonrati silenziosamente.
+.\" The change is in patch-2.4.0-prerelease.
+.SH VEDERE ANCHE
+.BR path_resolution (7),
+.BR mount (8),
+.BR umount (8)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.80 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

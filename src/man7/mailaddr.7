@@ -1,0 +1,130 @@
+.\"
+.\" Copyright (c) 1983, 1987 The Regents of the University of California.
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms are permitted
+.\" provided that the above copyright notice and this paragraph are
+.\" duplicated in all such forms and that any documentation,
+.\" advertising materials, and other materials related to such
+.\" distribution and use acknowledge that the software was developed
+.\" by the University of California, Berkeley.  The name of the
+.\" University may not be used to endorse or promote products derived
+.\" from this software without specific prior written permission.
+.\" THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+.\"
+.\"	@(#)mailaddr.7	6.5 (Berkeley) 2/14/89
+.\"
+.\" Extensively rewritten by Arnt Gulbrandsen <agulbra@troll.no>.  My
+.\" changes are placed under the same copyright as the original BSD page.
+.\"
+.\" Adjusted by Arnt Gulbrandsen <arnt@gulbrandsen.priv.no> in 2004 to
+.\" account for changes since 1995. Route-addrs are now even less
+.\" common, etc. Some minor wording improvements. Same copyright.
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Ottobre 1996
+.\" Aggiornamento a man-pages-1.20 di Ottavio G. Rizzo (otto@mast.queensu.ca)
+.\" Giugno 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\"
+.TH MAILADDR 7 2004-09-15 linux "Linux User's Manual" \" -*- nroff -*-
+.UC 5
+.SH NOME
+mailaddr \- descrizione dell'indirizzamento per la posta elettronica
+.SH DESCRIZIONE
+.nh
+Questa pagina di manuale dà una breve introduzione agli indirizzi di
+posta elettronica SMTP, come sono usati in Internet. Tali indirizzi 
+hanno il formato generale
+.PP
+	utente@dominio
+.PP
+dove dominio è una lista di sottodomini separata da punti. Per
+esempio, gli indirizzi
+.PP
+	eric@monet.berkeley.edu
+.br
+	Eric Allman <eric@monet.berkeley.edu>
+.br
+	eric@monet.berkeley.edu (Eric Allman)
+.PP
+sono tutte forme valide dello stesso indirizzo.
+.PP
+La parte del dominio ("monet.berkeley.edu") è un dominio che accetta 
+posta in ingresso. Esso può essere il nome di un host internet, e in 
+passato solitamente lo era, ma non è obbligatorio. La parte del
+dominio non è case sensitive (cioè caratteri minuscoli e maiuscoli sono
+equivalenti).
+.PP
+La parte locale ("eric") è spesso un nome utente, ma il suo
+significato è definito dal software locale. Può essere case sensitive,
+ma di solito non lo è. Se ci si trova con una parte locale che sembra
+spazzatura, normalmente è a causa di un gateway tra un sistema interno 
+di e-mail e la rete, come in questi esempi:
+.PP
+	"cognome/admd=telemail/c=us/o=hp/prmd=hp"@in.un.posto
+.br
+	UTENTE%QUALCOSA@da.qualche.parte
+.br
+	macchina!macchina!nome@da.qualche.parte
+.br
+	I2461572@da.qualche.parte
+.PP
+(dovuti, rispettivamente, ad un gateway X.400, un gateway per un
+qualche sistema interno di mail al qualche manca l'adeguato 
+supporto internet, un gateway UUCP, e l'ultimo è solo una noiosa
+politica sui nomi utente).
+.PP
+La parte del nome vero ("Eric Allman") può essere messa per prima
+fuori dai <>, o per ultima dentro () (per essere precisi le due cose
+non sono proprio la stessa cosa, ma la differenza esula lo scopo di
+questa pagina). Il nome può essere racchiuso tra virgolette usando ""
+se contiene alcuni caratteri particolari, di cui il più comune è ``.'':
+.PP
+	"Eric P. Allman" <eric@monet.berkeley.edu>
+.SS Abbreviazioni.
+.PP
+Molti sistemi di mail permettono agli utenti di abbreviare il nome del
+dominio. Per esempio, gli utenti a berkeley.edu possono mandare mail a
+Eric Allman usando "eric@monet".
+.I "Questo comportamento è deprecato".
+Talvolta funziona, ma non deve dipendere da esso
+.SS Indirizzi di instradamento.
+.PP
+In alcune circostanze può essere necessario instradare un messaggio
+attraverso diversi host per raggiungere la destinazione finale. Gli 
+indirizzi che mostrano queste ritrasmissioni sono detti "indirizzi route" 
+(route-addrs). Questi usano la sintassi:
+.PP
+	<@hostA,@hostB:user@hostC>
+.PP
+Ciò specifica che il messaggio dovrebbe essere spedito a hostA, da qua
+a hostB, e alla fine a hostC. Alcuni host non tengono in
+considerazione gli indirizzi route e spediscono direttamente a hostC.
+.PP
+I route-addrs oggi sono molto rari. Essi si trovano talvolta in vecchi
+archivi mail. Di solito è possibile ignorre tutto tranne la parte 
+"user@hostc" dell'indirizzo per determinare l'indirizzo giusto.
+.SS Postmaster.
+.PP
+Ad ogni sito è richiesto di avere un utente o un alias per un utente
+designato "postmaster" al quale possono essere indirizzati i
+problemi con il sistema delle mail. L'indirizzo del "postmaster" non
+è case sensitive.
+.SH FILE
+.I /etc/aliases
+.br
+.I ~/.forward
+.SH "VEDERE ANCHE"
+.BR binmail (1),
+.BR mail (1),
+.BR mconnect (1),
+.BR aliases (5),
+.BR forward (5),
+.BR sendmail (8),
+.BR vrfy (8)
+
+RFC\ 2822 (Internet Message Format)

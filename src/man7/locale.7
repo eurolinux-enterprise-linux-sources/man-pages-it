@@ -1,0 +1,215 @@
+.\" $Id: locale.7,v 1.1.1.1 2000/02/16 11:21:40 sagan Exp $
+.\" (c) 1993 by Thomas Koenig (ig25@rz.uni-karlsruhe.de)
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Modified Sat Jul 24 17:28:34 1993 by Rik Faith (faith@cs.unc.edu)
+.\" Modified Sun Jun 01 17:16:34 1997 by Jochen Hein (jochen.hein@delphi.central.de)
+.\"
+.\" Traduzione by Ottavio G. Rizzo (otto@mast.queensu.ca)
+.\" Giugno 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\" Aggiornamento a man-pages-2.24 di Giulio Daprelà <giulio@pluto.it>
+.\" marzo 2006
+.\" Aggiornamento a man-pages-2.38 di Giulio Daprelà - agosto 2006
+.\"
+.TH LOCALE 7  "24 aprile 1993" "Linux" "Linux Programmer's Manual"
+.SH NOME
+locale \- Descrizione del supporto multi-linguistico
+.SH SINTASSI
+.nf
+.B #include <locale.h>
+.fi
+.SH DESCRIZIONE
+Una localizzazione (locale, in inglese) è un insieme di regole
+linguistiche e culturali che coprono
+campi come la lingua dei messaggi, insiemi di caratteri, convenzioni
+lessicografiche, ecc. Un programma deve poter determinare la sua
+localizzazione e agire di conseguenza per poter essere adattato a culture
+diverse.
+.PP
+L'header
+.B <locale.h>
+dichiara i tipi di dati, funzioni e macro utili per questo scopo.
+.PP
+Le funzioni che vengono dichiarate sono
+.BR setlocale ()
+per impostare la localizzazione corrente e
+.BR localeconv ()
+per ottenere informazioni sul modo di formattare i numeri.
+.PP
+Le differenti categorie di informazioni locali di cui un programma
+potrebbe aver bisogno vengono dichiarate come macro. Usandole come
+primo argomento alla funzione
+.BR setlocale ()
+è possibile impostare una delle seguenti localizzazioni:
+.TP
+.B LC_COLLATE
+viene usato per modificare il comportamento delle funzioni
+.BR strcoll ()
+e
+.BR strxfrm () ,
+che servono per confrontare stringhe nell'alfabeto locale. Ad esempio,
+la «ß» tedesca viene ordinata lessicograficamente come «ss».
+.TP
+.B LC_CTYPE
+modifica il comportamento delle funzioni che maneggiano e classificano
+caratteri, come
+.BR isupper ()
+e
+.BR toupper () ,
+e le funzioni per caratteri multi\-byte come
+.BR mblen ()
+o
+.BR wctomb () .
+.TP
+.B LC_MONETARY
+cambia l'informazione restituita da
+.BR localeconv (),
+la quale descrive il modo in cui i numeri vengono normalmente
+stampati, compresi dettagli come l'uso del punto o della virgola
+decimale. Questa informazione è usata internamente dalla funzione
+.BR strfmon () .
+.TP
+.B LC_MESSAGES
+cambia il linguaggio in cui i messaggi vengono mostrati e la forma
+delle risposte positive o negative. La libreria C di GNU contiene le
+funzioni
+.BR gettext (),
+.BR ngettext (),
+e
+.BR rpmatch ()
+per facilitare l'impiego di queste informazioni. La famiglia di funzioni 
+GNU gettext rispetta anche la variabile
+.BR LANGUAGE .
+.TP
+.B LC_NUMERIC
+cambia l'informazione usata dalle famiglie di funzioni
+.BR printf ()
+e
+.BR scanf (),
+quando viene loro richiesto di usare le impostazioni localizzate. Queste
+informazioni possono anche essere lette tramite la funzione
+.BR localeconv ().
+.TP
+.B LC_TIME
+modifica il comportamento della funzione
+.BR strftime ()
+onde mostrare l'ora in una forma localmente accettabile; per esempio,
+in buona parte d'Europa si usano le 24 ore, a differenza delle 12 ore
+degli USA.
+.TP
+.B LC_ALL
+Vale per tutte le macro precedenti.
+.PP
+Se il secondo argomento a
+.BR setlocale ()
+è la stringa vuota
+.BR """""" ,
+allora la localizzazione predefinita è determinata come segue:
+.IP 1.
+Se è presente una variabile ambientale non nulla
+.BR LC_ALL ,
+viene usato il valore di
+.B LC_ALL.
+.IP 2.
+Se una variabile ambientale con lo stesso nome di una delle categorie
+precedenti esiste ed è non nulla, il suo valore viene usato per quella
+categoria. 
+.IP 3.
+Se è presente una variabile ambientale non nulla
+.BR LANG ,
+viene usato il valore di
+.B LANG .
+.PP
+I valori che descrivono la formattazione locale dei numeri sono dispobili
+in una
+.B struct lconv
+restituita dalla funzione
+.BR localeconv (),
+che è così dichiarata:
+.in +0.25i
+.nf
+
+struct lconv {
+
+  /* Numeric (non-monetary) information */
+
+  char *decimal_point;     /* Radix character */
+  char *thousands_sep;     /* Separator for digit groups to left 
+                              of radix character */
+  char *grouping; /* Each element is the number of digits in a 
+                     group; elements with higher indices are 
+                     further left.  An element with value CHAR_MAX 
+                     means that no further grouping is done.  An 
+                     element with value 0 means that the previous 
+                     element is used for all groups further left. */
+
+  /* Remaining fields are for monetary information */
+
+  char *int_curr_symbol;   /* First three chars are a currency symbol 
+                               from ISO 4217.  Fourth char is the 
+                               separator.  Fifth char is '\0'. */
+  char *currency_symbol;   /* Local currency symbol */
+  char *mon_decimal_point; /* Radix character */
+  char *mon_thousands_sep; /* Like `thousands_sep' above */
+  char *mon_grouping;      /* Like `grouping' above */
+  char *positive_sign;     /* Sign for positive values */
+  char *negative_sign;     /* Sign for negative values */
+  char  int_frac_digits;   /* Int'l fractional digits */
+  char  frac_digits;       /* Local fractional digits */
+  char  p_cs_precedes;     /* 1 if currency_symbol precedes a 
+                              positive value, 0 if succeeds */
+  char  p_sep_by_space;    /* 1 if a space separates currency_symbol 
+                              from a positive value */
+  char  n_cs_precedes;     /* 1 if currency_symbol precedes a 
+                              negative value, 0 if succeeds */
+  char  n_sep_by_space;    /* 1 if a space separates currency_symbol
+                              from a negative value */
+  /* Positive and negative sign positions:
+     0 Parentheses surround the quantity and currency_symbol.
+     1 The sign string precedes the quantity and currency_symbol.
+     2 The sign string succeeds the quantity and currency_symbol.
+     3 The sign string immediately precedes the currency_symbol.
+     4 The sign string immediately succeeds the currency_symbol. */
+  char  p_sign_posn;
+  char  n_sign_posn;
+};
+.fi
+.in +0.25i
+.SH "CONFORME A"
+POSIX.1-2001.
+
+Le funzioni GNU gettext sono specificate in LI18NUX2000.
+.SH "VEDERE ANCHE"
+.BR locale (1),
+.BR localedef (1),
+.BR gettext (3),
+.BR localeconv (3),
+.BR ngettext (3),
+.BR nl_langinfo (3),
+.BR rpmatch (3),
+.BR setlocale (3),
+.BR strcoll (3),
+.BR strfmon (3),
+.BR strftime (3),
+.BR strxfrm (3)

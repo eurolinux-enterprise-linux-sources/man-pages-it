@@ -1,0 +1,104 @@
+.\" Hey, Emacs!  This is an -*- nroff -*- source file.
+.TH DSELECT 8 "Gennaio 2000" "Debian Project" "Debian GNU/Linux"
+.SH NOME
+dselect \- interfaccia a console per gestire pacchetti Debian 
+.SH SINTASSI
+.B dselect
+[--admindir <directory>] [--help] [--version] [--licence | --license]
+[--expert] [--debug <file> | -D <file>] [\fI<azione>\fP]
+.SH DESCRIZIONE
+.B dselect
+è l'interfaccia utente primaria per installare, rimuovere e gestire
+i pacchetti di Debian GNU/Linux. È un front-end a
+.B dpkg(8).
+Normalmente
+.B dselect
+è invocato senza parametri, ma alcuni parametri dalla linea di comando
+sono ancora disponibili.
+.PP
+L'uso di
+.B dselect
+si spiega abbastanza da sé, ed è incluso un sistema di aiuto interno,
+che descrive le associazioni dei tasti (keystrokes) ed alcuni concetti generali.
+.I Leggere l'help.
+.SS AZIONI
+.TP
+.B Access
+Sceglie un `metodo' di accesso da usare per individuare le fonti di pacchetti.
+Di default, esistono diversi metodi come "floppy", "harddisk", "cdrom", 
+ma altri pacchetti, se installati, possono fornire metodi aggiuntivi,  
+come per esempio "apt" o "multi_cd", ecc.
+.TP
+.B Update
+Aggiorna la lista dei pacchetti disponibili per dpkg/dselect con 
+le informazioni relative alla fonte di pacchetti scelta.
+.TP
+.B Select
+Seleziona singoli paccheti da installare.
+.TP
+.B Install
+Installa i pacchetti selezionati.
+.TP
+.B Config
+Configura ogni pacchetto precedentemente non configurato.
+.TP
+.B Remove
+Rimuove o epura i pacchetti deselezionati.
+.TP
+.B Quit
+Esce da dselect (con successo).
+.SH OPZIONI
+Tutte le opzioni possono essere specificate sia dalla linea di comando che 
+dal file di configurazione di \fBdselect\fP \fI/etc/dpkg/dselect.cfg\fP. 
+Ogni linea nel file di configurazione è una opzione (esattamente come nella
+linea di comando, ma senza '-' davanti) o un commento (se inizia con un \fB#\fR).
+.br
+.TP
+.B --admindir <directory>
+Cambia la directory dove sono localizzati i file `status', `available' e 
+simili di dpkg. Questa directory, di default, è
+.I /var/lib/dpkg
+e normalmente non dovrebbe esserci alcuna necessità di cambiarla.
+.TP
+.B --debug <file> | -D<file>
+Attiva il debugging. Le informazioni di debugging sono inviate al
+.I <file>.
+.TP
+.B --expert
+Attiva la 'modalità esperto', per esempio non visualizzando possibili
+noiosi messaggi di aiuto.
+.TP
+.B --help
+Mostra un breve testo di aiuto ed esce successivamente.
+.TP
+.B --licence | --license
+Visualizza informazioni riguardo il copyright e la licenza di dselect
+ed esce successivamente.
+.TP
+.B --version
+Mostra informazioni sulla versione di dselect ed esce successivamente.
+.SH BUG
+
+L'interfaccia di selezione pacchetti di
+.B dselect
+è confusa o addirittura allarmante per un nuovo utente.
+.sp
+.B dselect
+non gestisce molto bene il campo Recommends, e non comprende del tutto
+il campo Replaces.
+.sp
+Non c'è un modo semplice per scaricare ed installare automaticamente
+i pacchetti attraverso un FTP anonimo con metodi di accesso predefiniti 
+(APT svolge questo compito).
+.SH VEDERE ANCHE
+.BR dpkg (8),
+.BR deb (5).
+.SH AUTORI
+.B dselect
+è stato scritto da Ian Jackson (ijackson@gnu.ai.mit.edu). La lista
+completa dei contributori può essere trovata in `dselect --license'.
+.br
+Questa pagina di manuale è stata scritta da Juho Vuori <javuori@cc.helsinki.fi> 
+e aggiornata da Josip Rodin. Traduzione e adattamenti in italiano a cura di 
+Hugh Hartmann <hhartmann@libero.it> 
+Revisione a cura di Francesco Grani <kekkograni@tin.it>.

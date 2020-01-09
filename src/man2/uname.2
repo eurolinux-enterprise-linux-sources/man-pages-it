@@ -1,0 +1,154 @@
+.\" Copyright (C) 2001 Andries Brouwer <aeb@cwi.nl>.
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" 2007-07-05 mtk: Added details on underlying system call interfaces
+.\"
+.\" Tradotto da goffredo baroncelli il 3/4/1998 <kreijack@usa.net>
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.38 di Giulio Daprelà - agosto 2006
+.\" Aggiornamento a man-pages-2.65 di Elisabetta Galli - settembre 2007
+.\"
+.TH UNAME 2 "5 luglio 2007" "Linux" "Linux Programmer's Manual"
+.SH NOME
+uname \- restituisce nome e informazioni sul kernel attuale
+.SH SINTASSI
+.B #include <sys/utsname.h>
+.sp
+.BI "int uname(struct utsname *" buf );
+.SH DESCRIZIONE
+.BR uname ()
+restituisce informazione sul sistema attraverso il puntatore
+.IR buf .
+La struttura 
+.I utsname 
+è definita in
+.IR <sys/utsname.h> :
+.in +0.5i
+.nf
+
+struct utsname {
+    char sysname[];
+    char nodename[];
+    char release[];
+    char version[];
+    char machine[];
+#ifdef _GNU_SOURCE
+    char domainname[];
+#endif
+};
+
+.fi
+.in -0.5i
+La lunghezza degli array in una
+.I struttura utsname
+non è specificata; i campi sono terminati con un byte nullo ('\\0').
+.SH "VALORE RESTITUITO"
+In caso di esito positivo viene restituito zero,
+altrimenti \-1 e
+.I errno
+viene impostato di conseguenza.
+.SH ERRORI
+.TP
+.B EFAULT
+.I buf
+non è valido.
+.SH "CONFORME A"
+SVr4, POSIX.1-2001.
+Non c'è alcuna chiamata a
+.BR uname ()
+in 4.3BSD.
+.PP
+Il membro
+.I domainname
+(il nome di dominio NIS o YP) è un'estensione GNU.
+.SH NOTE
+Questa è una chiamata di sistema, e si presume che il sistema operativo 
+sappia il suo nome, rilascio e versione.
+Essa inoltre sa su quale hardware funziona.
+Quindi quattro dei campi della struttura sono significativi.
+D'altra parte il campo \fInodename\fP è insignificante:
+esso dà il nome della macchina presente in qualche rete indefinita, ma 
+tipicamente le macchine si trovano in più di una rete e
+hanno più nomi. 
+Inoltre il kernel non ha modo di sapere queste cose,
+quindi bisogna dirgli cosa rispondere.
+Lo stesso vale per il campo aggiuntivo \fIdomainname\fP.
+.LP
+A questo scopo Linux usa le chiamate di sistema
+.BR sethostname (2)
+e
+.BR setdomainname (2).
+Notare che non c'è alcuno standard che dice che il nome host impostato da
+.BR sethostname (2)
+è la stessa stringa del campo \fInodename\fP della struttura restituita da
+.BR uname ()
+(in verità, alcuni sistemi permettono un nome host di 256 byte e un nome nodo di 8 byte),
+ma ciò è vero in Linux.
+Lo stesso vale per
+.BR setdomainname (2)
+e per il campo \fIdomainname\fP.
+.LP
+La lunghezza dei campi nella struttura varia.
+Alcuni sistemi operativi
+o librerie usano un valore prefissato 9 o 33 o 65 o 257.
+Altri sistemi usano
+SYS_NMLN o _SYS_NMLN o UTSLEN o _UTSNAME_LENGTH.
+E' chiaramente una
+pessima idea usare una qualunque di queste costanti; si usi solo sizeof(...).
+Spesso è scelto 257 per avere spazio per un nome di host internet.
+.LP
+Parte dell'informazione utsname è anche accessibile attraverso
+.BR sysctl (2)
+e attraverso
+.IR /proc/sys/kernel/ { ostype ,
+.IR hostname ,
+.IR osrelease ,
+.IR version ,
+.IR domainname }.
+.SS Interfaccia del kernel sottostante
+.LP
+Col tempo, aumenti nella dimensione della struttura
+.I utsuname
+hanno portato a tre versioni successive di
+.BR uname ():
+.IR sys_olduname ()
+(slot
+.IR __NR_oldolduname ),
+.IR sys_uname ()
+(slot
+.IR __NR_olduname ),
+e
+.IR sys_newuname ()
+(slot
+.IR __NR_uname).
+La prima usava la lunghezza 9 per tutti i campi;
+la seconda usava 65;
+anche la terza usava 65, aggiungendo però il campo \fIdomainname\fP.
+La funzione wrapper di glibc,
+.BR uname () ,
+nasconde questi dettagli alle applicazioni,
+invocando la versione più recente della chiamata di sistema fornita dal kernel.
+.SH "VEDERE ANCHE"
+.BR uname (1),
+.BR getdomainname (2),
+.BR gethostname (2)

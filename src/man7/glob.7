@@ -1,0 +1,200 @@
+.\" Copyright (c) 1998 Andries Brouwer
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\"
+.\" 2003-08-24 fix for / by John Kristoff + joey
+.\"
+.\" Traduzione by Ottavio G. Rizzo (otto@mast.queensu.ca)
+.\" Luglio 1998
+.\" Aggiornamento a man-pages-2.09 di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\" Aggiornamento a man-pages-2.62 di Elisabetta Galli <lab@kkk.it>
+.\" luglio 2007
+.\"
+.TH GLOB 7 "24 agosto 2003" "Unix" "Linux Programmer's Manual"
+.SH NOME
+glob \- Fare il globbing dei percorsi dei file
+.SH DESCRIZIONE
+Molto tempo fa, in Unix V6, c'era un programma
+.I /etc/glob
+che espandeva i modelli di metacaretteri.
+Poco dopo divenne parte della shell.
+
+Al giorno d'oggi c'è pure una routine di libreria
+.BR glob (3)
+per svolgere un simile compito a vantaggio dei programmi utenti.
+
+Le regole sono le seguenti (POSIX 1003.2, 3.13).
+.SS "Corrispondenze di metacaratteri"
+Una stringa è un modello di metacaratteri se contiene uno dei caratteri
+`?', `*' o `['. Il globbing è l'operazione che espande un modello di
+metacaratteri in un elenco di percorsi che corrisponde al modello. Una
+corrispondenza è definita da:
+
+Un `?' (non fra virgolette) corrisponde ad un carattere singolo.
+
+Un `*' (non fra virgolette) corrisponde a qualsiasi stringa, compresa
+quella vuota.
+.PP
+.B "Classi di Carattere"
+.sp
+Un'espressione della forma `[...]', dove il primo caratttere dopo la
+`[' iniziale non è un `!', corrisponde ad un carattere singolo, cioè a
+qualsiasi carattere fra quelli racchiusi tra le parentesi. La stringa
+nelle parentesi non può essere vuota; perciò è possibile avere una `]'
+fra parentesi, purché essa sia il primo carattere (ad es., `[][!]'
+corrisponde ai tre caratteri `[', `]' e `!').
+.PP
+.B Intervallo
+.sp
+C'è una convenzione speciale:
+due caratteri separati da `\-' indicano un intervallo
+(ad es., `[A\-Fa\-f0\-9]' equivale a `[ABCDEFabcdef0123456789]').
+Si può includere un `-' col suo significato letterale ponendolo al
+primo o all'ultimo posto fra le parentesi
+(ad es. `[]\-]' corrisponde solo ai due caratteri `]' e `\-',
+`[\-\-0]' corrisponde ai tre caratteri `\-', `.', `0', mentre `/'
+non ha corrispondenze.)
+.PP
+.B Complementazione
+.sp
+Un'espressione `[!...]' corrisponde ad un carattere singolo, cioè a
+qualsiasi carattere cui non corrisponda l'espressione ottenuta
+rimuovendo il `!' iniziale (per es.,  `[!]a\-]' corrisponde a
+qualsiasi carattere singolo eccetto `]', `a' e `\-').
+
+Si può togliere il significato speciale di  `?', `*' e `['
+precedendoli con un backslash, o, nel caso l'espressione sia parte di
+una riga di comando della shell, ponendola fra virgolette doppie. Fra
+parentesi quadre questi caratteri hanno un significato letterale. Per
+es.,  `[[?*\e]' corrisponde ai quattro caratteri `[', `?', `*' e `\e'.
+
+.SS Percorsi
+Il globbing è applicato separatamente a ogni componente di un percorso. A uno '/'
+di un percorso non può corrispondere uno dei metacaratteri `?' o `*', né
+un intervallo come `[.\-0]'. Un intervallo non può contenere uno '/' esplicito:
+ciò risulterebbe in un errore di sintassi.
+
+Se il nome di un file inizia con un `.', deve esserci una
+corrispondenza esplicita per il `.'. Per es., `rm *' non rimuove
+.profile, né `tar c *' archivia tutti i file: `tar c .' è meglio.
+
+.SS "Elenchi vuoti"
+
+La chiara e semplice regola di più sopra: «espandere un modello di
+metacaratteri in un elenco di percorsi che corrisponde al modello» era la
+definizione originale di Unix. Permetteva modelli che si espandevano
+in elenchi vuoti, come in
+.br
+.nf
+	xv -wait 0 *.gif *.jpg
+.fi
+quando, magari, non c'è nessun file *.gif (e questo non causa un
+errore).
+D'altra parte POSIX richiede che un modello di metacaratteri
+non venga modificato se è sintatticamente sbagliato o se la lista dei
+percorsi corrispondenti è vuota.
+Con
+.I bash
+si può forzare il comportamento classico ponendo
+.IR allow_null_glob_expansion=true .
+
+(Problemi simili accadono in altri posti. Per es., mentre script
+vecchi usano
+.br
+.nf
+	rm `find . \-name "*~"`
+.fi
+per uno script nuovo  bisogna usare
+.br
+.nf
+	rm \-f nosuchfile `find . \-name "*~"`
+.fi
+per evitare messagi di errore di
+.I rm
+invocato con un elenco vuoto di argomenti)
+
+.SH NOTE
+.SS Espressioni regolari
+Si noti che i modelli di metacaratteri non sono espressioni regolari, per
+quanto si assomiglino. Prima di tutto corrispondono a nomi di file
+piuttosto che a testo, e poi le convenzioni non sono le stesse: per
+esempio, `*' in un'espressione regolare vuol dire zero o più copie
+della cosa precedente.
+
+Ora che le espressioni regolari usano espressioni fra parentesi quadre
+in cui la negazione è indicata con un `^', POSIX ha dichiarato
+indefinito l'effetto di un modello come `[^...]'.
+
+.SS Classi di carattere e internazionalizzazione
+Naturalmente gl'intervalli erano originariamente interpretate come intervalli
+ASCII, per cui `[\ \-%]' stava per `[\ !"#$%]' e `[a\-z]' per «una
+qualsiasi minuscola».
+Alcune implementazioni Unix hanno generalizzato questo comportamento
+in modo tale che l'intervallo X-Y denota l'insieme di caratteri i cui
+codici sono compresi fra i codici di X e Y. D'altra parte, ciò
+richiede che l'utente conosca la codifica usata sul sistema locale, e,
+inoltre, non è comodo quando la sequenza di collazione per l'alfabeto
+locale è diversa dall'ordine dei codici di carattere. Perciò POSIX ha
+notevolmente esteso la notazione parentetica, sia per i modelli di
+metacaratteri che per le espressioni regolari. Prima abbiamo visto tre tipi
+di argomenti che possono apparire in un'espressione parentetica:
+(i) una negazione  (ii) caratteri singoli espliciti e (iii) intervalli.
+POSIX definisce gl'intervalli in un modo internazionalmente più
+utile e aggiunge altri tre tipi:
+
+(iii) Intervalli del tipo X\-Y includono tutti i caratteri (estremi
+inclusi) compresi tra X e Y nella sequenza di collazione definita
+dalla categoria
+.B LC_COLLATE
+nella localizzazione corrente.
+
+(iv) Classi di carattere con nome, come
+.br
+.nf
+[:alnum:]  [:alpha:]  [:blank:]  [:cntrl:]
+[:digit:]  [:graph:]  [:lower:]  [:print:]
+[:punct:]  [:space:]  [:upper:]  [:xdigit:]
+.fi
+in modo da poter dire «[[:lower:]]» al posto di «[a\-z]» e ottenere il
+risultato corretto anche in danese, dove ci sono tre lettere
+nell'alfabeto che vengono dopo la zeta. Queste classi di carattere
+sono definite dalla categoria
+.B LC_CTYPE
+nella localizzazione corrente.
+
+(v) Elementi di collazione, come «[.ch.]» o «[.a-acute.]», dove la
+stringa compresa fra «[.» e «.]» è un elemento di collazione definito
+dalla localizzazione corrente. Si noti che questo può essere un
+elemento composto da più caratteri.
+
+(vi) Una classe di equivalenza, come «[=a=]», dove la stringa compresa
+tra «[=» e «=]» e un qualsiasi elemento di collazione nella sua classe
+di equivalenza, definita dalla localizzazione corrente. Per esempio,
+«[[=a=]]» potrebbe essere equivalente a «[aáàäâ]», (attenzione: questo 
+è Latin-1) cioè a «[a[.a-acute.][.a-grave.][.a-umlaut.][.a-circumflex.]]».
+
+.SH VEDERE ANCHE
+.BR sh (1),
+.BR fnmatch (3),
+.BR glob (3),
+.BR locale (7),
+.BR regex (7)

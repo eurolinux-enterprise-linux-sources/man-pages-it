@@ -1,0 +1,172 @@
+.\" Copyright (C) 2001 Andries Brouwer <aeb@cwi.nl>.
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\"
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\"
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Traduzione da man-pages-2.16 di Giulio Daprelà <giulio@pluto.it>
+.\" dicembre 2005
+.\" Aggiornamento a man-pages-2.38 di Giulio Daprelà - agosto 2006
+.\" Aggiornamento a man-pages-2.62 di Elisabetta Galli - luglio 2007
+.\"
+.TH EXIT 3  12 giugno 2007 "Linux" "Linux Programmer's Manual"
+.SH NOME
+exit \- causa un termine normale del processo
+.SH SINTASSI
+.nf
+.B #include <stdlib.h>
+.sp
+.BI "void exit(int " status );
+.fi
+.SH DESCRIZIONE
+La funzione
+.BR exit ()
+provoca il termine normale dei processi e il
+valore di \fIstatus & 0377\fP è restituito al genitore
+(vedere
+.BR wait (2)).
+.LP
+Tutte le funzioni registrate con
+.BR atexit (3)
+e
+.BR on_exit (3)
+sono chiamate, in ordine inverso rispetto alla loro registrazione.
+(È possibile per una di queste funzioni usare
+.BR atexit (3)
+o
+.BR on_exit (3)
+per registrare una funzione aggiuntiva
+da eseguire durante il processo di uscita;
+la nuova registrazione è aggiunta all'inizio dell'elenco di funzioni
+che rimane da chiamare).
+Se una di queste funzioni non restituisce niente
+(per esempio, chiama
+.BR _exit (2),
+o si termina da sola mandandosi un segnale),
+non viene chiamata nessuna delle funzioni rimanenti,
+e la successiva uscita in elaborazione (in particolare, lo svuotamento degli stream
+.BR stdio (3)
+streams) viene abbandonata.
+Se una funzione è stata registrata più volte usando
+.BR atexit (3)
+o
+.BR on_exit (3),
+verrà chiamata tante volte quante sono le registrazioni.
+.LP
+Tutti gli stream
+.BR stdio (3)
+aperti sono svuotati e chiusi.
+I file creati con
+.BR tmpfile (3)
+sono rimossi.
+.LP
+Il C standard specifica due costanti,
+\fBEXIT_SUCCESS\fP e \fBEXIT_FAILURE\fP,
+che possono essere passate a
+.BR exit ()
+per indicare rispettivamente 
+il successo o l'insuccesso di una chiusura.
+.SH "VALORE RESTITUITO"
+La funzione
+.BR exit ()
+non restituisce nulla.
+.SH "CONFORME A"
+SVr4, 4.3BSD, POSIX.1-2001.
+.SH NOTE
+.LP
+Non è definito cosa succede se una delle
+funzioni registrate usando
+.BR atexit (3)
+e
+.BR on_exit (3)
+chiama
+.BR exit ()
+o
+.BR longjmp (3).
+.LP
+L'uso di
+.B EXIT_SUCCESS
+e
+.B EXIT_FAILURE
+è leggermente più portabile
+(verso ambienti non-Unix) di 0 e qualche valore non-zero
+come 1 o \-1.
+In particolare, VMS usa una convenzione differente.
+.LP
+BSD ha tentato di standardizzare i codici di uscita; vedere il file
+.IR <sysexits.h> .
+.LP
+Dopo
+.BR exit (),
+lo stato di uscita deve essere trasmesso al processo
+genitore.
+Ci sono tre casi.
+Se il genitore ha impostato l'handler
+.BR SA_NOCLDWAIT ,
+o l'handler
+.B SIGCHLD
+a
+.BR SIG_IGN ,
+lo stato è scartato.
+Se il genitore stava aspettando il processo figlio
+gli viene notificato lo stato di uscita.
+In entrambi i casi il processo in uscita muore
+immediatamente.
+Se il genitore non ha indicato che
+non gli interessa lo stato di uscita, ma non è in attesa,
+il processo in uscita diviene un processo "zombie"
+(che non è altro che un contenitore per il byte che 
+rappresenta lo stato di uscita), così che il genitore possa apprendere 
+lo stato di uscita quando in seguito chiama una delle
+funzioni
+.BR wait (2)
+.LP
+Se l'implementazione supporta il segnale
+.BR SIGCHLD ,
+questo segnale è 
+inviato al genitore.
+Se il genitore ha settato
+.BR SA_NOCLDWAIT ,
+non è definito se il segnale
+.B SIGCHLD
+è inviato.
+.LP
+Se il processo è un leader di sessione e il suo terminale di controllo è
+il terminale di controllo della sessione, allora a ciascun processo nel
+gruppo dei processi in primo piano di questo terminale di controllo
+viene mandato un segnale
+.B SIGHUP ,
+e il terminale è disassociato da questa
+sessione, permettendone l'acquisizione da parte di un nuovo processo 
+controllante.
+.LP
+Se l'uscita del processo fa sì che un gruppo di processo divenga orfano,
+e se un qualunque membro del nuovo gruppo del processo orfano viene 
+fermato, allora verrà mandato un segnale
+.B SIGHUP
+seguito da un segnale
+.B SIGCONT
+a ciascun processo
+in questo gruppo di processo.
+.SH "VEDERE ANCHE"
+.BR _exit (2),
+.BR wait (2),
+.BR atexit (3),
+.BR on_exit (3),
+.BR tmpfile (3)

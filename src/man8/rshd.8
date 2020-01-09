@@ -1,0 +1,199 @@
+.\" Copyright (c) 1983, 1989, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" Traduzione da inetutils-1.4.2 di Giulio Daprelà <giulio@pluto.it>
+.\" gennaio 2006
+.\"
+.\"     @(#)rshd.8	8.1 (Berkeley) 6/4/93
+.\"
+.Dd 4 giugno 1993
+.Dt RSHD 8
+.Os BSD 4.2
+.Sh NOME
+.Nm rshd
+.Nd server della shell remota
+.Sh SINTASSI
+.Nm rshd
+.Op Fl alnL
+.Sh DESCRIZIONE
+Il server
+.Nm rshd
+è il server per la routine
+.Xr rcmd 3
+e, di conseguenza, per il programma
+.Xr rsh 1 .
+Il server fornisce servizi di esecuzione remota con autenticazione
+basata su numeri di porta privilegiati da host di fiducia.
+.Pp
+Il server
+.Nm rshd
+si mette in ascolto delle richieste di servizio alla porta indicata
+nella specifica di servizio ``cmd''; vedere
+.Xr services 5 .
+Quando viene ricevuta una richiesta di servizio viene iniziato il 
+seguente protocollo:
+.Bl -enum
+.It
+Il server verifica la porta sorgente del client.
+Se la porta non è nel range 512-1023, il server
+abortisce la connessione.
+.It
+Il server legge cartteri dal socket fino a
+un byte null (`\e0'). La stringa risultante è interpretata
+come un numero
+.Tn ASCII
+base 10.
+.It
+Se il numero ricevuto nel passo 2 è non-zero,
+esso è interpretato come numero di porta di un flusso secondario
+da usare per
+.Em stderr .
+Una seconda connessione è quindi creata sulla porta specificata
+sulla macchina client. Anche la porta sorgente di questa seconda
+connessione è nel range 512-1023.
+.It
+Il server verifica l'indirizzo sorgente del client e
+richiede il corrispondente nome host (vedere
+.Xr gethostbyaddr 3 ,
+.Xr hosts 5
+e
+.Xr named 8 ) .
+Se il nome host non può essere determinato, è usata la rappresentazione 
+con notazione a punti dell'indirizzo dell'host.
+Se il nome dell'host è nello stesso dominio del server (in accordo con
+gli ultimi due componenti del nome di dominio), o se viene data l'
+opzione
+.Fl a
+sono richiesti gli indirizzi per quel nome host,
+verificando che nome e indirizzo corrispondano.
+Se la verifica dell'indirizzo fallisce, la connessione è abortita
+con il messaggio, ``Host address mismatch.''
+.It
+Un nome di utente che finisce con null di almeno 16 caratteri
+è recuperato sul primo socket. Questo nome utente è interpretato
+come identità dell'utente sulla macchina del
+.Em client Ns .
+.It
+Un nome di utente che termina con null di almeno 16 caratteri
+è recuperato sul primo socket. Questo nome utente è interpretato
+come identità dell'utente da usare sulla macchina del
+.Sy server Ns .
+.It
+Un comando che termina con null da passare a una shell
+è recuperato sul primo socket. La lunghezza del comando è
+limitata dal limite superiore nella dimensione dell'elenco
+degli argomenti del sistema.
+.It
+.Nm Rshd
+quindi valida l'utente usando
+.Xr ruserok 3 ,
+che usa il file
+.Pa /etc/hosts.equiv
+e il file
+.Pa .rhosts
+trovato nella home directory dell'utente. L'opzione
+.Fl l
+impedisce a
+.Xr ruserok 3
+di effettuare validazioni basate sul file ``.rhosts'' dell'utente,
+a meno che l'utente non sia il superutente.
+.It
+Se il file
+.Pa /etc/nologin
+esiste e l'utente non è il superutente,
+la connessione è chiusa.
+.It
+Un byte null è restituito sul primo socket
+e la linea di comando è passata alla normale shell di login
+dell'utente. La shell eredita le connessione di rete stabilite da
+.Nm rshd .
+.El
+.Pp
+I messaggi keepalive a livello trasporto sono abilitato a meno che non 
+sia presente l'opzione
+.Fl n .
+L'uso di messaggi keepalive permette alle sessioni di scadere
+se il client va in crash o diviene irraggiungibile.
+.Pp
+L'opzione
+.Fl L
+causa il log di tutti gli accessi riusciti in
+.Xr syslogd 8
+come messaggi
+.Li auth.info .
+.Sh DIAGNOSTICA
+Tranne l'ultimo elencato sopra,
+tutti i messaggi di diagnostica sono restituiti
+al primo socket, dopo di che goni connessione di rete viene chiusa.
+In errore è indicato da un byte iniziale con un valore di 1
+(0 è restituito nel precedente passo 10 quando tutti i passi precedenti 
+l'esecuzione della shell di login sono completati con successo).
+.Bl -tag -width indent
+.It Sy Locuser too long.
+Il nome dell'utente sulla macchina del client
+è più lungo di 16 caratteri.
+.It Sy Ruser too long.
+Il nome dell'utente sulla macchina remota è
+più lungo di 16 caratteri.
+.It Sy Command too long .
+La linea di comando passata supera le dimensioni dell'elenco
+argomenti (come configurato nel sistema).
+.It Sy Login incorrect.
+Non esiste alcun campo nel file password per il nome utente.
+.It Sy Remote directory.
+Il comando
+.Xr chdir
+nella home directory è fallito.
+.It Sy Permission denied.
+La procedura di autenticazione descritta sopra è fallita.
+.It Sy Can't make pipe.
+La pipe necessaria per
+.Em stderr ,
+non è stata creata.
+.It Sy Can't fork; try again.
+Un
+.Xr fork
+del server è fallito.
+.It Sy <shellname>: ...
+La shell di login dell'utente non può essere avviata. Questo messaggio è 
+restituito alla connessione associata con
+.Em stderr ,
+e on è preceduto da un byte flag.
+.El
+.Sh VEDERE ANCHE
+.Xr rsh 1 ,
+.Xr rcmd 3 ,
+.Xr ruserok 3
+.Sh BUG
+La procedura di autenticazione usata qui presume l'integrità
+di ciascuna macchina client e del mezzo di connessione. Questo non è
+sicuro, ma è utile in un ambiente ``open''.
+.Pp
+Deve essere presente un servizio per permettere la cifratura di tutti 
+gli scambi di dati.
+.Pp
+Può essere usato un protocollo più estensibile (come Telnet).

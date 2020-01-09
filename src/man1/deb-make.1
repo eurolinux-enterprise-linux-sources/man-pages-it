@@ -1,0 +1,65 @@
+.TH deb-make 1L "Utility di Debian" "DEBIAN" \" -*- nroff -*-
+.SH NOME
+deb-make \- "Debianizza" un pacchetto sorgente
+.SH SINTASSI
+\fBdeb-make\fP [\fBnative\fP]
+.SH DESCRIZIONE
+deb-make e` uno strumento per convertire un pacchetto di codice sorgente 
+regolare in un pacchetto avente il formato in accordo con i requisiti 
+richiesti dal progetto Debian. deb-make dovrebbe essere invocato all'interno 
+della directory del codice sorgente che dovrebbe essere chiamata 
+<nomepacchetto>-<versione>. Il nomepacchetto deve essere tutto in lettere
+minuscole, numeri e punti. Se il nome della directory non e` conforme a 
+questo schema, allora si consiglia di rinominare la directory prima di usare 
+deb-make.
+.br
+.SH CLASSI DI PACCHETTI
+.TP
+.B Single
+Il pacchetto sorgente generera` un singolo pacchetto binario .deb. Questo e`
+il caso standard se non si sa quale opzione scegliere.
+.TP
+.B Multi
+Il pacchetto sorgente generera` diversi pacchetti binari .deb da un singolo
+pacchetto sorgente. Scegliere questa opzione per pacchetti di grandi 
+dimensioni.
+.TP
+.B Library
+Il pacchetto sorgente generera` successivamente due pacchetti binari. Un 
+pacchetto libreria contenente giustamente la lib in /usr/lib e l'altro 
+pacchetto *-dev_*.deb contenente la documentazione e gli header di C.
+.SH AZIONI ESEGUITE (REALIZZATE)
+.B deb-make
+copia l'archivio sul livello piu` alto della directory dentro
+<nomepacchetto>-<versione>.orig se questa directory non esiste.
+L'archivio orig e` necessario agli altri strumenti debian per 
+generare il file diffs ai sorgenti originali rechiesto dal formato
+del pacchetto debian.
+.PP
+Poi deb-make procede a generare una sottodirectory "debian" e i file control
+necessari nella sottodirectory. Questi file control sono elaborati con il
+nomepacchetto e versione estratti dal nome della directory e il username e 
+l'indirizzo e-mail costruiti dal file /etc/mailname e dal file /etc/passwd
+(Spiacente in questo momento non c'e` ancora il supporto YP).
+Se la variabile d'ambiente
+.B EMAIL
+e` impostata allora questo indirizzo EMAIL viene usato come l'indirizzo e-mail 
+del manutentore invece di cercarlo nell'ambiente.
+.PP
+deb-make generera` anche dei file di esempio che sono adattati per il 
+pacchetto generato. Si possono rimuovere tutti i file con *.ex se lo si
+desidera. Rinominando questi file al loro nome senza il .ex alla fine 
+attivera` questa caratteristica di debstd.
+.SH OPZIONI
+.TP
+.I native
+Non generare un archivio .orig. Il pacchetto e` nativo della Debian che non
+necessita di nessuna diffs. Il numero di versione non avra` un numero di 
+release debian.
+.SH VEDI ANCHE
+.B debstd(1), dch(1), debclean(1), debchange(1)
+and
+.B dpkg(1)
+.SH AUTORE
+Christoph Lameter <clameter@debian.org>
+Traduzione ed adattamenti in italiano a cura di Hugh Hartmann <hhartmann@libero.it>

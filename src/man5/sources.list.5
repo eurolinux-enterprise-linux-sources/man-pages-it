@@ -1,0 +1,223 @@
+.\"     Title: sources.list
+.\"    Author: Jason Gunthorpe
+.\" Generator: DocBook XSL Stylesheets v1.72.0 <http://docbook.sf.net/>
+.\"      Date: 29 February 2004
+.\"    Manual: 
+.\"    Source: Linux
+.\"
+.TH "SOURCES.LIST" "5" "29 Febbraio 2004" "Linux" ""
+
+.SH NOME
+sources.list \- Lista delle risorse dei pacchetti per APT
+.SH "DESCRIZIONE"
+.PP
+L'elenco delle risorse dei pacchetti è utilizzata per localizzare gli 
+archivi del sistema di distribuzione pacchetti in uso sul sistema.  
+Attualmente, questa pagina di manuale documenta solo il sistema di 
+gestione dei pacchetti usato dalla distribuzione Debian GNU/Linux.
+Questo file di controllo è ubicato in \fI/etc/apt/sources.list\fR.
+.PP
+La lista delle sorgenti (dei pacchetti) è progettata per supportare qualsiasi
+numero di sorgenti attive e una molteplicità di media delle sorgenti. Il file 
+elenca una sorgente per riga, con la sorgente preferita elencata per prima. 
+Il formato di ogni riga è:
+\fItype uri args\fR. Il primo elemento, \fItype\fR (tipo) determina il 
+formato per \fIargs\fR (gli argomenti), \fIuri\fR è l'Universal Resource  
+Identifier (Identificatore universale di risorsa) 
+(URI), che è un macroinsieme del più specifivo e ben 
+conosciuto Universal Resource Locator, o URL. 
+Le linee rimanenti possono venire marcate come commenti 
+usando un carattere #.
+.PP
+La directory \fI/etc/apt/sources.list.d\fR fornisce un metodo per aggiungere
+voci di sources.list in file separati che terminano con \&.list. Il formato è
+il medesimo del file \fIsources.list\fR regolare.
+.SH "I TIPI DEB E DEB-SRC"
+.PP
+Il tipo \fBdeb\fP descrive un tipico archivio Debian a due livelli,
+\fIdistribuzione/componente\fR. Tipicamente, \fIdistribuzione\fR è 
+generalmente una tra \fIstable\fR, \fIunstable\fR, o \fItesting\fR,  
+mentre \fIcomponente\fR è uno di \fImain\fR, \fIcontrib\fR,  
+\fInon-free\fR, o \fInon-us\fR. Il tipo \fBdeb-src\fP descrive il codice sorgente
+della distribuzione debian nella medesima forma del tipo \fBdeb\fP. 
+Una riga \fBdeb-src\fP è richiesta per recuperare gli indici dei (pacchetti)
+sorgenti.
+.PP
+Il formato per una voce in \fBsources.list\fP, utilizzando i tipi 
+\fIdeb\fR e \fIdeb-src\fR è:
+
+.nf
+deb uri distribuzione [componente1] [componenente2] [...]
+.fi
+.PP
+L'URI per il tipo \fIdeb\fP deve specificare la base della distribuzione 
+Debian, da cui \fBAPT\fR troverà le informazioni necessarie. 
+\fIdistribuzione\fP può specificare un path esatto, nel qual caso 
+i \fIcomponenti\fP devono essere omessi e \fIdistribuzione\fP deve terminare
+con una barra rovescia (slash /). Questo è utile quando interessa solo una
+particolare sotto-sezione dell'archivio, indicata dall'URI.
+Se \fIdistribuzione\fP non specifica un percorso esatto, deve essere presente 
+almeno un \fIcomponente\fP.
+.PP
+\fBdistribuzione\fP può contenere anche una variabile, \fB$(ARCH)\fP,
+che espande alla architettura Debian (i386, m68k, powerpc, ...)
+utilizzata sul sistema. Questo consente di utilizzare file
+\fBsources.list\fP, independenti dall'architettura. In generale questo
+è interesante solo quando viene specificato un percorso esatto, altrimenti
+\fBAPT\fP genererà automaticamente URI con la corrente architettura.
+.PP
+Siccome può essere specificata solo una distribuzione per riga, può
+essere necessario avere righe multiple per lo stesso URI, se è desiderato
+un sottoinsieme di tutte le distribuzioni o componenti disponibili 
+per quella ubicazione. \fBAPT\fP ordinerà la lista URI dopo aver generato un  
+insieme interno completo, e bloccherà i riferimenti multipli al medesimo
+host Internet, per esempio, in una singola connessione, cosicché non stabilisca
+una connessione FTP inefficiente, la chiuda, faccia qualcos'altro e poi
+ristabilisca una connessione con quel medesimo host.
+Questa caratteristica è utile per accedere a siti FTP occupati con limitazioni
+di accesso del numero di utenti anonimi contemporanei.  
+\fBAPT\fP inoltre parallelizza le connessioni a host differenti,  
+per occuparsi in maniera più efficiente dei siti con scarsa larghezza di banda.
+.PP
+E' importante elencare le sorgenti in ordine di preferenza, con la sorgente
+preferita elecata per prima. Tipicamente questo provocherà una scelta per velocità
+dal piu` veloce al piu` lento (per esempio, CD-ROM seguito dagli host di
+rete locale, seguito dagli host di internet distanti).
+.PP
+Alcuni esempi:
+
+.nf
+deb http://http.us.debian.org/debian stable main contrib non\-free
+deb http://http.us.debian.org/debian dists/stable\-updates/
+
+.fi
+.SH "SPECIFICAZIONE DI URI"
+.PP
+I tipi di URI attualmente riconosciuti sono: cdrom, file, http, e ftp.
+.TP
+\fBfile\fR
+Il tipo file permette che una directory arbitraria, nel file system, sia 
+considerata un archivio. Questo è utile per il montaggio di NFS (Network
+File System) e mirror locali o archivi.
+.TP
+\fBcdrom\fR
+Il tipo cdrom permette ad \fBAPT\fR di usare un lettore CDROM locale con
+un media (disco) montato in swap. Usare il programma \fBapt-cdrom\fR(8) per
+creare voci cdrom nel file source list.
+.TP
+\fBhttp\fR
+Il tipo http specifica un server HTTP per l'archivio. Se una variabile
+d'ambiente \fBhttp_proxy\fR è impostata con il formato 
+\fBhttp://server:port/\fR, verrà utilizzato il server proxy specificato in
+\fBhttp_proxy\fR. Gli utenti di proxy HTTP/1.1 autenticati possono usare
+una stringa del formato \fBhttp://user:pass@server:port/\fR
+Notare che questo è un metodo di autenticazione insicuro.
+.TP
+\fBftp\fR
+Il tipo ftp specifica un server FTP per l'archivio. Il comportamento di 
+APT per FTP è molto ben configurabile; per ulteriori informazioni vedere la
+pagina di manuale di \fBapt.conf\fR(5). Notare che un proxy ftp può venire
+specificato usando la variabile d'ambiente \fBftp_proxy\fR.  
+E' possibile specificare un proxy http (spesso i server proxy http  
+comprendono gli url ftp) usando questo metodo e SOLO questo. Utilizzando 
+l'http specificato nel file di configurazione, i proxy ftp verranno ignorati.
+.TP
+\fBcopy\fR
+Il tipo copy è identico al tipo file eccetto che i pacchetti vengono
+copiati nella directory della cache al posto di essere utilizzati direttamente 
+dalla loro ubicazione. Questo è utile per persone che usano un disco zip 
+per copiare file insieme a APT.
+.TP
+\fBrsh\fR,\fBssh\fR
+Il metodo rsh/ssh richiama rsh/ssh per connettersi ad un host remoto come un
+dato utente e accedere ai file. Non c'è alcuna possibilità di  
+autenticazione della password, prima che siano realizzati precedenti
+arrangiamenti con le chiavi RSA o rhosts. Per accedere ai file su di host 
+remoto usare i comandi standard \fBfind\fR e \fBdd\fR per realizzare 
+il trasferimento di file da remoto.
+.SH "ESEMPI"
+.PP
+Utilizza l'archivio memorizzato localmente (o montato con NFS) nella directory
+/home/jason/debian per stable/main, stable/contrib, e stable/non-free.
+
+.nf
+deb file:/home/jason/debian stable main contrib non\-free
+.fi
+.PP
+Come il precedente, eccetto che questo utilizza la distribuzione unstable 
+(di sviluppo).
+
+.nf
+deb file:/home/jason/debian unstable main contrib non\-free
+.fi
+.PP
+La riga per i pacchetti sorgenti come quella sopra 
+
+.nf
+deb\-src file:/home/jason/debian unstable main contrib non\-free
+.fi
+.PP
+Utilizza HTTP per accedere all'archivio su archive.debian.org, e usa solo 
+l'area hamm/main.
+
+.nf
+deb http://archive.debian.org/debian\-archive hamm main
+.fi
+.PP
+Utilizza FTP per accedere all'archivio su ftp.debian.org, sotto la directory 
+debian, e usa solo l'area stable/contrib.
+
+.nf
+deb ftp://ftp.debian.org/debian stable contrib
+.fi
+.PP
+Utilizza FTP per accedere all'archivio su ftp.debian.org, sotto la directory 
+dedian e usa solo l'area unstable/contrib. Se questa linea appare come
+l'unica linea nel precedente esempio in \fIsources.list\fR,
+verrà usata un singola sessione FTP per entrambe le righe delle risorse.
+
+.nf
+deb ftp://ftp.debian.org/debian unstable contrib
+.fi
+.PP
+Utilizza HTTP per accedere all'archivio su nonus.debian.org, sotto la 
+directory debian-non-US.
+
+.nf
+deb http://nonus.debian.org/debian\-non\-US stable/non\-US main contrib non\-free
+.fi
+.PP
+Utilizza HTTP per accedere all'archivio su nonus.debian.org, sotto la 
+directory debian\-non\-US e usa solo i file trovati sotto
+\fIunstable/binary\-i386\fR su macchine i386, 
+\fIunstable/binary\-m68k\fR su m68k, e così
+via per altre architetture supportate. [Notare questo esempio che  
+illustra solo come usare la variabile sostituzione; non\-us è così  
+strutturato da non molto] 
+
+.nf
+deb http://ftp.de.debian.org/debian\-non\-US unstable/binary\-$(ARCH)/
+.fi
+.SH "VEDERE ANCHE"
+.PP
+\fBapt-cache\fR(8) 
+\fBapt.conf\fR(5)
+.SH "BUG"
+.PP
+\fILa pagina dei bug di APT\fR\&[1]. Se si desidera riportare un bug in APT,
+per favore vedere il file
+\fI/usr/share/doc/debian/bug\-reporting.txt\fR o il comando \fBreportbug\fR(1).
+.SH "AUTORI"
+.PP
+\fBJason Gunthorpe\fR
+Autore.
+.PP
+\fBIl Team APT\fR
+Autore
+.PP  
+Traduzione e adattamenti in Italiano a cura di Hugh Hartmann 
+<hhartmann@libero.it>, Revisione a cura di Vieri Giugni <v.giugni@gmail.com>.
+.SH "RIFERIMENTI"
+APT bug page <URL:http://bugs.debian.org/src.apt>
+
+ 

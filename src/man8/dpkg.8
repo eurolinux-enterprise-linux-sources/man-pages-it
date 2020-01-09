@@ -1,0 +1,615 @@
+.TH DPKG 8 "12 Aprile, 1998" "Progetto Debian" "suite dpkg"
+.SH NOME
+dpkg \- gestore a medio livello di pacchetti Debian
+
+.SH SINTASSI
+.B dpkg [\fIopzioni\fP] \fIazione\fP
+
+.SH AVVERTIMENTO
+Questo manuale è destinato agli utenti che desiderano capire le 
+opzioni della riga di comando di \fBdpkg\fP e gli stati dei pacchetti 
+con maggior dettagli rispetto a quelli forniti con \fBdpkg --help\fP.
+
+Esso \fInon\fP dovrebbe essere usato dai manutentori dei pacchetti che
+desiderano capire come \fBdpkg\fP installerà i loro pacchetti. Le 
+descrizioni di quello che fa \fBdpkg\fP quando installa e rimuove i
+pacchetti, sono particolarmente inadeguate. Per informazioni dettagliate 
+riguardo a questo, si è pregati di riferirsi all'argomento \fIPackage 
+Management System\fP sotto le \fIdebian-faq\fP e nel sistema Info GNU. Per 
+le informazioni riguardo la creazione di pacchetti Debian, vedere 
+l'argomento \fIDebian Package Management Tools\fP nello stesso posto.
+
+.SH DESCRIZIONE
+\fBdpkg\fP è uno strumento a medio livello per installare, costruire,
+rimuovere e gestire i pacchetti GNU/Linux Debian. L'interfaccia
+primaria e più amichevole per \fBdpkg\fP è \fBdselect\fP(8).  \fBdpkg\fP 
+è di per sé controllato interamente attraverso i parametri da linea di
+commando, che consistono esattamente di una azione e nessuna o più opzioni.
+Il parametro riferito all'azione comunica a dpkg che cosa fare e le opzioni
+controllano il comportamento dell'azione in alcuni modi.
+
+\fBdpkg\fP può anche essere usato come un'interfaccia (front-end) a  
+\fBdpkg-deb\fP.
+
+Le azioni seguenti sono di \fBdpkg-deb\fP, e se sono incontrate \fBdpkg\fP
+avvia proprio \fBdpkg-deb\fP con i parametri che gli vengono forniti:
+.nf
+    \fB-b\fP, \fB--build\fP,
+    \fB-c\fP, \fB--contents\fP,
+    \fB-I\fP, \fB--info\fP,
+    \fB-f\fP, \fB--field\fP,
+    \fB-e\fP, \fB--control\fP,
+    \fB-x\fP, \fB--extract\fP,
+    \fB-X\fP, \fB--vextract\fP, e
+    \fB--fsys-tarfile\fP.
+.fi
+Per le informazioni riguardo queste azioni, si è pregati di riferirsi
+alla pagina di manuale \fBdpkg-deb\fP(1).
+
+.SH INFORMAZIONI RIGUARDO AI PACCHETTI
+\fBdpkg\fP gestisce alcune informazioni utili riguardo i pacchetti
+disponibili. Le informazioni si dividono in tre classi: \fBstates\fP,
+\fBselection states\fP e \fBflags\fP.  Questi valori sono destinati 
+ad essere cambiati principalmente con \fBdselect\fP.
+.SS PACKAGE STATES (STATI DEL PACCHETTO)
+.TP
+.B installed (installato)
+Il pacchetto è spachettato e correttamente configurato.
+.TP
+.B half-installed (semi-installato)
+L'installazione del pacchetto è stata iniziata, ma per qualche motivo
+non è stata completata.
+.TP
+.B not-installed (non-inatallato)
+Il pacchetto non è installato nel proprio sistema.
+.TP
+.B unpacked (spacchettato)
+Il pacchetto è spacchettato, ma non configurato.
+.TP
+.B half-configured (semi-configurato)
+Il pacchetto è spacchettato ed è stata avviata la configurazione,
+ma per qualche motivo non è ancora stata completata.
+.TP
+.B config-files (file di configurazione)
+Solo i file di configurazione del pacchetto sono presenti nel sistema.
+.SS PACKAGE SELECTION STATES (STATI DI SELEZIONE DEL PACCHETTO)
+.TP
+.B install (installa)
+Il pacchetto è selezionato per l'installazione.
+.TP
+.B deinstall (disinstalla)
+Il pacchetto è selezionato per la disinstallazione (per esempio se si
+vuole rimuovere tutti i file, eccetto quelli di configurazione).
+.TP
+.B purge (epurazione)
+Il pacchetto è selezionato per essere rimosso (per esempio se si vuole
+rimuovere ogni cosa, anche i file di configurazione).
+.SS PACKAGE FLAGS (FLAGS DEL PACCHETTO)
+.TP
+.B hold (tenere)
+Un pacchetto segnato per essere su \fBhold\fP non viene manipolato da 
+\fBdpkg\fP, a meno che non venga forzato a fare questo con l'opzione 
+\fB--force-hold\fP.
+.TP
+.B reinst-required
+Un pacchetto marcato con \fBreinst-required\fP è rotto e richiede la
+re-installazione. Questi pacchetti non possono essere rimossi, a meno
+che dpkg non venga forzato con l'opzione \fB--force-reinstreq\fP.
+
+.SH AZIONI
+.TP
+\fBdpkg -i\fP | \fB--install\fP \fIpackage_file\fP...
+Installa il pacchetto. Se è specificata l'opzione \fB--recursive\fP o
+\fB-R\fP, invece del \fIpackage_file\fP si deve riferire a una directory.
+
+L'installazione consiste dei seguenti passaggi:
+.br
+
+\fB1.\fP Estrazione dei file di controllo del nuovo pacchetto.
+.br
+
+\fB2.\fP Se un'altra versione dello stesso pacchetto era installata
+prima della nuova installazione, viene eseguito lo script \fIprerm\fP del 
+vecchio pacchetto.
+.br
+
+\fB3.\fP Esecuzione dello script \fIpreinst\fP, se è fornito dal pacchetto.
+.br
+
+\fB4.\fP Spacchettamento dei nuovi file, e backup dei vecchi file nello
+stesso momento, così che, se qualcosa va storto, questi possano essere
+ripristinati.
+.br
+
+\fB5.\fP Se un'altra versione dello stesso pacchetto era installata
+prima della nuova installazione, viene eseguito lo script \fIpostrm\fP 
+del vecchio pacchetto. Notare che questo script è eseguito dopo lo 
+script \fIpreinst\fP del nuovo pacchetto, perché i nuovi file sono scritti
+nello stesso momento in cui i vecchi file sono rimossi.
+.br
+
+\fB6.\fP Configurazione del pacchetto. Vedere \fB--configure\fP per 
+informazioni dettagliate riguardo a come questo viene fatto.
+.TP
+\fBdpkg --unpack \fP\fIpackage_file\fP ...
+Spacchetta il pacchetto, ma non lo configura. Se l'opzione \fB--recursive\fP o
+\fB-R\fP è specificata, \fIpackage_file\fP si deve riferire a una directory 
+invece di un file.
+.TP
+\fBdpkg --configure \fP\fIpackage\fP ... | \fB-a\fP | \fB--pending\fP
+Riconfigura un pacchetto spacchettato. Se l'opzione \fB-a\fP o \fB--pending\fP 
+è specificata invece di \fIpackage\fP, tutti i pacchetti spacchettati ma
+non configurati saranno configurati.
+
+La configurazione consiste dei seguenti passaggi:
+.br
+
+\fB1.\fP Spacchettamento dei file di configurazione e, nello stesso momento,
+backup dei vecchi file di configurazione, così che, se qualcosa va storto,
+questi possano essere ripristinati.
+.br
+
+\fB2.\fP Avvio dello script \fIpostinst\fP, se fornito dal pacchetto.
+.TP
+\fBdpkg -r\fP | \fB--remove\fP | \fB-P\fP | \fB--purge \fP\fIpackage\fP ... | \fB-a\fP | \fB--pending\fP
+Rimuove un pacchetto installato. L'azione \fB-r\fP o \fB--remove\fP rimuove
+ogni cosa eccetto i file di configurazione.  Questo può evitare di dover
+riconfigurare il pacchetto se viene reinstallato successivamente. (I file di
+configurazione sono elencati nel file di controllo \fIdebian/conffiles\fP)
+\fB-P\fP o \fB--purge\fP rimuove ogni cosa, inclusi i file di configurazione.  
+Se è dato \fB-a\fP o \fB--pending\fP invece del nome pacchetto, allora
+tutti i pacchetti non spacchettati, ma segnati per essere rimossi o eliminati
+nel file \fI/var/lib/dpkg/status\fP, saranno rispettivamente rimossi o
+eliminati.
+
+La rimozione di un pacchetto consiste dei seguenti passaggi:
+.br
+
+\fB1.\fP Esecuzione dello script \fIprerm\fP 
+.br
+
+\fB2.\fP Rimozione dei file installati
+.br
+
+\fB3.\fP Esecuzione dello script \fIpostrm\fP 
+.br
+.TP
+.BI "dpkg  -p|--print-avail " package
+Visualizza i dettagli riguardo al \fIpackage\fP, come trovati nel file
+\fI/var/lib/dpkg/available\fP.
+.TP
+\fBdpkg --update-avail\fP | \fB--merge-avail\fP \fIPackages-file\fP
+L'update di \fBdpkg\fP e \fBdselect\fP fornisce informazioni su quali 
+pacchetti sono disponibili.  Con l'azione \fB--merge-avail\fP, le vecchie 
+informazioni sono combinate con le informazioni dal \fIPackages-file\fP. 
+Con l'azione \fB--update-avail\fP, le vecchie informazioni sono sostituite
+con le informazioni presenti nel \fIPackages-file\fP.  Il \fIPackages-file\fP 
+distribuito con Debian GNU/Linux è chiamato semplicemente \fIPackages\fP.  
+Il \fBdpkg\fP tiene una sua memorizzazione dei pacchetti disponibili nel file \fI/var/lib/dpkg/available\fP.
+.TP
+\fBdpkg -A\fP | \fB--record-avail\fP \fIpackage_file\fP ...
+Aggiorna le informazioni di \fBdpkg\fP e \fBdselect\fP sui pachetti 
+disponibili, con le informazioni dal pacchetto \fIpackage_file\fP. Se 
+l'opzione \fB--recursive\fP o \fB-R\fP è specificata, il \fIpackage_file\fP
+si deve riferire a una directory.
+.TP
+.B dpkg --forget-old-unavail
+Elimina dalla propria 'memoria' i pacchetti non installati e non disponibili.
+.TP
+.B dpkg --clear-avail
+Elimina ogni informazione esistente riguardo i pacchetti che sono ancora
+disponibili.
+.TP
+\fBdpkg -l\fP | \fB--list\fP \fIpackage-name-pattern\fP ...
+Elenca i pacchetti forniti con il relativo pattern. Se nessun 
+\fIpackage-name-pattern\fP è fornito, elenca tutti i pacchetti nel file 
+\fI/var/lib/dpkg/available\fP.  In \fIpackage-name-pattern\fP sono permessi
+tutti i normali wildchar della shell.  (Sarà necessario 'quotare'
+\fIpackage-name-pattern\fP per evitare che la shell esegua l'espansione 
+del filename.  Per esempio, \fBdpkg -l 'libc5*'\fP  fornirà una lista di tutti 
+i pacchetti il cui nome inizia con "libc5".)
+.TP
+\fBdpkg -s\fP | \fB--status\fP \fIpackage-name\fP ...
+Riporta lo stato di un pacchetto specificato. Questo visualizza semplicemente 
+l'entrata nel database degli stati del pacchetto installato.
+.TP
+\fBdpkg -C\fP | \fB--audit\fP
+Ricerca i pacchetti che sono stati installati nel proprio sistema solo
+parzialmente.  \fBdpkg\fP suggerirà che cosa fare con questi pachetti per
+ottenere il loro funzionamento.
+.TP
+\fBdpkg --get-selections\fP [\fIpattern\fP...]
+Fornisce una lista di pacchetti selezionati, e la scrive nello stdout.
+.TP
+.B dpkg --set-selections
+Imposta le selezioni di pacchetti usando un file letto dallo stdin.
+.TP
+.B dpkg --yet-to-unpack
+Ricerca i pacchetti selezionati per l'installazione, ma che per alcune 
+ragioni non sono ancora stati installati.
+.TP
+\fBdpkg -L\fP | \fB--listfiles\fP \fIpackage\fP ...
+Elenca i file installati nel proprio sistema dal pacchetto \fBpackage\fP.
+È comunque da notare che i file creati da script di installazione
+di uno specifico pacchetto non sono elencati.
+.TP
+\fBdpkg -S\fP | \fB--search\fP \fIfilename-search-pattern\fP ...
+Ricerca di un file dai pacchetti installati. Tutti i wildchar
+standard della shell possono essere usati nel percorso.
+.TP
+.B dpkg --print-architecture
+Restituisce l'architettura del sistema (per esempio, "i386"). Questa opzione
+usa il \fBgcc\fP.
+.TP
+.B dpkg --print-gnu-build-architecture
+Restituisce la versione GNU dell'architettura del sistema (per esempio, 
+"i486").
+.TP
+.B dpkg --print-installation-architecture
+Restituisce l'architettura del sistema per l'installazione.
+.TP
+.B dpkg --compare-versions \fIver1 op ver2\fP
+Compara i numeri di versione, dove \fIop\fP è un operatore binario.  
+\fBdpkg\fP ritorna un segnale di successo (cioè risultato uguale a zero) se
+le condizioni specificate sono soddisfatte, altrimenti ritorna un segnale di
+insuccesso (risultato diverso da zero). Ci sono due gruppi di operatori, che
+differiscono per come trattano una assenza di versione in \fIver1\fP o
+\fIver2\fP.  I primi considerano la versione mancante come più vecchia di
+qualunque altra versione, e sono: \fBlt le eq ne ge gt\fP.  Gli altri
+considerano la versione mancante come più recente di qualunque altra 
+versione, e sono: \fBlt-nl le-nl ge-nl gt-nl\fP.  Altri sono forniti
+solo per la compatibilità con la sintassi del file control: 
+\fB< << <= = >= >> >\fP.
+.TP
+.B dpkg --command-fd <n>
+Accetta una serie di comandi da un file descrittore di ingresso \fB<n>\fP. 
+Nota: le opzioni addizionali impostate dalla linea di comando e attraverso
+questo file descrittore, non sono reimpostate per i comandi sucessivi 
+eseguiti durante la stessa esecuzione.
+.TP
+.B dpkg --help
+Visualizza un breve messaggio di aiuto.
+.TP
+.B dpkg --force-help
+Fornisce un aiuto riguardo le opzioni \fB--force-\fP\fIthing\fP.
+.TP
+.BR "dpkg -Dh " | " --debug=help"
+Fornisce un aiuto sulle opzioni di debugging.
+.TP
+\fBdpkg --licence\fP | \fBdpkg --license\fP
+Visualizza la licenza di \fBdpkg\fP.
+.TP
+\fBdpkg --version\fP
+Visualizza le informazioni sulla versione di \fBdpkg\fP.
+.TP
+\fBdpkg-deb-actions\fP
+Vedere \fBdpkg-deb\fP(1) per maggiori informazioni riguardo le seguenti 
+azioni.
+
+.nf
+\fBdpkg -b\fP | \fB--build\fP \fIdirectory\fP [\fIfilename\fP]
+    Costruisce un pacchetto Debian GNU/Linux.
+\fBdpkg -c\fP | \fB--contents\fP \fIfilename\fP
+    Elenca il contenuto di un pacchetto Debian GNU/Linux.
+\fBdpkg -e\fP | \fB--control\fP \fIfilename\fP [\fIdirectory\fP]
+    Estrae le informazioni di controllo da un pacchetto.
+\fBdpkg -x\fP | \fB--extract\fP \fIfilename directory\fP
+    Estrae i file contenuti in un pacchetto.
+\fBdpkg -f\fP | \fB--field\fP  \fIfilename\fP [\fIcontrol-field\fP] ...
+    Visualizza il/i campo/i del control file di un pacchetto.
+\fBdpkg --fsys-tarfile\fP \fIfilename\fP
+    Visualizza il filesystem contenuto nel file tar da un pacchetto 
+    Debian.
+\fBdpkg -I\fP | \fB--info\fP \fIfilename\fP [\fIcontrol-file\fP]
+    Mostra le informazioni riguardo a un pacchetto.
+\fBdpkg -X\fP | \fB--vextract\fP \fIfilename\fP \fIdirectory\fP
+    Estrae e visualizza i nomi dei file contenuti da un pacchetto.
+.fi
+
+.SH OPZIONI
+Tutte le opzioni possono essere specificate sia dalla linea di comando che
+nel file di configurazione di \fBdpkg\fP \fI/etc/dpkg/dpkg.cfg\fP. Ogni 
+linea nel file di configurazione è una opzione (esattamente come nella 
+linea di comando, ma senza '-' davanti) o un commento (se inizia con un \fB#\fR).
+.br
+.TP
+\fB--abort-after=\fP\fInumber\fP
+Cambia il numero di errori oltre cui dpkg si arresterà. Il valore 
+predefinito è 50.
+.TP
+.BR -B | --auto-deconfigure
+Quando un pacchetto è rimosso, c'è la possibilità che un altro pacchetto
+installato dipenda dal pacchetto rimosso. Specificando questa opzione 
+si causerà la deconfigurazione automatica del pacchetto che dipende
+da quello rimosso.
+.TP
+\fB-D\fIoctal\fP | \fB--debug=\fP\fIoctal\fP
+Imposta il debugging ON.  \fIoctal\fP è formato da un assemblaggio vettoriale
+(bitwise-orring) di valori della lista qui sotto (notare che questi valori 
+possono cambiare nelle release future).  \fB-Dh\fP o \fB--debug=help\fP 
+visualizza questi valori di debugging.
+
+.nf
+numero  descrizione
+    1   Informazioni utili generiche sullo stato di progresso
+    2   Chiamate e stato dei mantainer scripts
+   10   Output per ogni file processato
+  100   Molto output per ogni file processato
+   20   Output per ogni file di configurazione
+  200   Molto output per ogni file di configurazione
+   40   Dipendenze e conflitti
+  400   Molto output per dipendenze e conflitti
+ 1000   Molte sciocchezze riguardo, ad esempio, la dpkg/info directory
+ 2000   Quantità folle di sciocchezze
+.fi
+.TP
+\fB--force-\fP\fIthings\fP | \fB--no-force-\fP\fIthings\fP | \fB--refuse-\fP\fIthings\fP
+
+Forza (force) o rifiuta (refuse) (\fBno-force\fP e \fBrefuse\fP significano la 
+stessa cosa) di fare alcune cose.  \fIthings\fP è una lista, separata da
+virgole, di cose qui sotto specificate.  \fB--force-help\fP visualizza un 
+messagggio che le descrive. Le cose marcate con un (*) sono forzate di default.
+
+\fIAvvertimento: Queste opzioni sono principalmente intese per un utilizzo 
+da parte di soli esperti. Il loro utilizzo senza la piena conoscenza dei 
+loro effetti potrebbe compromettere l'intero sistema.\fP
+
+\fBall\fP:
+Commuta in on (o off) tutte le opzioni di forzatura
+
+\fBauto-select\fP(*):
+Seleziona i pacchetti per installarli e deseleziona i pacchetti per 
+rimuoverli.
+
+\fBdowngrade\fP(*):
+Installa un pacchetto, anche se la nuova versione di questo è già 
+installata.
+
+\fBconfigure-any\fP:
+Configura anche tutti i pacchetti spacchettati ma non configurati 
+da cui dipende il pacchetto corrente.
+
+\fBhold\fP:
+Processa i pacchetti anche se marcati con "hold".
+
+\fBremove-reinstreq\fP:
+Rimuove un pacchetto, anche se è rotto e marcato per la richiesta 
+di re-installazione.  Questo può causare, per esempio, che parti 
+del pacchetto rimangano sul sistema, venendo poi dimenticate da
+\fBdpkg\fP.
+
+\fBremove-essential\fP:
+Rimuove un pacchetto, anche se è considerato essenziale. I pacchetti
+essenziali contengono la maggior parte dei comandi Unix fondamentali. 
+Rimuovere questi pacchetti può portare l'intero sistema a cessare
+di funzionare, è quindi da usare con cautela.
+
+\fBdepends\fP:
+Commuta tutti i problemi di dipendenza in messaggi di avvertimento.
+
+\fBdepends-version\fP:
+Non si cura della versione quando verifica le dipendenze.
+
+\fBconflicts\fP:
+Installa il pacchetto, anche se è in conflitto con un altro pacchetto. 
+Questo è pericoloso, usualmente causerà la sovrascrittura di alcuni file.
+
+\fBconfmiss\fP:
+Installa sempre un file di configurazione mancante. Questo è pericoloso
+dato che non preserva cambiamenti o rimozioni operate al file.
+
+\fBconfnew\fP:
+Se un file di configurazione è stato modificato installa sempre la nuova 
+versione senza chiedere conferma; a meno che non sia stato dato anche
+\fB--force-confdef\fP, nel cui caso si considera valida l'azione 
+predefinita.
+
+\fBconfold\fP:
+Se un file di configurazione è stato modificato mantiene sempre la 
+versione vecchia senza chiedere conferma; a meno che non sia stato dato
+anche \fB--force-confdef\fP, nel cui caso si considera valida l'azione 
+predefinita.
+
+\fBconfdef\fP:
+Se un file di configurazione è stato modificato si sceglie sempre 
+l'azione predefinita. Se non c'è alcuna azione predefinita sarà 
+chiesto all'utente cosa fare, a meno che non siano stati dati anche
+\fB--force-confnew\fP o \fB--force-confold\fP, nel cui caso saranno
+usate queste impostazioni per decidere sull'azione finale.
+
+\fBoverwrite\fP:
+Sovrascrive un file di un pacchetto con un file di un altro pacchetto.
+
+\fBoverwrite-dir\fP
+Sovrascrive una directory di un pacchetto con un file di un altro 
+pacchetto.
+
+\fBoverwrite-diverted\fP:
+Sovrascrive un file deviato con una versione non deviata.
+
+\fBarchitecture\fP:
+Processa anche i pacchetti con architettura sbagliata.
+
+\fBbad-path\fP:
+\fBPATH\fP è carente di programmi importanti, sono probabili problemi.
+
+\fBnot-root\fP:
+Prova a installare/deinstallare cose anche non come root.
+
+.TP
+\fB--ignore-depends\fP=\fIpackage\fP,...
+Ignora il controllo delle dipendenze per i pacchetti specificati (in 
+realtà il controllo viene eseguito comunque, ma sono restituiti solo
+avvertimenti riguardo i conflitti e nient'altro).
+.TP
+\fB--new\fP | \fB--old\fP
+Seleziona il formato nuovo o vecchio per i pacchetti binari. Questa 
+è un'opzione di \fBdpkg-deb\fP(1).
+.TP
+.B --nocheck
+Non legge o controlla il contenuto del control file mentre costruisce
+un pacchetto. Questa è un'opzione di \fBdpkg-deb\fP(1).
+.TP
+.B --no-act
+Esegue tutto ciò che si suppone debba essere fatto, ma senza scrivere 
+alcun cambiamento. È usato per vedere cosa succederebbe con l'azione
+specificata, senza modificare nulla realmente.
+
+Assicurarsi di dare \fB--no-act\fP prima del parametro relativo alla 
+azione, altrimenti potrebbero riscontrarsi risultati non desiderati.
+(per esempio \fBdpkg --purge foo --no-act\fP epurerà prima il pacchetto
+foo per poi provare ad epurare il pacchetto --no-act, nonostante 
+ci si possa in realtà attendere che non faccia nulla)
+.TP
+\fB-R\fP | \fB--recursive\fP
+Si occupa ricorsivamente di tutti i files del tipo \fB*.deb\fP 
+trovati nella directory specificata e nelle sue subdirectories. 
+Può essere usato con le azioni \fB-i\fP, \fB-A\fP, \fB--install\fP, 
+\fB--unpack\fP e \fB--avail\fP.
+.TP
+\fB-G\fP
+Non installa un pacchetto se una nuova versione dello stesso pacchetto è
+già installata.  Questo è un alias di \fB--refuse-downgrade.\fP
+.TP
+\fB--root=\fP\fIdir\fP | \fB--admindir=\fP\fIdir\fP | \fB--instdir=\fP\fIdir\fP
+Cambia le directory di default. L'\fBadmindir\fP di default è
+\fI/var/lib/dpkg\fP e contiene molti files che forniscono informazioni
+riguardo lo stato dei pacchetti installati o disinstallati, ecc.  
+La \fBinstdir\fP di default è \fI/\fP  e si riferisce alla directory dove i 
+pacchetti sono installati.  \fBinstdir\fP è anche la directory passata a 
+\fBchroot\fP(2) prima dell'esecuzione degli script di installazione del
+\fIpackage\fP, significa che gli script vedono la \fBinstdir\fP come una 
+directory di root.
+Il cambiamento di \fBroot\fP cambia \fBinstdir\fP in \fIdir\fP e
+\fBadmindir\fP in \fIdir\fP\fB/var/lib/dpkg\fP.
+.TP
+\fB-O\fP | \fB--selected-only\fP
+Processa solamente i pacchetti che sono selezionati per l'installazione. 
+La selezione attuale è fatta con \fBdselect\fP o da \fBdpkg\fP, quando
+gestisce i pacchetti. Per esempio, quando un pacchetto è rimosso (e quindi 
+non più presente come installato), esso sarà marcato per l'installazione.
+.TP
+.BR -E " | " --skip-same-version
+Non installa il pacchetto se la stessa versione è già installata.
+.TP
+\fB--status-fd \fP\fI<n>\fP
+Invia informazioni sullo stato di un pacchetto al file descrittore \fI<n>\fP.  
+Questo può essere dato molte volte.  Gli aggiornamenti dello stato hanno la
+forma `status: <pkg>: <pkg qstate>'.
+
+.SH FILE
+.TP
+.I /etc/dpkg/dpkg.cfg
+File di configurazione con le opzioni di default.
+.P
+Gli altri file elencati di seguito si trovano nelle loro directory di
+default, vedere l'opzione \fB--admindir\fP su come cambiare la locazione
+di questi file.
+.TP
+.I /var/lib/dpkg/available
+Lista dei pacchetti disponibili.
+.TP
+.I /var/lib/dpkg/status
+Fornisce gli stati dei pacchetti disponibili. Questo file contiene
+informazioni riguardo se un pacchetto è marcato per la rimozione
+oppure no, se è installato oppure no, etc. Vedere la sezione 
+\fBINFORMAZIONI RIGUARDO I PACCHETTI\fP per ulteriori informazioni.
+.P
+I seguenti file sono componenti di un pacchetto binario. Vedere \fBdeb\fP(5)
+per ulteriori informazioni riguardo questi file:
+.TP
+.I control
+.TP
+.I conffiles
+.TP
+.I preinst
+.TP
+.I postinst
+.TP
+.I prerm
+.TP
+.I postrm
+
+
+.SH VARIABILI D'AMBIENTE
+.TP
+.B DPKG_NO_TSTP
+Si definisca questa variabile se si preferisce che quando \fBdpkg\fP
+deve eseguire una uscita su shell esegua una shell nuova piuttosto che 
+sospendersi.
+.TP
+.B SHELL
+\fBdpkg\fP verrà eseguito in una nuova shell.
+.TP
+.B COLUMNS
+Imposta il numero di colonne che \fBdpkg\fP dovrebbe usare mentre visualizza
+un testo formattato.  Correntemente questa variabile è usata solo da -l.
+
+.SH ESEMPI
+Per elencare i pacchetti relativi all'editor vi:
+.br
+\fB     dpkg -l '*vi*'\fP
+.br
+
+Per vedere le entrate nel file \fI/var/lib/dpkg/available\fP su due 
+pacchetti:
+.br
+\fB     dpkg --print-avail elvis vim | less\fP
+.br
+
+Per cercare la lista dei pacchetti da se stessi:
+.br
+\fB     less /var/lib/dpkg/available\fP
+.br
+
+Per rimuovere il pacchetto elvis installato:
+.br
+\fB     dpkg -r elvis\fP
+.br
+
+Per installare un pacchetto, prima è necessario trovarlo in un archivio
+o in un CDROM. Il file "available" mostra che il pacchetto vim si trova 
+nella sectione "editors":
+.br
+\fB     cd /cdrom/hamm/hamm/binary/editors\fP
+\fB     dpkg -i vim_4.5-3.deb\fP
+.br
+
+Per fare una copia locale degli stati di selezione pacchetti: 
+.br
+\fB     dpkg --get-selections >myselections\fP
+.br
+
+È possibile trasferire questo file su un altro computer ed installarlo 
+lì con:
+.br
+\fB     dpkg --set-selections <myselections\fP
+.br
+Notare che effettivamente questo non installerà o rimuoverà nessun pacchetto,
+ma imposterà solamente gli stati di selezione sui pacchetti richiesti. 
+Sarà necessaria qualche altra applicazione per effettivamente scaricare ed
+installare i pacchetti richiesti.
+
+Di norma si può constatare come \fBdselect\fP(8) fornisca un modo più
+conveniente per modificare gli stati di selezione dei pacchetti.
+
+.br
+.SH VEDERE ANCHE
+\fBdselect\fP(8),
+\fBdpkg-deb\fP(1),
+\fBdeb\fP(5),
+e
+\fBdeb-control\fP(5)
+
+.SH BUGS
+
+\fB--no-act\fP fornisce in genere meno informazioni di quanto potrebbe essere 
+utile.
+
+.SH AUTORI
+.nf
+Vedere \fB/usr/share/doc/dpkg/THANKS\fP per la lista delle persone che hanno
+contribuito a \fBdpkg\fP .
+Traduzione in italiano a cura di Hugh Hartmann <hhartmann@libero.it>
+Revisione a cura di Francesco Grani <kekkograni@tin.it>
+.fi

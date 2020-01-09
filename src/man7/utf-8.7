@@ -1,0 +1,295 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" Copyright (C) Markus Kuhn, 1996, 2001
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\"
+.\" 1995-11-26  Markus Kuhn <mskuhn@cip.informatik.uni-erlangen.de>
+.\"      First version written
+.\" 2001-05-11  Markus Kuhn <mgk25@cl.cam.ac.uk>
+.\"      Update
+.\"
+.\" Traduzione by Ottavio G. Rizzo (otto@mast.queensu.ca)
+.\" Giugno 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.62 di Elisabetta Galli <lab@kkk.it>
+.\" luglio 2007
+.\"
+.TH UTF-8 7 "11 maggio 2001" "GNU" "Linux Programmer's Manual"
+.SH NOME
+UTF-8 \- una codifica Unicode multi-byte ASCII-compatibile
+.SH DESCRIZIONE
+L'insieme di caratteri
+.B Unicode 3.0
+occupa uno spazio a 16 bit. La codifica più naturale di Unicode (nota
+come
+.BR UCS-2 )
+consta di sequenze di parole a 16 bit. Queste stringhe possono
+contenere byte come '\\0' o '/', che hanno significato speciale per
+i nomi di file e per i parametri di altre funzioni della libreria C,
+come parte di un carattere a 16 bit. Inoltre, la maggioranza dei
+programmi UNIX si aspetta nomi di file in ASCII e, non sa leggere parole
+a 16 bit come caratteri senza grosse modifiche. Per queste ragioni
+.B UCS-2
+non è una codifica esterna di
+.B Unicode
+adatta a nomi di file, file di testo, variabili d'amiente, ecc. L'
+.BR "Insieme universale di caratteri ISO 10646 (UCS)" ,
+un'estensione di Unicode, occupa addirittura uno spazio a 31 bit, e la
+sua codifica naturale,
+.B UCS-4 
+(una sequenza di parole a 32 bit), soffre degli stessi problemi.
+
+La codifica
+.B UTF-8
+di
+.B Unicode
+e
+.B UCS
+evita questi problemi, ed è il modo comune nel quale
+.B Unicode
+è usato nei sistemi operativi tipo Unix.
+.SS Proprietà
+La codifica
+.B UTF-8
+possiede queste ottime proprietà:
+.TP 0.2i
+*
+i caratteri
+.B UCS
+da 0x00000000 a 0x0000007f (i caratteri
+.B US-ASCII
+classici) sono codificati semplicemente come byte da 0x00 a 0x7f
+(compatibilità ASCII). In altre parole, file e stringhe contenenti
+solamente caratteri ASCII a 7 bit hanno la stessa codifica sia in
+.B ASCII
+che in
+.BR UTF-8 .
+.TP
+*
+Tutti i caratteri
+.B UCS
+> 0x7f sono codificati come una sequenza a multi-byte consistente
+esclusivamente di byte nell'intervallo da 0x80 a 0xfd, in modo tale
+da non trovare nessun byte ASCII all'interno di un altro carattere, e
+da non avere problemi con, tra gli altri, '\\0' o '/'.
+.TP
+*
+L'ordinamento lessicografico delle stringhe in
+.B UCS-4
+viene preservato.
+.TP
+*
+Tutti i 2^31 possibili codici UCS possono essere codificati con
+.BR UTF-8 .
+.TP
+*
+I byte 0xfe e 0xff non sono mai usati nella codifica
+.BR UTF-8 .
+.TP
+*
+Il primo byte di una sequenza multi-byte
+.B UCS
+che rappresenta un carattere non ASCII è sempre nell'intervallo da
+0xc0 a 0xfd e indica la lunghezza della sequenza. Tutti i byte
+seguenti sono nell'intervallo da 0x80 a 0xbf, facilitando un'eventuale
+risincronizzazione e facendo diventare la codifica senza memoria e
+resistente a byte mancanti.
+.TP
+*
+I caratteri
+.B UCS
+codificati con
+.B UTF-8
+possono arrivare ai sei byte di lunghezza, tuttavia lo standard
+.B Unicode
+non specifica caratteri oltre 0x10ffff, così i caratteri Unicode
+possono essere lunghi solo fino a quattro byte in
+.BR UTF-8 .
+.SS Codifica
+Le seguenti sequenze di byte vengono usate per rappresentare un
+carattere. La sequenza da usare dipende dal numero del codice UCS del
+carattere: 
+.TP 0.4i
+0x00000000 \- 0x0000007F:
+.RI 0 xxxxxxx
+.TP
+0x00000080 \- 0x000007FF:
+.RI 110 xxxxx 
+.RI 10 xxxxxx
+.TP
+0x00000800 \- 0x0000FFFF:
+.RI 1110 xxxx
+.RI 10 xxxxxx
+.RI 10 xxxxxx
+.TP
+0x00010000 \- 0x001FFFFF:
+.RI 11110 xxx
+.RI 10 xxxxxx
+.RI 10 xxxxxx
+.RI 10 xxxxxx
+.TP
+0x00200000 \- 0x03FFFFFF:
+.RI 111110 xx
+.RI 10 xxxxxx
+.RI 10 xxxxxx
+.RI 10 xxxxxx
+.RI 10 xxxxxx
+.TP
+0x04000000 \- 0x7FFFFFFF:
+.RI 1111110 x
+.RI 10 xxxxxx
+.RI 10 xxxxxx
+.RI 10 xxxxxx
+.RI 10 xxxxxx
+.RI 10 xxxxxx
+.PP
+Le configurazioni di bit
+.I xxx
+sono riempite coi bit del numero del codice carattere rappresentato in
+binario. Viene usata solo la più breve delle sequenze multi-byte che
+possono rappresentare il numero del codice.
+.PP
+I valori del codice
+.B UCS
+0xd800\(en0xdfff (surrogati UTF-16), così come 0xfffe e
+0xffff (non-caratteri UCS) non devono apparire nei flussi
+.B UTF-8
+conformi.
+.SS Esempi
+Il carattere
+.B Unicode
+0xa9 = 1010 1001 (il simbolo di copyright ©) si codifica in UTF-8 come
+.PP
+.RS
+11000010 10101001 = 0xc2 0xa9
+.RE
+.PP
+e il carattere 0x2260 = 0010 0010 0110 0000 (il simbolo «non uguale»)
+si codifica come:
+.PP
+.RS
+11100010 10001001 10100000 = 0xe2 0x89 0xa0
+.RE
+.SS "Note sull'applicazione"
+Gli utenti devono selezionare una localizzazione
+.B UTF-8 ,
+ad esempio con
+.PP
+.RS
+export LANG=en_GB.UTF-8
+.RE
+.PP
+per poter attivare il supporto
+.B UTF-8
+nelle applicazioni.
+.PP
+I software applicativi che devono riconoscere la dofica caratteri usata
+devono sempre impostare la localizzazione con, ad esempio,
+.PP
+.RS
+setlocale(LC_CTYPE, "")
+.RE
+.PP
+e i programmatori possono quindi testare l'espressione
+.PP
+.RS
+strcmp(nl_langinfo(CODESET), "UTF-8") == 0
+.RE
+.PP
+per determinare se una localizzazione
+.B UTF-8
+è stata selezionata e se quindi tutti gli input e output
+standard in testo, comunicazioni terminale, contenuto in testo dei file,
+nomi file e variabili d'ambiente sono codificati in
+.BR UTF-8 .
+.PP
+I programmatori abituati alle codifiche a singolo byte come
+.B US-ASCII
+o
+.B ISO 8859
+devono ricordare che due assunzioni valide qui non sono più valide
+nelle localizzazioni
+.B UTF-8 .
+Innanzitutto un singolo byte non corrisponde necessariamente più ad un
+singolo carattere. In secondo luogo, poiché i moderni emulatori 
+terminale in modalità
+.B UTF-8
+supportano anche
+.B caratteri a doppia larghezza
+cinese, giapponese e coreano e i
+.BR "caratteri combinanti" ,
+non spaziati, l'emissione di un singolo carattere non avanza 
+necessariamente il cursore di una posizione come avveniva in
+.BR ASCII .
+Funzioni di libreria come
+.BR mbsrtowcs (3)
+e
+.BR wcswidth (3)
+oggi devono essere usate posizioni di caratteri e cursore.
+.PP
+La sequenza ufficiale ESC per commutare da uno schema di codifica
+.B ISO 2022
+(usato ad esempio dai terminali VT100) a
+.B UTF-8
+è ESC % G
+("\\x1b%G"). La corrispondente sequenza di ritorno da
+.B UTF-8
+a ISO 2022 è ESC % @ ("\\x1b%@"). Altre sequenze ISO 2022 (come quelle
+per commutare gli insiemi G0 e G1) non sono applicabili in modalità UTF-8.
+.PP
+Si può sperare che nel futuro
+.B UTF-8
+sostituirà
+.B ASCII
+e
+.B ISO 8859
+a tutti i livelli come codifica caratteri comune nei sistemi POSIX,
+portando così ad un ambiente significativamente più ricco per la 
+gestione del testo.
+.SS Sicurezza
+Gli standard
+.BR Unicode " and " UCS
+richiedono che i produttori di
+.B UTF-8
+debbano usare la forma più breve possibile, ad es. produrre una
+sequenza a due byte con primo byte 0xc0 non è conforme.
+.B Unicode 3.1
+ha aggiunto la richiesta che i programmi confori non debbano accettare
+le forme non brevi nel loro input. Ciò è per ragioni di sicurezza: se
+l'input utente è verificato per possibili violazioni di sicurezza, un 
+programma può verificare solo la versione
+.B ASCII
+di "/../" o ";" o NUL e dimenticare che ci sono motli modi
+.RB non- ASCII
+di rappresentare queste cose in una codifica
+.B UTF-8
+non breve.
+.SS Standard
+ISO/IEC 10646-1:2000, Unicode 3.1, RFC\ 2279, Plan 9.
+.SH AUTORE
+Markus Kuhn <mgk25@cl.cam.ac.uk>
+.SH "VEDERE ANCHE"
+.BR nl_langinfo (3),
+.BR setlocale (3),
+.BR charsets (7),
+.BR unicode (7)

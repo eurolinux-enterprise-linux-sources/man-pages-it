@@ -1,0 +1,107 @@
+.\" Copyright (C) 1995, Thomas K. Dyas <tdyas@eden.rutgers.edu>
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Created   Wed Aug  9 1995     Thomas K. Dyas <tdyas@eden.rutgers.edu>
+.\"
+.\" FIXME -- I can't find this in SVr4!
+.\"
+.\" Tradotto da Goffredo Baroncelli il 21/4/1998 <kreijack@usa.net>
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\"
+.TH SYSFS 2 "9 agosto 1995" "Linux 1.3.16" "Linux Programmer's Manual"
+.SH NOME
+sysfs \- acquisisce informazioni sul file system
+.SH SINTASSI
+.BI "int sysfs(int " option ", const char *" fsname );
+
+.BI "int sysfs(int " option ", unsigned int " fs_index ", char *" buf );
+
+.BI "int sysfs(int " option );
+.SH DESCRIZIONE
+.BR sysfs ()
+restituisce informazioni sui tipi di file system presenti nel kernel.
+La sintassi della chiamata di sistema
+.BR sysfs ()
+dipende dal parametro
+.I option
+:
+
+.TP
+.B 1
+Converte la stringa identificatrice del file system
+.I fsname
+in un indice che identifica il file system.
+.TP
+.B 2
+Converte un'indice di un file-system 
+.I fs_index
+in una stringa terminata con un byte nul. Questa stringa viene scritta nel 
+buffer a cui punta
+.IR buf .
+Assicurarsi che
+.I buf
+abbia abbastanza spazio per accettare la stringa.
+.TP
+.B 3
+Restituisce il numero di tipi di file-system presenti nel kernel.
+
+.PP
+La numerazione degli indici dei tipi di file system presenti incomincia 
+da zero.
+.SH "VALORI RESTITUITI"
+In caso di successo
+.BR sysfs ()
+restituisce l'indice del file system con l'opzione
+.BR 1 ,
+zero con l'opzione
+.BR 2 ,
+e il numero del file systems attualmente configurato con l'opzione
+.BR 3 .
+In caso di errore viene restituito \-1, e viene impostato
+.I errno .
+.SH ERRORI
+.TP
+.B EFAULT
+.RI "O " fsname " o " buf
+sono al di fuori del proprio spazio di indirizzamento accessibile.
+.TP
+.B EINVAL
+.I fsname
+non è un identificatore valido di file system;
+.I fs_index
+è fuori dai limiti;
+.I option
+non è valida.
+.PP
+.SH "CONFORME A"
+SVr4.
+.SH NOTA
+Su Linux, con il filesystem
+.I proc
+montato su
+.IR /proc ,
+la stessa informazione può essere ricavata da
+.IR /proc/filesystems .
+.SH BACHI
+Non c'è supporto a libc o glibc.
+Non c'è modo di capire quanto deve essere grande \fIbuf\fP.

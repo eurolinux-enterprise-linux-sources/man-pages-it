@@ -1,0 +1,155 @@
+.\" Copyright (c) 1983, 1990, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" Traduzione da inetutils-1.4.2 di Giulio Daprelà <giulio@pluto.it>
+.\" gennaio 2006
+.\"
+.\"	@(#)rcp.1	8.1 (Berkeley) 5/31/93
+.\"
+.Dd 31 maggio 1993
+.Dt RCP 1
+.Os BSD 4.3r
+.Sh NAME
+.Nm rcp
+.Nd fa una copia remota di un file
+.Sh SINTASSI
+.Nm rcp
+.Op Fl Kpx
+.Op Fl k Ar realm
+.Ar file1 file2
+.Nm rcp
+.Op Fl Kprx
+.Op Fl k Ar realm
+.Ar file ...
+.Ar directory
+.Sh DESCRIZIONE
+.Nm Rcp
+copia file tra macchine. Ciascun argomento
+.Ar file
+o
+.Ar directory
+può essere un nome di file remoto nella forma
+``rname@rhost:path'', o il nome di un file locale (non contenente i 
+caratteri `:', o `/' prima di `:').
+.Pp
+.Bl -tag -width flag
+.It Fl K
+L'opzione
+.Fl K
+disattiva tutte le autenticazioni Kerberos.
+.It Fl k
+L'opzione
+.Fl k
+richiede
+.Nm rcp
+per ottenere biglietti per l'host remoto nel regno
+.Ar realm
+invece del regno dell'host remoto determinato da
+.Xr krb_realmofhost  3  .
+.It Fl p
+L'opzione
+.Fl p
+fa sì che
+.Nm rcp
+tenti di preservare (duplicare) nele proprie copie gli orari di modifica
+e i premessi del file sorgente, ignorando la
+.Ar umask  .
+Per default permessi e proprietario di
+.Ar file2
+sono preservati se essi esistono giù; altrimenti vengono usati i 
+permessi del file sorgente modificati dalla
+.Xr umask  2
+sull'host di destinazione.
+.It Fl r
+Se qualunque dei file sorgenti è una directory,
+.Nm rcp
+copia ciascun sottoalbero collegato a tale nome; in questo caso la
+destinazione deve essere una directory.
+.It Fl x
+L'opzione
+.Fl x
+attiva la cifratura
+.Tn DES
+per tutti i dati passati da
+.Nm rcp .
+Questo può avere un impatto sul tempo di risposta e sull'utilizzo della
+.Tn CPU
+ma fornisce una maggiore sicurezza.
+.El
+.Pp
+Se
+.Ar path
+non è un nome di percorso completo esso è interpretato relativamente 
+alla directory di login dell'utente specificato
+.Ar ruser
+su
+.Ar rhost  ,
+o il proprio nome utente corrente se non è specificato nessun altro nome 
+utente remoto.
+Un
+.Ar path
+su un host remoto può essere virgolettato (usando \e, ", o \(aa)
+in modo che i metacaratteri siano interpretati remotamente.
+.Pp
+.Nm Rcp
+non chiede password; esso realizza l'esecuzione remota attraverso
+.Xr rsh  1  ,
+e richiede la stessa autorizzazione.
+.Pp
+.Nm Rcp
+maneggia copie di terze parti, dove nè i file sorgente nè i file 
+destinzaione sono sulla macchina corrente.
+.Sh VEDERE ANCHE
+.Xr cp 1 ,
+.Xr ftp 1 ,
+.Xr rsh 1 ,
+.Xr rlogin 1
+.Sh STORIA
+Il comando
+.Nm rcp
+è apparso nella
+.Bx 4.2 .
+La versione di
+.Nm rcp
+descritta qui è stata reimplementata con Kerberos in
+.Bx Reno 4.3 .
+.Sh BUG
+Non rileva tutti i casi in cui la destinazione di una copia può essere 
+un file nei casi in cui solo una directory può essere legale.
+.Pp
+Se confuso da qualunque output generato da comandi in un file
+.Pa \&.login ,
+.Pa \&.profile ,
+o
+.Pa \&.cshrc
+sull'host remoto.
+.Pp
+Nome hnost e utente destinatario devono essere specificati come
+``rhost.rname'' quando sulla macchina destinataria funzione la versione
+.Bx 4.2
+di
+.Nm rcp  .

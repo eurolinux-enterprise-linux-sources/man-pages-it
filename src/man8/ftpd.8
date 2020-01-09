@@ -1,0 +1,295 @@
+.\" Copyright (c) 1985, 1988, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" Traduzione da inetutils-1.4.2 di Giulio Daprelà <giulio@pluto.it>
+.\" gennaio 2006
+.\"
+.\"     @(#)ftpd.8	8.3 (Berkeley) 6/1/94
+.\"
+.Dd 1 giugno 1994
+.Dt FTPD 8
+.Os BSD 4.2
+.Sh NOME
+.Nm ftpd
+.Nd
+Server Internet File Transfer Protocol
+.Sh SINTASSI
+.Nm ftpd
+.Op Fl dlADq
+.Op Fl T Ar maxtimeout
+.Op Fl t Ar timeout
+.Op Fl a Ar login-name
+.Sh DESCRIZIONE
+.Nm Ftpd
+è il processo del server
+Internet File Transfer Protocol.
+Il server usa il protocollo
+.Tn TCP
+e ascolta la porta specificata nelle specifiche del servizio
+.Dq ftp ;
+vedere
+.Xr services 5 .
+.Pp
+Opzioni disponibili:
+.Bl -tag -width Ds
+.It Fl d
+L'informazione di debug è scritta su syslog
+usando LOG_FTP.
+.It Fl l
+Ciascune sezione
+.Xr ftp 1
+che abbia successo o fallisca è oggata usando syslog con un servizio di LOG_FTP.
+Se questa opzione è specificata due volte, anche le operazioni di, 
+recupero (get), archiviazione (put), aggiunta, cancellazione, creazione 
+di directory, rimozione di directory e rinominazione e i loro argomenti 
+nomi di file sono loggate.
+.It Fl A
+E' permesso solo l'autenticazione anonima.
+.It Fl D
+ftpd entra nel modo demone. Ciò permette a ftpd di funzionare senza inetd.
+.It Fl q
+Modo silenzioso. Al client non viene fornita alcuna informazione sulla 
+versione di ftpd.
+.It Fl T
+Un client può anche richiedere un differente periodo di timeout;
+il massimo periodo permesso può essere impostato in
+.Ar timeout
+secondi con l'opzione
+.Fl T .
+Il limite di default è di 2 ore.
+.It Fl t
+Il periodo di inattività di timeout è impostato in
+.Ar timeout
+secondi (il default è di 15 minuti).
+.It Fl a
+Dà anonymous e altri
+.Ar login-name
+(anonymous e ftpd funzioneranno ancora).
+.El
+.Pp
+Il file
+.Pa /etc/nologin
+può essere usato per disabilitare l'accesso ftp.
+Se il file esiste,
+.Nm
+lo visualizza ed esce.
+Se il file
+.Pa /etc/ftpwelcome
+esiste,
+.Nm
+lo stampa prima di emettere il messaggio
+.Dq ready .
+Se il file
+.Pa /etc/motd
+esiste,
+.Nm
+lo stampa dopo un login avvenuto con successo.
+.Pp
+Il server ftp attualmente supporta le seguenti richieste ftp.
+Il caso delle richieste è ignorato.
+.Bl -column "Request" -offset indent
+.It Request Ta "Description"
+.It ABOR Ta "abort previous command"
+.It ACCT Ta "specify account (ignored)"
+.It ALLO Ta "allocate storage (vacuously)"
+.It APPE Ta "append to a file"
+.It CDUP Ta "change to parent of current working directory"
+.It CWD Ta "change working directory"
+.It DELE Ta "delete a file"
+.It HELP Ta "give help information"
+.It LIST Ta "give list files in a directory" Pq Dq Li "ls -lgA"
+.It MKD Ta "make a directory"
+.It MDTM Ta "show last modification time of file"
+.It MODE Ta "specify data transfer" Em mode
+.It NLST Ta "give name list of files in directory"
+.It NOOP Ta "do nothing"
+.It PASS Ta "specify password"
+.It PASV Ta "prepare for server-to-server transfer"
+.It PORT Ta "specify data connection port"
+.It PWD Ta "print the current working directory"
+.It QUIT Ta "terminate session"
+.It REST Ta "restart incomplete transfer"
+.It RETR Ta "retrieve a file"
+.It RMD Ta "remove a directory"
+.It RNFR Ta "specify rename-from file name"
+.It RNTO Ta "specify rename-to file name"
+.It SITE Ta "non-standard commands (see next section)"
+.It SIZE Ta "return size of file"
+.It STAT Ta "return status of server"
+.It STOR Ta "store a file"
+.It STOU Ta "store a file with a unique name"
+.It STRU Ta "specify data transfer" Em structure
+.It SYST Ta "show operating system type of server system"
+.It TYPE Ta "specify data transfer" Em type
+.It USER Ta "specify user name"
+.It XCUP Ta "change to parent of current working directory (deprecated)"
+.It XCWD Ta "change working directory (deprecated)"
+.It XMKD Ta "make a directory (deprecated)"
+.It XPWD Ta "print the current working directory (deprecated)"
+.It XRMD Ta "remove a directory (deprecated)"
+.El
+.Pp
+I seguenti comandi non standard o specifici di
+.Tn UNIX
+sono supportati dalla richiesta
+SITE.
+.Pp
+.Bl -column Request -offset indent
+.It Sy Request Ta Sy Description
+.It UMASK Ta cambia la umask, e.g. ``SITE UMASK 002''
+.It IDLE Ta imposta il tempo di inattività, e.g. ``SITE IDLE 60''
+.It CHMOD Ta cambia i permessi di un file, e.g. ``SITE CHMOD 755 filename''
+.It HELP Ta fornisce informazioni di aiuto.
+.El
+.Pp
+Le richieste ftp rimanenti specificate in Internet RFC 959
+sono riconosciute, ma non implementate.
+MDTM e SIZE non sono specificate in RFC 959, ma appariranno nella
+prossima RFC FTP aggiornata.
+.Pp
+Il server ftp abortirà un trasferimento di file attivo solo quando il 
+comando
+ABOR
+è preceduto da un segnale Telnet "Interrupt Process" (IP)
+e un segnale Telnet "Synch" nel flusso di comando Telnet, come descritto
+nella Internet RFC 959.
+Se un comando
+STAT
+è ricevuto durante un trasferimento dati, preceduto da un IP e
+Synch Telnet, verrà restituito lo stato del trasferimento.
+.Pp
+.Nm Ftpd
+interpreta i nomi di file in accordo alle convenzioni
+.Dq globbing
+usate da
+.Xr csh 1 .
+Questo permette agli utenti di utilizzare i metacaratteri
+.Dq Li \&*?[]{}~ .
+.Pp
+.Nm Ftpd
+autentica gli utenti conformemente a tre regole.
+.Pp
+.Bl -enum -offset indent
+.It
+Il nome di login deve essere nel data base delle password,
+.Pa /etc/passwd ,
+e non avere password nulla.
+In questo caso una password deve essere fornita dal client prima che
+qualunque operazione sul file venga eseguita.
+.It
+Il nome di login non deve apparire nel file
+.Pa /etc/ftpusers .
+.It
+L'utente deve avere una shell standard restituita da
+.Xr getusershell 3 .
+.It
+Se il nome utente è
+.Dq anonymous
+o
+.Dq ftp ,
+un account ftp anonimo deve essere presente nel file password (utente
+.Dq ftp ) .
+In questo caso l'utente può accedere specificando qualunque password
+(per convenzione come password deve essere utilizzato un indirizzo email
+dall'utente).
+.El
+.Pp
+Nell'ultimo caso,
+.Nm ftpd
+prende misure speciali per restringere i privilegi di accesso del client.
+Il server esegue un
+.Xr chroot 2
+sulla directory home dell'utente
+.Dq ftp .
+Perché la sicurezza del sistema non venga compromessa, si raccomanda che
+il sottoalbero
+.Dq ftp
+sia costruito con attenzione, seguendo queste regole:
+.Bl -tag -width "~ftp/pub" -offset indent
+.It Pa ~ftp
+Dà la proprietà della home directory a
+.Dq root
+e la rende non scrivibile da nessuno.
+.ne 1i
+.It Pa ~ftp/bin
+Dà la proprietà di questa directory a
+.Dq root
+e la rende non scrivibile da nessuno (modo 555).
+Il programma
+.Xr ls 1
+deve essere presente per supportare l'elenco di comandi.
+Questo programma può avere i permessi 111.
+.It Pa ~ftp/etc
+Dà la proprietà di questa directory a
+.Dq root
+e la rende non scrivibile da nessuno (modo 555).
+I file
+.Xr passwd 5
+e
+.Xr group 5
+devono essere presenti perché il comando
+.Xr ls
+possa produrre nomi di utente invece di numeri.
+Il campo password in
+.Xr passwd
+non è usato, e non deve contenere password reali.
+Il file
+.Pa motd ,
+se presente, verrà stampato in seguito a un'autenticazione riuscita.
+Questi file devono avere permessi 444.
+.It Pa ~ftp/pub
+Dà a questa directory i premessi 777 e proprietà di
+.Dq ftp .
+Gli ospiti quindi possono mettere file che siano accessibili attraverso 
+un account anonimo in questa directory.
+.El
+.Sh FILE
+.Bl -tag -width /etc/ftpwelcome -compact
+.It Pa /etc/ftpusers
+Elenco degli utenti non benvenuti/limitati.
+.It Pa /etc/ftpwelcome
+Annuncio di benvenuto.
+.It Pa /etc/motd
+Annuncio di benvenuto dopo l'autenticazione.
+.It Pa /etc/nologin
+Visualizzazione e accesso rifiutati.
+.El
+.Sh VEDERE ANCHE
+.Xr ftp 1 ,
+.Xr getusershell 3 ,
+.Xr syslogd 8
+.Sh BUG
+Il server deve funzionare come super-utente per creare socket
+con numeri di porta privilegiati. Esso mantiene un id utente effettivo
+dell'utente autenticato, tornando al super-utente solo quando lega gli 
+indirizzi ai socket. I possibili buchi di sicurezza sono stati 
+estesamente verificati, ma potrebbero essere incompleti.
+.Sh STORIA
+Il comando
+.Nm
+è apparso nella
+.Bx 4.2 .

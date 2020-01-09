@@ -1,0 +1,367 @@
+.\" Copyright (c) 1985, 1991, 1993, 1994
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" Traduzione da inetutils-1.4.2 di Giulio Daprelà <giulio@pluto.it>
+.\" gennaio 2006
+.\"
+.\"     @(#)inetd.8	8.4 (Berkeley) 6/1/94
+.\"
+.Dd 1 giugno 1994
+.Dt INETD 8
+.Os BSD 4.4
+.Sh NOME
+.Nm inetd
+.Nd internet
+.Dq super-server
+.Sh SINTASSI
+.Nm inetd
+.Op Fl d
+.Op Fl R Ar rate
+.Op Ar configuration_files ...
+.Sh DESCRIZIONE
+Il programma
+.Nm inetd
+deve essere eseguito all'avvio da
+.Pa /etc/rc
+(vedere
+.Xr rc 8 ) .
+Esso quindi resta in ascolto di connessioni su certi
+socket internet. Quando su uno dei suoi socket viene trovata una 
+connessione, esso decide a quale servizio il socket corrisponde, e 
+invoca il programma per servire la richiesta. Il programma server è 
+invocato con il socket del servizio come suo standard input, output e 
+descrittori di errore. Dopo che il programma è finito
+.Nm inetd
+continua ad ascoltare il socket (tranne in alcuni casi che verranno 
+descritti sotto). Essenzialmente
+.Nm inetd
+permette l'esecuzione di un demone per invocarne molti altri,
+riducendo il carico del sistema.
+.Pp
+Opzioni disponibili per
+.Nm inetd:
+.Bl -tag -width Ds
+.It Fl d, --debug
+Attiva il debugging.
+.It Fl R, --rate Ar rate
+Specifica il numero massimo di volte che un servizio può essere invocato
+in un minuto; il default è 1000.
+.It Fl --version
+Mostra la versione.
+.It Fl --help
+Mostra l'help.
+.El
+.Pp
+Una volta eseguito,
+.Nm inetd
+legge le sue informazioni di configurazione da un percorso di
+configurazione sulla linea di comando, per default,
+.Pa /etc/inetd.conf and /etc/initd.d .
+Se il percorso di configuraizone è una directory, tutti i file nella
+directory sono letti come un file di configurazione. Tutti i file di 
+configurazione sono letti e uniti.
+Ci deve essere una voce per ciascun campo nel file di confiuraizone, con 
+voci per ciascun campo separate da un tab o uno spazio.
+Commenti sono segnati da un ``#'' all'inizio di una linea.
+Ci deve essere una voce per ciascun campo. I campi del file di 
+configurazione sono i seguenti:
+.Pp
+.Bd -unfilled -offset indent -compact
+nome del servizio
+tipo di socket
+protocollo
+wait/nowait
+utente
+programma server
+argomenti del programma server
+.Ed
+.Pp
+Ci sono due tipi di servizi che
+.Nm inetd
+può avviare: standard e TCPMUX.
+Un servizio standard ha una porta nota assegnata ad esso;
+esso può essere un servizio che implementa uno standard ufficiale Internet 
+o è un servizio specifico BSD.
+Come descritto in
+.Tn RFC 1078 ,
+i servizi TCPMUX sono servizi non standard che non hanno una porta
+nota assegnata ad essi.
+Essi sono invocati da
+.Nm inetd
+quando un programma si connette alla porta nota
+.Dq tcpmux
+e specifica il nome del servizio.
+Questa caratteristica è utile per aggiungere server sviluppati 
+localmente.
+.Pp
+Il campo
+.Em service-name
+è il nome di un servizio valido nel file
+.Pa /etc/services .
+Per i servizi
+.Dq interni
+(discussi sotto), il servizio
+nome
+.Em deve
+essere il nome ufficiale del servizio (che è il primo campo in
+.Pa /etc/services ) .
+Per i servizi TCPMUX, il valore del campo
+.Em service-name
+consiste nella stringa
+.Dq tcpmux
+seguita da uno slash e il nome del
+servizio scelto localmente.
+I nomi del servizio elencati in
+.Pa /etc/services
+e il nome
+.Dq help
+sono riservati.
+Provare a scegliere nomi unici pir i propri servizi TCPMUX prefissandoli
+con il nome della propria organizzazione e aggiungendo come suffisso un 
+numero di versione.
+.Pp
+Il
+.Em socket-type
+deve essere uno tra
+.Dq stream ,
+.Dq dgram ,
+.Dq raw ,
+.Dq rdm ,
+o
+.Dq seqpacket ,
+in funzione di quale socket sia uno stream, datagramma, raw,
+messaggio recapitato affidabilmente, o socket sequenced packet.
+I servizi TCPMUX devono usare
+.Dq stream .
+.Pp
+Il
+.Em protocollo
+deve essere un protocollo valido come dato in
+.Pa /etc/protocols .
+Esempi possono essere
+.Dq tcp
+o
+.Dq udp .
+I servizi TCPMUX devono usare
+.Dq tcp .
+.Pp
+Il campo
+.Em wait/nowait
+specifica se il server che è invocato da inetd si approprierà del
+socket associato con il punto di accesso del servizio, e quindi se
+.Nm inetd
+deve aspettare che il server esca prima di ascoltare nuove richieste di 
+servizio.
+I server datagrammi devono usare
+.Dq wait ,
+poiché essi sono sempre invocati con il datagramma socket originale 
+legato all'indirizzo del servizio specificato.
+Questi server devono leggere almento un datagramma dal socket
+prima di uscire.
+Se un server datagramma si connette al suo peer,
+lliberando il socket in modo che
+.Nm inetd
+possa ricevere ulteriori messaggi sul socket, si dice che esso è un 
+server
+.Dq multi-threaded ;
+esso deve leggere un datagramma dal socket e creare un nuovo socket
+connesso al peer.
+Può esserci un fork, e il genitore deve quindi uscire
+per permettere a
+.Nm inetd
+di verificare nuove richieste di servizio per generare nuovi server.
+I server datagrammi che processano tutti i datagrammi in arrivo
+su un socket ed eventuali time out sono detti
+.Dq single-threaded .
+.Xr Comsat 8 ,
+.Pq Xr biff 1
+e
+.Xr talkd 8
+sono entrambi esempi dell'ultimo tipo di server datagramma.
+.Xr Tftpd 8
+è un esempio di un server datagramma multi-threaded.
+.Pp
+I server che usano stream socket generalmente sono multi-threaded e
+usano il campo
+.Dq nowait .
+Le richieste di connessione per questi servizi sono accettate da
+.Nm inetd ,
+e al server è dato solo il nuovo socket accettato connesso a un
+client del servizio.
+La maggior parte dei servizi stream-based operano in questo modo.
+I server stream-based che usano
+.Dq wait
+sono avviati con il servizio di ascolto del socket, e devono accettare
+almeno una richiesta di connessione prima di uscire.
+Tali server normalmente accetteranno e processeranno le richieste di 
+connessione in arrivo fino a un timeout.
+I servizi TCPMUX devono usare
+.Dq nowait .
+.Pp
+Il campo
+.Em user
+deve contenere il nome utente dell'utente il cui server deve funzionare.
+Questo permette che ai server vengano dati permessi minori di root.
+.Pp
+Il campo
+.Em server-program
+deve contenere il percorso del programma che viene eseguito da
+.Nm inetd
+quando viene rilevata una richiesta sul suo socket. Se
+.Nm inetd
+fornisce il servizio internamente, questo campo deve essere
+.Dq internal .
+.Pp
+Gli
+.Em argomenti del programma server
+devono essere dei normali argomenti,
+che iniziano con argv[0], che è il nome del programma.
+Il servizio è fornito internamente, la parola
+.Dq internal
+deve prendere il posto di questo campo.
+.Pp
+Il programma
+.Nm inetd
+fornisce internamente numerosi servizi
+.Dq elementari
+con l'uso delle sue routine. Questi servizi sono
+.Dq echo ,
+.Dq discard ,
+.Dq chargen
+(generatore caratteri),
+.Dq daytime
+(ora leggibile dell'uomo), e
+.Dq time
+(tempo leggibile dalla macchina,
+nella forma del numero di secondi a partire dalla mezzanotte dell'1 
+gennaio 1900). Tutti questi servizi sono basati su tcp. Per dettagli su
+questi servizi consultare le
+.Tn RFC
+appropriate dal Network Information Center.
+.Pp
+Il programma
+.Nm inetd
+rilegge il suo file di configurazione quando riceve un segnale hangup,
+.Dv SIGHUP .
+I servizi possono essere aggiunti, cancellati o modificati quando il 
+file di configurazione viene riletto.
+.Sh TCPMUX
+.Pp
+.Tn RFC 1078
+descrive il protocollo TCPMUX:
+``A TCP client connects to a foreign host on TCP port 1.  It sends the
+service name followed by a carriage-return line-feed <CRLF>.  The
+service name is never case sensitive.  The server replies with a
+single character indicating positive (+) or negative (\-)
+acknowledgment, immediately followed by an optional message of
+explanation, terminated with a <CRLF>.  If the reply was positive,
+the selected protocol begins; otherwise the connection is closed.''
+Il programma è passato alla connessione TCP come file descrittori 0 e 1.
+.Pp
+Se il nome del servizio TCPMUX comincia con un ``+'',
+.Nm inetd
+restituisce la risposta positiva per il programma.
+Questo permette di invocare programmi che usano stdin/stdout
+senza mettere in essi alcun codice speciale del server.
+.Pp
+Il nome del servizio speciale
+.Dq help
+fa sì che
+.Nm inetd
+elenchi i servizi TCPMUX in
+.Pa inetd.conf .
+.ne 1i
+.Sh "ESEMPI"
+.Pp
+Qui ci sono numerosi esempi di campi del servizio per vari tipi di
+servizio:
+.Bd -literal
+ftp           stream  tcp   nowait root  /usr/libexec/ftpd       ftpd -l
+ntalk         dgram   udp   wait   root  /usr/libexec/ntalkd     ntalkd
+tcpmux/+date  stream  tcp   nowait guest /bin/date               date
+tcpmux/phonebook stream tcp nowait guest /usr/local/bin/phonebook phonebook
+.Ed
+.Sh "MESSAGGI DI ERRORE"
+Il server
+.Nm inetd
+fa il log dei messaggi di errore usando
+.Xr syslog 3 .
+Messaggi di errore importanti e le loro spiegazioni sono:
+.Bd -literal
+\fIservice\fP/\fIprotocol\fP server failing (looping), service terminated.
+.Ed
+Il numero di richieste per il servizio specificato negli ultimi minuti
+eccede il limite. Il limite esiste per impedire a un programma 
+malfunzionante o a un utente malizioso di impantanare il sistema.
+Questo messaggio può apparire per numerose ragioni:
+1) ci sono molti host che richiedono il servizio in un breve lasso di tempo,
+2) un programma client malfunzionante richiede il servizio troppo frequentemente,
+3) un utente malizioso sta eseguendo un programma per invocare il 
+servizio in un attacco 'denial of service', o
+4) il programma di servizio invocato ha un errore che fa che i client 
+riprovino rapidamente.
+Usare l'opzione
+.Op Fl R
+come descritto sopra per cambiare l'ammontare limite.
+Quando il limite è raggiunto il servizio viene riabilitato
+automaticamente in 10 minuti.
+.sp
+.Bd -literal
+\fIservice\fP/\fIprotocol\fP: No such user '\fIuser\fP', service ignored
+\fIservice\fP/\fIprotocol\fP: getpwnam: \fIuser\fP: No such user
+.Ed
+Non esiste nessun campo per
+.Em user
+nel file
+.Pa passwd .
+Il primo messaggio avviene quando
+.Nm inetd
+(ri)legge il file di configurazione. Il secondo messaggio avviene quando 
+il servizio viene invocato.
+.sp
+.Bd -literal
+\fIservice\fP: can't set uid \fInumber\fP
+\fIservice\fP: can't set gid \fInumber\fP
+.Ed
+L'ID dell'utente o del gruppo per il campo
+.Em user
+non è valido.
+.Sh VEDERE ANCHE
+.Xr comsat 8 ,
+.Xr fingerd 8 ,
+.Xr ftpd 8 ,
+.Xr rexecd 8 ,
+.Xr rlogind 8 ,
+.Xr rshd 8 ,
+.Xr telnetd 8 ,
+.Xr tftpd 8
+.Sh HISTORY
+Il comando
+.Nm
+è apparso nella
+.Bx 4.3 .
+TCPMUX è basato su codice e documentazione di Mark Lottor.

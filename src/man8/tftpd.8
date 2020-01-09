@@ -1,0 +1,103 @@
+.\" Copyright (c) 1983, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" Traduzione da inetutils-1.4.2 di Giulio Daprelà <giulio@pluto.it>
+.\" gennaio 2006
+.\"
+.\"	@(#)tftpd.8	8.1 (Berkeley) 6/4/93
+.\"
+.Dd 4 giugno 1993
+.Dt TFTPD 8
+.Os BSD 4.2
+.Sh NOME
+.Nm tftpd
+.Nd
+Server Internet Trivial File Transfer Protocol
+.Sh SINTASSI
+.Nm tftpd
+.Op Fl l
+.Op Fl n
+.Op Ar directory ...
+.Sh DESCRIZIONE
+.Nm Tftpd
+è un server che supporta
+l'Internet Trivial File Transfer
+Protocol (\c
+.Tn RFC 783).
+I server
+.Tn TFTP
+operano alla porta indicata nella descrizione del servizio
+.Ql tftp ;
+vedere
+.Xr services 5 .
+Il server normalmente è avviato da
+.Xr inetd 8 .
+.Pp
+L'uso di
+.Xr tftp 1
+non richiede un account o password sul sistema remoto.
+A causa della mancanza di informazioni di autenticazione,
+.Nm tftpd
+consentirà solo l'accesso a file leggibili pubblicamente.
+I file contenenti la stringa ``/\|\fB.\|.\fP\|/'' non sono permessi.
+I file devono essere scritti solo se essi esistono già e sono 
+pubblicamente scrivibili. Notare che questo estende il concetto di
+.Dq pubblico
+per includere tutti gli utenti su tutti gli host che possono essere 
+raggiunti attraverso la rete; ciò potrebbe non essere appropriato su 
+tutti i sistemi, e le sue implicazioni dovrebbero essere considerate 
+prima di abilitare il servizio tfpt.
+Il server dovrebbe avere l'ID dell'utente con il più basso pribilegio
+possibile.
+.Pp
+L'accesso ai file può essere ristertto invocando
+.Nm tftpd
+con un elenco di directory che includa fino a 20 percorsi
+come argomenti del programma server in
+.Pa /etc/inetd.conf .
+In questo caso l'accesso è ristretto ai file i cui nomi hanno
+per prefisso una delle directory date.
+Anche le directory date sono trattate come percorso di ricerca per 
+richieste di nomi di file relativi.
+.Pp
+Le opzioni sono:
+.Bl -tag -width Ds
+.It Fl l
+Fa il log di tutte le richieste usando
+.Xr syslog 3 .
+.It Fl n
+Sopprime il riconoscimento negativo delle richieste di nomi di file 
+relativi inesistenti.
+.El
+.Sh VEDERE ANCHE
+.Xr tftp 1 ,
+.Xr inetd 8
+.Sh STORIA
+Il comando
+.Nm
+è apparso nella
+.Bx 4.2 .

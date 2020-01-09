@@ -1,0 +1,179 @@
+.\" Copyright (c) 1993
+.\" The Regents of the University of California.  All rights reserved.
+.\" 
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\" notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\" notice, this list of conditions and the following disclaimer in the
+.\" documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\" must display the following acknowledgement:
+.\" This product includes software developed by the University of
+.\" California, Berkeley and its contributors.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\" may be used to endorse or promote products derived from this software
+.\" without specific prior written permission.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\" 
+.\" From: @(#)err.3	8.1 (Berkeley) 6/9/93
+.\" $FreeBSD: src/lib/libc/gen/err.3,v 1.11.2.5 2001/08/17 15:42:32 ru Exp $
+.\" 
+.\" 2007-12-08, mtk, Converted from mdoc to man macros
+.\" 
+.\" Traduzione di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\" Aggiornamento a man-pages 2.71 di Elisabetta Galli <lab@kkk.it>
+.\" dicembre 2007
+.\" 
+.TH "ERR" "3" "28 dicembre 2007" "Linux" "Linux Programmer's Manual"
+.SH "NOME"
+err, verr, errx, verrx, warn, vwarn, warnx, vwarnx \- messaggi di errore formattati
+.SH "SINTASSI"
+.nf 
+.B #include <err.h>
+.sp
+.BI "void err(int " eval ", const char *" fmt ", ...);"
+.sp
+.BI "void errx(int " eval ", const char *" fmt ", ...);"
+.sp
+.BI "void warn(const char *" fmt ", ...);"
+.sp
+.BI "void warnx(const char *" fmt ", ...);"
+.sp
+.B #include <stdarg.h>
+.sp
+.BI "void verr(int " eval ", const char *" fmt ", va_list " args );
+.sp
+.BI "void verrx(int " eval ", const char *" fmt ", va_list " args );
+.sp
+.BI "void vwarn(const char *" fmt ", va_list " args );
+.sp
+.BI "void vwarnx(const char *" fmt ", va_list " args );
+.fi 
+.SH "DESCRIZIONE"
+Le famiglie di funzioni
+.BR err
+e
+.BR warn
+visualizzano un messaggio di errore formattato sull'uscita dello standard
+error.
+In ogni caso vengono stampati l'ultimo componente del nome del 
+programma, un carattere di due punti, e uno spazio.
+Se l'argomento
+.I fmt
+non è NULL viene emesso
+un messaggio di errore formattato in stile
+.BR printf (3)\-like .
+L'output è concluso da un carattere newline.
+.PP
+Le funzioni
+.BR err (),
+.BR verr (),
+.BR warn (),
+e
+.BR vwarn ()
+aggiungono un messaggio di errore ottenuto da
+.BR strerror (3)
+basato su un codice o sulla variabile globale
+.I R errno ,
+preceduto da un altro ":" e uno spazio a meno che l'argomento
+.I fmt
+sia
+NULL.
+.PP
+Le funzioni
+.BR err (),
+.BR verr (),
+.BR warn (),
+e
+.BR vwarn ()
+usano la variabile globale
+.I errno
+per trovare il messaggio di errore.
+.PP
+Le funzioni
+.BR errx ()
+e
+.BR warnx ()
+non aggiungono un messaggio di errore.
+.PP
+Le funzioni
+.BR err (),
+.BR verr (),
+.BR errx (),
+e
+.BR verrx ()
+non ritornano, ma escono con il valore dell'argomento
+.I R eval .
+.SH "ESEMPI"
+Mostra la stringa di informazione attuale errno ed esce:
+.in +0.5i
+.nf 
+
+if ((p = malloc(size)) == NULL)
+    err(1, NULL);
+if ((fd = open(file_name, O_RDONLY, 0)) == \-1)
+    err(1, "%s", file_name);
+.fi 
+.in
+.PP
+Visualizza un messaggio di errore ed esce:
+.in +0.5i
+.nf 
+
+if (tm.tm_hour < START_TIME)
+    errx(1, "too early, wait until %s", start_time_string);
+.fi 
+.in
+.PP
+Avvisa di un errore:
+.in +0.5i
+.nf 
+
+if ((fd = open(raw_device, O_RDONLY, 0)) == \-1)
+    warnx("%s: %s: trying the block device",
+	    raw_device, strerror(errno));
+if ((fd = open(block_device, O_RDONLY, 0)) == \-1)
+    err(1, "%s", block_device);
+.fi 
+.in
+.SH "CONFORME A"
+Queste funzioni sono estensioni BSD non standard.
+.\" 
+.SH "STORIA"
+.\" Le funzioni
+.\" .BR err ()
+.\" e
+.\" .BR warn ()
+.\" apparirono inizialmente in
+.\" 4.4BSD.
+.SH "VEDERE ANCHE"
+.BR error (3),
+.BR exit (3),
+.BR printf (3),
+.BR perror (3),
+.BR strerror (3)
+.SH "COLOPHON"
+Questa pagina fa parte del rilascio 2.75 del progetto
+.I man\-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man\-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

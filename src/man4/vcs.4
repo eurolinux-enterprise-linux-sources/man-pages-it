@@ -1,0 +1,169 @@
+.\" Copyright (c) 1995 James R. Van Zandt <jrv@vanzandt.mv.com>
+.\" Sat Feb 18 09:11:07 EST 1995
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\"
+.\" Modified, Sun Feb 26 15:08:05 1995, faith@cs.unc.edu
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Settembre 1996
+.\" Aggiornamento alla versione 1.15 di Alessandro Rubini (rubini@linux.it)
+.\" Maggio 1997
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.62 di Elisabetta Galli <lab@kkk.it>
+.\" luglio 2007
+.\"
+.TH VCS 4 "17 dicembre 2007" "Linux" "Linux Programmer's Manual"
+.SH NOME
+vcs, vcsa \- memoria delle console virtuali
+.SH DESCRIZIONE
+\fB/dev/vcs0\fP è un dispositivo a caratteri con numero primario 7 e
+numero secondario 0, di solito con modo 0644 e proprietario root:tty.
+Tale dispositivo fa riferimento alla memoria del terminale della console
+virtuale attualmente visulizzata sullo schermo.
+.LP
+\fB/dev/vcs[1\-63]\fP sono i dispositivi a caratteri per i terminali
+delle console virtuali, hanno numero primario 7 e numeri secondarî da 1 a 63,
+di solito con modo 0644 e proprietario root.tty.
+\fB/dev/vcsa[0\-63]\fP sono la stessa cosa, ma
+comprendono gli attributi e hanno 4 byte di prefisso
+per specificare le
+dimensioni dello schermo e la posizione del cursore: \fIrighe\fP, \fIcolonne\fP, \fIx\fP, \fIy\fP.
+(\fIx\fP = \fIy\fP = 0 nell'angolo in alto a sinistra della schermo).
+
+Quando viene caricato un font a 512 caratteri,
+si può prendere il bit in nona posizione applicando
+l'operazione \fBVT_GETHIFONTMASK\fP di
+.BR ioctl (2)
+(disponibile nel kernel Linux dalla versione 2.6.18 in avanti)
+a \fI/dev/tty[1\-63]\fP;
+il valore verrà restituito nel
+.I "unsigned short"
+a cui punta il terzo
+argomento
+.BR ioctl (2) .
+.PP
+Questi dispositivi rimpiazzano le
+.IR ioctl
+di screendump di
+.BR console (4),
+cosicché l'amministratore di
+sistema può controllare gli accessi a tale informazione usando i permessi del file system.
+.PP
+I dispositivi per le prime otto console virtuali possono essere creati con:
+
+.nf
+	for x in 0 1 2 3 4 5 6 7 8; do 
+		mknod \-m 644 /dev/vcs$x c 7 $x;
+		mknod \-m 644 /dev/vcsa$x c 7 $[$x+128];
+	done
+	chown root:tty /dev/vcs*
+.fi
+
+Non è supportata
+alcuna richiesta
+.IR ioctl (2).
+.SH FILES
+/dev/vcs[0\-63]
+.br
+/dev/vcsa[0\-63]
+.\" .SH AUTHOR
+.\" Andries Brouwer <aeb@cwi.nl>
+.SH VERSIONI
+Introdotto dalla versione 1.1.92 del kernel Linux.
+.SH ESEMPIO
+Si può fare uno screendump sulla vt3 passando a vt1 e scrivendo
+\fIcat /dev/vcs3 >foo\fP.
+Si noti che l'output non contiene caratteri di
+newline, cosicché può essere necessaria un po' di elaborazione, come
+in \fIfold \-w 81 /dev/vcs3 | lpr\fP o (orrore)
+\fIsetterm \-dump 3 \-file /proc/self/fd/1\fP
+.LP
+Il dispositivo \fI/dev/vcsa0\fP è usato per il supporto Braille.
+
+Questo programma mostra il carattere e gli attributi dello schermo
+sotto il cursore della seconda console virtuale, poi cambia il colore
+di sfondo:
+
+.nf
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/vt.h>
+
+int
+main(void)
+{
+    int fd;
+    char *device = "/dev/vcsa2";
+    char *console = "/dev/tty2";
+    struct {unsigned char lines, cols, x, y;} scrn;
+    unsigned short s;
+    unsigned short mask;
+    unsigned char ch, attrib;
+
+    fd = open(console, O_RDWR);
+    if (fd < 0) {
+        perror(console);
+	exit(EXIT_FAILURE);
+    }
+    if (ioctl(fd, VT_GETHIFONTMASK, &mask) < 0) {
+        perror("VT_GETHIFONTMASK");
+        exit(EXIT_FAILURE);
+    }
+    (void) close(fd);
+    fd = open(device, O_RDWR);
+    if (fd < 0) {
+        perror(device);
+        exit(EXIT_FAILURE);
+    }
+    (void) read(fd, &scrn, 4);
+    (void) lseek(fd, 4 + 2*(scrn.y*scrn.cols + scrn.x), 0);
+    (void) read(fd, &s, 2);
+    ch = s & 0xff;
+    if (attrib & mask)
+        ch |= 0x100;
+    attrib = ((s & ~mask) >> 8);
+    printf("ch='%c' attrib=0x%02x\\n", ch, attrib);
+    attrib ^= 0x10;
+    (void) lseek(fd, \-1, 1);
+    (void) write(fd, &attrib, 1);
+    exit(EXIT_SUCCESS);
+}
+.fi
+.SH "VEDERE ANCHE"
+.BR gpm (8),
+.BR console (4),
+.BR tty (4),
+.BR ttyS (4)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.74 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

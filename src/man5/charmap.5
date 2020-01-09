@@ -1,0 +1,136 @@
+.\" Hey emacs, this is -*- nroff -*-
+.\"
+.\" This file is part of locale(1) which displays the settings of the 
+.\" current locale.
+.\" Copyright (C) 1994  Jochen Hein (Hein@Student.TU-Clausthal.de)
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
+.\"
+.\" Traduzione by Ottavio G. Rizzo (otto@mast.queensu.ca)
+.\" Luglio 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\" Aggiornamento a man-pages-2.62 di Elisabetta Galli <lab@kkk.it>
+.\" luglio 2007
+.\"
+.TH CHARMAP 5 "28 nov 1994" "" "Linux User Manual"
+.SH NOME
+charmap \- simboli di carattere per definire codifiche di carattere
+.SH DESCRIZIONE
+Una descrizione di insiemi di caratteri (charmap) definisce un insieme
+di caratteri disponibili e la loro codifica.
+Tutti gli insiemi di caratteri supportati
+dovrebbero contenere l'
+.B insieme portatile di caratteri
+come sottoinsieme appropriato.
+.\" Non più vero:
+.\" L'insieme di caratteri portabile è definito nel file
+.\" .I /usr/lib/nls/charmap/POSIX
+.\" .I /usr/share/i18n/charmap/POSIX
+.\" a scopi di riferimento.
+.SH SINTASSI
+Il file di una charmap inizia con un'intestazione che può contenere le
+seguenti parole chiave:
+.TP
+.I <codeset>
+è seguito dal nome del codeset (insieme di codici)
+.TP
+.I <mb_cur_max>
+è seguito dal numero massimo di byte in un carattere a più byte; i
+caratteri a più byte non sono al momento supportati.
+Il valore di default
+è 1
+.TP
+.I <mb_cur_min>
+è seguito dal numero minimo di byte in un carattere: il valore
+deve
+essere minore o uguale di
+.BR mb_cur_max .
+se non specificato, di default vale
+.BR mb_cur_max .
+.TP
+.I <escape_char>
+è seguito da un carattere che viene usato come
+escape nel resto del file per indicare quei caratteri da
+interpretare specialmente. Di
+default è il
+backslash (
+.B \\\\  
+).
+.TP
+.I <comment_char>
+è seguito da un carattere che viene usato
+per indicare i commenti nel resto del file.
+Di default è il
+cancelletto (
+.B #
+).
+.PP
+La definizione vera e propria della charmap inizia con la parola chiave
+.B CHARMAP
+nella colonna 1.
+
+Le righe seguenti possono definire la codifica di un carattere in uno
+di questi due modi:
+.TP
+.I <nome simbolico> <codifica> <commenti>
+Questa forma definisce esattamente un carattere e la sua codifica.
+.TP
+.I <nome simbolico>...<nome simbolico> <codifica> <commenti>
+Questa forma definisce una coppia di caratteri, ed è
+utile solo per i
+caratteri a più byte che non sono al momento implementati.
+.PP
+L'ultima riga in un file di charmap deve contenere
+.B END CHARMAP.
+.SS Nomi simbolici
+Un
+.B nome simbolico
+per un carattere contiene solo caratteri dell'
+.B insieme portatile di caratteri.
+Il nome stesso è racchiuso fra parentesi angolari.
+I caratteri che seguono il 
+.B <carattere di escape>
+vengono interpretati letteralmente; per esempio, la sequenza
+.B '<\\\\\\\\\\\\>>'
+rappresenta il nome simbolico
+.B '\\\\>'
+racchiuso fra parentesi angolari.
+.SS Codifiche di carattere
+La
+codifica può avere una di queste tre forme:
+.TP
+.I <escape>d<numero>
+con un numero decimale
+.TP
+.I <escape>x<numero>
+con un numero esadecimale
+.TP
+.I <escape><numero>
+con un numero ottale.
+.\" FIXME - comments
+.\" FIXME - char ... char
+.SH FILE
+.I /usr/share/i18n/charmaps/*
+.\" .SH AUTORE
+.\" Jochen Hein (jochen.hein@delphi.central.de)
+.SH "CONFORME A"
+POSIX.2
+.SH "VEDERE ANCHE"
+.BR locale (1),
+.BR localedef (1),
+.BR localeconv (3),
+.BR setlocale (3),
+.BR locale (5)

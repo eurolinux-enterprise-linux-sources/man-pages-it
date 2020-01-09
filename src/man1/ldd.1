@@ -1,0 +1,81 @@
+.\" Copyright 1995-2000 David Engel (david@ods.com)
+.\" Copyright 1995 Rickard E. Faith (faith@cs.unc.edu)
+.\" Copyright 2000 Ben Collins (bcollins@debian.org)
+.\"    Redone for GLibc 2.2
+.\" Copyright 2000 Jakub Jelinek (jakub@redhat.com)
+.\"    Corrected.
+.\" Most of this was copied from the README file.
+.\" Do not restrict distribution.
+.\" May be distributed under the GNU General Public License
+.\"
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.37 di Giulio Daprelà - agosto 2006
+.\" Aggiornamento a man-pages-2.41 di Giulio Daprelà - ottobre 2006
+.\"
+.TH LDD 1 "30 ottobre 2000" "Linux Programmer's Manual"
+.SH NOME
+ldd \- stampa le dipendenze delle librerie condivise
+.SH SINTASSI
+.B ldd
+.RB [OPZIONE]...
+FILE...
+.SH DESCRIZIONE
+.B ldd
+stampa le librerie condivise richieste da ciascun programma o libreria 
+condivisa specificata sulla lnea di comando.
+.SH OPZIONI
+.TP
+.B \-\-version
+Stampa il numero di versione di
+.BR ldd .
+.TP
+.B \-v\ \-\-verbose
+Stampa tutte le informazioni, inclusa ad es. la versione.
+.TP
+.B \-u\ \-\-unused
+Stampa le dipendenze dirette inutilizzate.
+(A partire da glibc 2.3.4.)
+.TP
+.B \-d\ \-\-data\-relocs
+Effettua rilocazioni e riporta ogni oggeto mancante (solo ELF).
+.TP
+.B \-r\ \-\-function\-relocs
+Effettua rilocazioni sia per oggetti dati che per funzioni, e
+riporta tutti gli oggetti o funzioni mancanti (solo ELF).
+.TP
+.B \-\-help
+Informazioni sull'uso.
+.SH NOTE
+La versione standard di
+.B ldd
+viene con glibc2. Libc5 veniva con una versione più vecchia, ancora 
+presente in alcuni sistemi. Le lunghe opzioni non sono supportate dalla 
+versione libc5. D'alra parte la versione glibc2 non supporta
+.B \-V
+ed ha solo l'equivalente
+.BR \-\-version .
+.LP
+La versione libc5 di questo programma userà il nome esatto di una libreria data
+sulla linea di comand quando contiene un '/'; altrimenti essa
+cerca la libreria nelle locazioni standard. Per eseguirla
+su una libreria condivisa nella directory corrente, premettere al nome "./".
+.SH BACHI
+.B ldd
+non funziona con librerie condivise a.out.
+.PP
+.B ldd
+non funziona con alcuni programmi a.out molto vecchi, che sono stati
+costruiti prima che il supporto di
+.B ldd
+fosse aggiunto alle release del compilatore.
+Se si usa
+.B ldd
+in uno di questi programmi il programma tenterà di funzionare
+\fIargc\fP = 0 e i risultati saranno non prevedibili.
+.\" .SH AUTHOR
+.\" David Engel.
+.\" Roland McGrath and Ulrich Drepper.
+.SH VEDERE ANCHE
+.BR ld.so (8),
+.BR ldconfig (8)

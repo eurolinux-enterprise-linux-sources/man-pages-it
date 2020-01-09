@@ -1,0 +1,112 @@
+.\" Copyright (c) 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Traduzione in italiano di Giordano Neri (neri@cli.di.unipi.it)
+.\" Tradotto il 3 Maggio 1999
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\"	This product includes software developed by the University of
+.\"	California, Berkeley and its contributors.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"	@(#)daemon.3	8.1 (Berkeley) 6/9/93
+.\" Added mentioning of glibc weirdness wrt unistd.h. 5/11/98, Al Viro
+.TH DAEMON 3 2007-07-26 "GNU" "Linux Programmer's Manual"
+.SH NOME
+daemon \- esegue sullo sfondo
+.SH SINTASSI
+.B #include <unistd.h>
+.sp
+.BI "int daemon(int " nochdir ", int " noclose );
+.sp
+.in -4n
+Funzione di Test dei requisiti delle macro per glibc (vedere
+.BR feature_test_macros (7)):
+.in
+.sp
+.BR daemon():
+_BSD_SOURCE || (_XOPEN_SOURCE && _XOPEN_SOURCE\ <\ 500)
+.Sh DESCRIZIONE
+La funzione
+.BR daemon ()
+è utilizzata dai programmi che vogliono staccarsi dal controllo del 
+terminale e girare sullo sfondo come demoni di sistema.
+.PP
+A meno che l'argomento
+.I nochdir
+non sia impostato a zero,
+.BR daemon ()
+cambia la directory di lavoro corrente alla directory radice («/»).
+.PP
+A meno che l'argomento
+.I noclose
+non sia impostato a zero,
+.BR daemon ()
+redireziona lo standard input, lo standard output e lo standard error
+a \fI/dev/null\fP.
+.SH "VALORE RESTITUITO
+(Questa funzione esegue un fork, e se il
+.BR fork (2)
+ha successo, il genitore chiama
+.\" not .IR in order not to underline _
+.BR _exit (2),
+in modo che errori successivi vengano visti solo dal figlio.)
+In caso di successo verrà restituito zero.
+Se si verifica un errore,
+.BR daemon ()
+restituisce \-1 e imposta la variabile globale
+.I errno
+ad uno qualunque degli errori specificati per
+.BR fork (2)
+e
+.BR setsid (2).
+.SH CONFORME A
+Non presente in POSIX.1-2001.
+Una funzione simile è apparsa su BSDs.
+La funzione
+.BR daemon ()
+apparve per la prima volta in 4.4BSD.
+.SH NOTE
+L'implementazione di glibc può anche restituire \-1 se esiste
+.I /dev/null ,
+ma non sarà un dispositivo a caratteri con i numeri maggiore e minore
+che ci si aspetterebbe.
+In questo caso
+.I errno
+non ha bisogno di essere impostato.
+.SH VEDERE ANCHE
+.BR fork (2),
+.BR setsid 2
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.74 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare

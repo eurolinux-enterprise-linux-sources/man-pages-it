@@ -1,0 +1,37 @@
+Questo pacchetto contiene le man-page Linux per tutti i pacchetti.
+
+Le pagine di manuale si installeranno automaticamente nella locazione
+corretta, tuttavia il sistema continuerà a cercare le pagine in inglese,
+se non gli diciamo che vogliamo leggere quelle in italiano.
+Per far sapere a man che preferiamo leggere le pagine in italiano
+bisogna preimpostare, ad esempio in ~/.profile,
+la variabile LANG, nel seguente modo:
+
+export LANG=it_IT@euro
+
+man andrà a cercare le pagine man per prima cosa nella directory
+/usr/share/man/it, e, se non dovesse trovarle, le cercherà
+nelle directory standard /usr/share/man/man[1-8].
+
+Per l'installazione è sufficiente copiare le pagine nella directory
+corretta.
+"make install" le copierà in /usr/share/man/it/man[1-8].
+"make" sposta le pagine di questo pacchetto più vecchie di quelle
+già installate in una sottodirectory `not_installed',
+quindi rimuove le vecchie versioni (compress o no),
+comprime le pagine, e le copia in /usr/share/man/it/man[1-8].
+
+
+Notare che le pagine fornite con il pacchetto GNU fileutils sono proprio
+dei testi di aiuto (infatti, sono generate automaticamente da testi di aiuto),
+e sono peggio che inutili. Senza di esse si avrebbero delle pagine di manuale
+buone e dettagliate, come quelle che si trovano qui in man1.
+Tant'è, molte distribuzioni installano queste "man pages",
+a detrimento dei loro utenti.
+
+Copyright: queste man-page sono sottoposte a diversi copyright.
+Per le pagine POSIX, vedere il file POSIX-COPYRIGHT.
+Tutte le altre pagine sono liberamente distribuibili quando il
+sorgente nroff è incluso.
+
+Inviare correzioni e aggiunte a Elisa, lab@kkk.it

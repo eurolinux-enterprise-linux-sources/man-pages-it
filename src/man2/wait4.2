@@ -1,0 +1,152 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" Copyright (c) 1993 by Thomas Koenig (ig25@rz.uni-karlsruhe.de)
+.\" and Copyright (c) 2004 by Michael Kerrisk (mtk-manpages@gmx.net)
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\" License.
+.\"
+.\" Modified Sat Jul 24 13:32:44 1993 by Rik Faith (faith@cs.unc.edu)
+.\" Modified Mon Jun 23 14:09:52 1997 by aeb - add EINTR.
+.\" Modified Tue Jul  7 12:26:42 1998 by aeb - changed return value wait3
+.\" Modified 2004-11-11, Michael Kerrisk <mtk-manpages@gmx.net>
+.\"	Rewrote much of this page, and removed much duplicated text, 
+.\"		replacing with pointers to wait.2
+.\"
+.\" Tradotto il 9-4-1998 da Goffredo Baroncelli <kreijack@usa.net>
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.41 di Giulio Daprelà - ottobre 2006
+.\" Aggiornamento a man-pages-2.64 di Elisabetta Galli - agosto 2007
+.\"
+.TH WAIT4 2 "26 luglio 2007" "Linux" "Linux Programmer's Manual"
+.SH NOME
+wait3, wait4 \- attende che i processi cambino stato, in stile BSD
+.SH SINTASSI
+.nf
+.B #include <sys/types.h>
+.B #include <sys/time.h>
+.B #include <sys/resource.h>
+.B #include <sys/wait.h>
+.sp
+.BI "pid_t wait3(int *" "status" ", int " options ,
+.BI "            struct rusage *" rusage );
+.sp
+.BI "pid_t wait4(pid_t " pid ", int *" status ", int " options ,
+.BI "            struct rusage *" rusage );
+.fi
+.sp
+.in -4n
+Test delle funzioni e requisiti delle macro per glibc (vedere
+.BR feature_test_macros (7)):
+.in
+.sp
+.BR wait3 ():
+_BSD_SOURCE
+.br
+.BR wait4 ():
+_BSD_SOURCE || _XOPEN_SOURCE\ >=\ 500
+.SH DESCRIZIONE
+Le chiamate di sistema
+.BR wait3 ()
+e
+.BR wait4 ()
+sono simili a
+.BR waitpid (2),
+ma in aggiunta restituiscono informazioni sull'uso di risorse da parte 
+del processo figlio nella struttura puntata da
+.IR rusage .
+.PP
+Oltre ad usare l'argomento
+.I rusage ,
+la seguente chiamata
+.BR wait3 ():
+
+.nf
+
+    wait3(status, options, rusage);
+
+.fi
+è equivalente a:
+.nf
+
+    waitpid(\-1, status, options);
+
+.fi
+Similmente la seguente chiamata
+.BR wait4 ():
+
+.nf
+
+    wait4(pid, status, options, rusage);
+
+.fi
+è equivalente a:
+.nf
+
+    waitpid(pid, status, options);
+
+.fi
+In altre parole,
+.BR wait3 ()
+aspetta qualunque figlio, mentre
+.BR wait4 ()
+può essere usata per selezionare un figlio specifico, o figli, da aspettare.
+Vedere
+.BR wait (2)
+per maggiori dettagli.
+.PP
+Se
+.I rusage
+non è NULL, la
+.I struct rusage
+al quale punta verrà riempita con informazioni di autenticazione
+sul figlio.
+Vedere
+.BR getrusage (2)
+per i dettagli.
+.SH "VALORI RESTITUITI"
+Come per
+.BR waitpid (2).
+.SH ERRORI
+Come per
+.BR waitpid (2).
+.SH "CONFORME A"
+4.3BSD
+.SH NOTE
+L'inclusione di
+.I <sys/time.h>
+oggi non è richiesta, ma aumenta la portabilità.
+(In verità,
+.I <sys/resource.h>
+definisce la struttura
+.I rusage
+con i campi di tipo
+.I struct timeval
+definiti in
+.IR <sys/time.h> .)
+.SH "VEDERE ANCHE"
+.BR fork (2),
+.BR getrusage (2),
+.BR sigaction (2),
+.BR signal (2),
+.BR wait (2),
+.BR signal (7)

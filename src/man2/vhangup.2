@@ -1,0 +1,73 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" Copyright 1993 Rickard E. Faith (faith@cs.unc.edu)
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\"
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\" Modified, 27 May 2004, Michael Kerrisk <mtk-manpages@gmx.net>
+.\"     Added notes on capability requirements
+.\"
+.\" Tradotto da Goffredo Baroncelli <kreijack@usa.net> il 9/4/1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.64 di Elisabetta Galli <lab@kkk.it>
+.\" agosto 2007
+.\"
+.TH VHANGUP 2 "26 luglio 2007" "Linux" "Linux Programmer's Manual"
+.SH NOME
+vhangup \- sospende virtualmente il tty attuale
+.SH SINTASSI
+.B #include <unistd.h>
+.sp
+.B int vhangup(void);
+.sp
+.in -4n
+Test delle funzioni e requisiti delle macro per glibc (vedere
+.BR feature_test_macros (7)):
+.in
+.sp
+.ad l
+.BR vhangup ():
+_BSD_SOURCE || (_XOPEN_SOURCE && _XOPEN_SOURCE\ <\ 500)
+.ad b
+.SH DESCRIZIONE
+.BR vhangup ()
+simula un hangup sul terminale attuale.
+Questa chiamata permette ad altri utenti
+di avere un terminale \*(lqpulito\*(rq quando effettueranno il login.
+.SH "VALORI RESTITUITI"
+In caso di successo restituisce zero.
+In caso di errore restituisce \-1, e
+.I errno
+verrà impostato di conseguenza.
+.SH ERRORI
+.TP
+.B EPERM
+Il processo chiamante non ha i privilegi sufficienti per chiamare
+.BR vhangup ();
+è richiesta
+la funzionalità
+.B CAP_SYS_TTY_CONFIG.
+.SH "CONFORME A"
+Questa chiamata è specifica di Linux, e non deve essere usata in 
+programmi pensati per essere portabili.
+.SH "VEDERE ANCHE"
+.BR capabilities (7),
+.BR init (8)

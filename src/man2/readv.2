@@ -1,0 +1,226 @@
+.\" Copyright (C) 2007 Michael Kerrisk <mtk-manpages@gmx.net>
+.\" and (c) 1993 by Thomas Koenig (ig25@rz.uni-karlsruhe.de)
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\"
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\"
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\" License.
+.\" Modified Sat Jul 24 18:34:44 1993 by Rik Faith (faith@cs.unc.edu)
+.\" Merged readv.[23], 2002-10-17, aeb
+.\" 2007-04-30 mtk, A fairly major rewrite to fix errors and
+.\"     add more details.
+.\"
+.\" Traduzione da man-pages-2.16 di Giulio Daprelà <giulio@pluto.it>
+.\" dicembre 2005
+.\" Aggiornamento a man-pages-2.38 di Giulio Daprelà - agosto 2006
+.\" Aggiornamento a man-pages-2.49 di Giulio Daprelà - giugno 2007
+.\"
+.TH READV 2  2002-10-17 "" "Linux Programmer's Manual"
+.SH NAME
+readv, writev \- legge o scrive dati in buffer multipli
+.SH SINTASSI
+.nf
+.B #include <sys/uio.h>
+.sp
+.BI "ssize_t readv(int " fd ", const struct iovec *" iov ", int " iovcnt );
+.sp
+.BI "ssize_t writev(int " fd ", const struct iovec *" iov ", int " iovcnt );
+.fi
+.SH DESCRIZIONE
+La funzione
+.BR readv ()
+legge i buffer
+.I iovcnt
+dal file associato al descrittore di file
+.I fd
+nei buffer descritti da
+.IR iov 
+("scatter input").
+.PP
+La funzione
+.BR writev ()
+scrive i buffer di dati
+.I iovcnt
+descritti da
+.I iov
+nel file associato al descrittore di file
+.IR fd 
+("gather output").
+.PP
+Il puntatore
+.I iov
+punta a una matrice di
+.I iovec
+strutture,
+definite in
+.I <sys/uio.h>
+come:
+.PP
+.br
+.in +0.25in
+.nf
+struct iovec {
+    void  *iov_base;    /* Starting address */
+    size_t iov_len;     /* Number of bytes to transfer */
+};
+.fi
+.in 0.25in
+.PP
+La funzione
+.BR readv ()
+funzione esattamente come
+.BR read (2)
+tranne per il fatto che i buffer multipli sono riempiti.
+.PP
+La funzione
+.BR writev ()
+funzione esattamente come
+.BR write (2)
+tranne per il fatto che i buffer multipli sono svuotati.
+.PP
+I buffer sono processati in ordine matriciale
+Ciò significa che
+.BR readv ()
+riempie completamente
+.IR iov [0]
+prima di procedere a
+.IR iov [1],
+e così via.
+(Se ci sono dati insufficienti allora non tutti i buffer puntati da
+.I iov
+possono essere riempiti)
+Similarmente,
+.BR writev ()
+estrae l'intero contenuto di
+.IR iov [0]
+prima di procedere a
+.IR iov [1],
+e così via.
+.PP
+I trasferimenti di dati eseguiti da
+.BR readv ()
+e
+.BR writev ()
+sono atomici: il dato scritto da
+.BR writev ()
+è scritto come un blocco singolo mescolato con
+output
+provenienti da scritture in altri processi (tuttavia si veda
+.BR pipe (7)
+per un'eccezione);
+analogamente,
+.BR readv ()
+è garantito che legga un blocco contiguo di dati dal file,
+indipendentemente dalle operazioni di lettura eseguite in altri thread o
+processi che hanno descrittori di file che fanno riferimento alla stessa
+descrizione di file aperto
+(si veda
+.BR open (2)).
+.SH VALORE RESTITUITO
+In caso di successo la funzione
+.BR readv ()
+restituisce il numero di byte letti; la funzione
+.BR writev ()
+restituisce il numero di byte scritti.
+In caso di erroreviene restituito \-1 , e \fIerrno\fP è impostato
+appropriatamente.
+.SH ERRORI
+Gli errori sono gli stessi di
+.BR read (2)
+e
+.BR write (2).
+Inoltre è definito il seguente errore:
+.TP
+.B EINVAL
+La somma dei valori
+.I iov_len
+supera un valore
+.I ssize_t .
+Oppure, il vettore conteggio \fIiovcnt\fR è meno di zero o maggiore del massimo
+permesso.
+.SH CONFORME A
+4.4BSD (le funzioni
+.BR readv ()
+e
+.BR writev ()
+sono apparse per la prima volta in 4.2BSD), POSIX.1-2001.
+Linux libc5 usava \fIsize_t\fR come tipo per il parametro \fIiovcnt\fR ,
+e \fIint\fP come tipo restituito per queste funzioni.
+.\" The readv/writev system calls were buggy before Linux 1.3.40.
+.\" (Says release.libc.)
+.SH NOTE LINUX
+POSIX.1-2001 permette un'implementazione per porre un limite al numero
+di elementi che possono essere passati in
+.IR iov .
+Un'implementazione può pubblicizzare i suoi limiti impostando
+.B IOV_MAX
+in
+.IR <limits.h>
+o in run time attraverso il valore restituito da
+.IR sysconf(_SC_IOV_MAX) .
+Su Linux, il limite pubblicizzato per questo meccanismo è 1024,
+che è il limite reale del kernel.
+Tuttavia, le funzioni wrapper glibc fanno del lavoro extra se
+rilevano che la chiamata di sistema del kernel sottostante ha fallito
+perché i suoi limiti sono stati superati.
+Nel caso di
+.BR readv ()
+la funzione wrapper alloca un buffer temporaneo abbastanza grande
+per tutti gli elementi specificati da
+.IR iov ,
+passa questo buffer in una chiamata a
+.BR read (),
+copia i dati dal buffer alle locazioni specificate dai campi
+.I iov_base
+degli elementi di
+.IR iov ,
+e infine libera il buffer.
+La funzione wrapper per
+.BR writev ()
+esegue la task analoga usando un buffer temporaneo e una chiamata a
+.BR write ().
+.SH BUG
+Non è consigliabile mischiare chiamate a funzioni come
+.BR readv ()
+o
+.BR writev (),
+che operano sui descrittori dei file, con le funzioni della libreria stdio;
+i risultati sarebbero indefiniti e probabilmente on ciò che si vuole.
+.SH ESEMPIO
+Il seguente codice di esempio mostra l'uso di
+.BR writev ():
+
+.in +0.5i
+.nf
+char *str0 = "hello ";
+char *str1 = "world\\n";
+struct iovec iov[2];
+ssize_t nwritten;
+
+iov[0].iov_base = str0;
+iov[0].iov_len = strlen(str0);
+iov[1].iov_base = str1;
+iov[1].iov_len = strlen(str1);
+
+nwritten = writev(STDOUT_FILENO, iov, 2);
+.fi
+.in
+.SH VEDERE ANCHE
+.BR read (2),
+.BR write (2)

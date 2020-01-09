@@ -1,0 +1,364 @@
+.\" Traduzione da bison 2.0 di Giulio Daprelà <giulio@pluto.it>
+.\" gennaio 2006
+.TH BISON 1 local
+.SH NOME
+bison \- Generatore GNU di analizzatore sintattico (sostituto di yacc)
+.SH SINTASSI
+.B bison
+[
+.BI \-b  " file-prefix"
+] [
+.BI \-\-file-prefix= file-prefix
+] [
+.B \-d
+] [
+.BI \-\-defines= defines-file
+] [
+.B \-g
+] [
+.BI \-\-graph= graph-file
+] [
+.B \-k
+] [
+.B \-\-token-table
+] [
+.B \-l
+] [
+.B \-\-no-lines
+] [
+.B \-n
+] [
+.B \-\-no-parser
+] [
+.BI \-o " outfile"
+] [
+.BI \-\-output-file= outfile
+] [
+.BI \-p " prefix"
+] [
+.BI \-\-name-prefix= prefix
+] [
+.B \-t
+] [
+.B \-\-debug
+] [
+.B \-v
+] [
+.B \-\-verbose
+] [
+.B \-V
+] [
+.B \-\-version
+] [
+.B \-y
+] [
+.B \-\-yacc
+] [
+.B \-h
+] [
+.B \-\-help
+] [
+.B \-\-fixed-output-files
+]
+file
+.br
+.B yacc
+[
+.I "opzioni e operandi similari"
+]
+.SH DESCRIZIONE
+.I Bison
+è un generatore di analizzatore sintattico nello stile di
+.IR yacc (1).
+Può essere retrocompatibile con file di input disegnati
+per
+.IR yacc .
+.PP
+I file di input possono seguire la convenzione di
+.I yacc
+di terminare con
+.BR .y .
+Diversamente da
+.IR yacc ,
+i file generati non hanno nomi fissi, ma usano invece il prefisso
+del file di input.
+Inoltre, se c'è la necessità di inserire codice
+.I C++
+nel file di input, si può terminare il nome con un'estensione in stile C++
+(.ypp o .y++), e bison seguirà la propria estensione per nominare il
+file di output (.cpp o .c++).
+Per esempio, un file di descrizione grammaticale chiamato
+.B parse.yxx
+produrrà l'analizzatore generato in un file chiamato
+.BR parse.tab.cxx ,
+invece di quello usato da
+.IR yacc
+.B y.tab.c
+o dalle vecchie versioni di
+.I Bison
+.BR parse.tab.c .
+.PP
+Questa descrizione delle opzioni che può essere data a
+.I bison
+è adattata dal nodo
+.B Invocation
+nel manuale
+.B bison.texinfo,
+che può essere considerato autorevole.
+.PP
+.I Bison
+supporta entrambe le opzioni tradizionali a singola lettera e nomi
+mnemonici di opzioni lunghe. I nomi di opzioni lunghe sono indicati con
+.B \-\-
+invece che
+.BR \- .
+Le abbreviazioni per nomi di opzioni sono permesse a patto che siano
+uniche. Quando un'opzione lunga prende un argomento, come
+.BR \-\-file-prefix ,
+connettere il nome di opzione e l'argomento con
+.BR = .
+.SS OPZIONI
+.TP
+.BI \-b " file-prefix"
+.br
+.ns
+.TP
+.BI \-\-file-prefix= file-prefix
+Specifica un prefisso da usare per tutti i nomi dei file di output di
+.I bison.
+I nomi sono scelti come se il file di input si chiamasse
+\fIfile-prefix\fP\fB.c\fP.
+.TP
+.B \-d
+.br
+.ns
+Scrive un file di output extra contenente definizioni macro per i nomi
+di tipo token definiti nel tipo di valore di grammatica e semantica
+.BR YYSTYPE ,
+oltre ad alcune dichiarazioni di variabili
+.B esterne.
+.sp
+Se il file di output dell'analizzatore è chiamato
+.IB name .c
+allora questo file è chiamato
+\fIname\fP\fB.h\fP.
+.sp
+Questo file di output è essenziale se si desidera mettere la definizione di
+.B yylex
+in un file sorgente separato, poiché
+.B yylex
+deve poter fare riferimento ai codici di tipo token e alla variabile
+.BR yylval .
+.TP
+.BI \-\-defines= defines-file
+Il comportamento di
+.B \-\-defines
+è lo stesso dell'opzione
+.B \-d
+La sola differenza è che ha un argomento opzionale che è il
+nome del nome del file di output.
+.TP
+.BI \-g
+.br
+.ns
+Emette una definizione VCG dell'autome grammaticale LALR(1) calcolata da
+Bison. Se il file grammaticale è
+.BR foo.y
+, il file di output VCG sarà
+.BR foo.vcg .
+.TP
+.BI \-\-graph= graph-file
+Il comportamento di
+.BI \-\-graph
+è lo stesso dell'opzione
+.BI \-g
+. La sola differenza è che ha un argomento opzionale che
+è il nome del file di output graph.
+.TP
+.B \-k
+.br
+.ns
+.TP
+.B \-\-token-table
+Questa opzione fa sì che il
+.IB nome .tab.c
+di output includa un elenco dei nomi
+token ordinati secondo i loro numeri token; questo è definito nell'array
+.IR yytname .
+Sono generate anche
+#definizioni per
+.IR YYNTOKENS ,
+.IR YYNNTS ,
+.IR YYNRULES ,
+e
+.IR YYNSTATES .
+.TP
+.B \-l
+.br
+.ns
+.TP
+.B \-\-no-lines
+Non mette alcuna
+.B #linea
+dei comandi del preprocessore nel file dell'analizzatore sintattico.
+Normalmente
+.I bison
+li mette nel file dell'analizzatore in modo tale che il compilatore C
+e i debugger associeranno gli errori al rpoprio file sorgente, il
+file grammaticale. questa opzione fa sì che essi associno gli errori con il
+file analizzatore, trattandolo come un file sorgente indipendente in sè stesso.
+.TP
+.B \-n
+.br
+.ns
+.TP
+.B \-\-no-parser
+Non genera il codice analizzatore nell'output; genera solo
+dichiarazioni. Il file generato con
+.IB nome .tab.c
+avrà solo dichiarazioni di costanti. In aggiunta è generato un file di
+.IB nome .act
+contenente una dichiarazione contenente tutte le
+azioni tradotte.
+.TP
+.BI \-o " outfile"
+.br
+.ns
+.TP
+.BI \-\-output-file= outfile
+Specifica il nome
+.I outfile
+per il file analizzatore.
+.sp
+Gli altri nomi di file di output sono costruiti da
+.I outfile
+come descritto nelle opzioni
+.B \-v
+e
+.B \-d
+.
+.TP
+.BI \-p " prefix"
+.br
+.ns
+.TP
+.BI \-\-name-prefix= prefix
+Rinomina i somboli esterni usati nell'analizzatore in modo che essi inizino con
+.I prefix
+invece che
+.BR yy .
+L'elenco preciso dei simboli rinominati è
+.BR yyparse ,
+.BR yylex ,
+.BR yyerror ,
+.BR yylval ,
+.BR yychar ,
+e
+.BR yydebug .
+.sp
+Per esempio, se si usa
+.BR "\-p c" ,
+i nomi divengono
+.BR cparse ,
+.BR clex ,
+e così via.
+.TP
+.B \-t
+.br
+.ns
+.TP
+.B \-\-debug
+Nel file analizzatore definisce la macro
+.B YYDEBUG
+a 1 se non è già definita,
+in modo che vengano compilati i servizi di debugging.
+.TP
+.B \-v
+.br
+.ns
+.TP
+.B \-\-verbose
+Scrive un file di output extra contenente descrizioni prolisse degli
+stati dell'analizzatore e cosa è fatto per ciascun tipo di token look-ahead
+in quello stato.
+.sp
+Questo file descrive anche tutti i conflitti, sia quelli risolti dalla
+precedenza degli operatori sia quelli irrisolti.
+.sp
+Il nome dei file è fatto rimuovendo
+.B .tab.c
+o
+.B .c
+dal nome del file di output dell'analizzatore, e aggiungendo invece
+.B .output
+.
+.sp
+Tuttavia, se il file di input è
+.BR foo.y ,
+allora il file analizzatore parser è chiamato
+.B foo.tab.c
+per default. Come conseguenza, il file di output
+prolisso è chiamato
+.BR foo.output .
+.TP
+.B \-V
+.br
+.ns
+.TP
+.B \-\-version
+Stampa il numero di versione di
+.I bison
+ed esce.
+.TP
+.B \-h
+.br
+.ns
+.TP
+.B \-\-help
+Stampa un sommario delle opzioni di
+.I bison
+ed esce.
+.TP
+.B \-y
+.br
+.ns
+.TP
+.B \-\-yacc
+.br
+.ns
+.TP
+.B \-\-fixed-output-files
+Equivalente a
+.BR "\-o y.tab.c" ;
+il file analizzatore di output è chiamato
+.BR y.tab.c ,
+e gli altri output sono chiamati
+.B y.output
+e
+.BR y.tab.h .
+Lo scopo di questa opzione è di imitare le convenzioni di
+.IR yacc
+sul nome dei file di output.
+Pertanto il seguente script di shell può essere un sostituto di
+.I yacc
+ed è spesso installato come
+.IR yacc :
+.sp
+.RS
+.ft B
+bison \-y "$@"
+.ft R
+.sp
+.RE
+.SH VEDERE ANCHE
+.IR yacc (1)
+.br
+Il
+.IR "Bison Reference Manual" ,
+incluso come file
+.B bison.texinfo
+nella distribuzione sorgente di
+.I bison
+.
+.SH DIAGNOSTICA
+Autoesplicativa.

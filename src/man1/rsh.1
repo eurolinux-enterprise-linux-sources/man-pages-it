@@ -1,0 +1,186 @@
+.\" Copyright (c) 1983, 1990, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" Traduzione da inetutils-1.4.2 di Giulio Daprelà <giulio@pluto.it>
+.\" gennaio 2006
+.\"
+.\"	@(#)rsh.1	8.2 (Berkeley) 4/29/95
+.\"
+.Dd 29 aprile 1995
+.Dt RSH 1
+.Os BSD 4.2
+.Sh NOME
+.Nm rsh
+.Nd shell remota
+.Sh SINTASSI
+.Nm rsh
+.Op Fl Kdnx
+.Op Fl k Ar realm
+.Op Fl l Ar username
+.Ar host
+.Nm rsh
+.Op Fl Kdnx
+.Op Fl k Ar realm
+.Ar username@host
+.Op command
+.Sh DESCRIZIONE
+.Nm Rsh
+esegue
+.Ar comandi
+sull'
+.Ar host  .
+.Pp
+.Nm Rsh
+copia il suo standard input sul comando remoto, lo standard
+output del comando remoto sul suo standard output, e lo
+standard error del comando remoto sul suo standard error.
+I segnali di interrupt, quit e terminate sono propagati al comando 
+remoto;
+.Nm rsh
+nrmalmente termina quando termina il comando remoto.
+Le opzioni sono le seguenti:
+.Bl -tag -width flag
+.It Fl K
+L'opzione
+.Fl K
+disattiva l'autenticazione Kerberos.
+.It Fl d
+L'opzione
+.Fl d
+attiva il socket debugging (usando
+.Xr setsockopt  2  )
+sui socket
+.Tn TCP
+usati per la comunicazione con l'host remoto.
+.It Fl k
+L'opzione
+.Fl k
+fa sì che
+.Nm rsh
+ottenga ticket per l'host remoto in
+.Ar realm
+invece di ottenerlo come determinato da
+.Xr krb_realmofhost  3  .
+.It Fl l
+Per default, il nome utente remoto è lo stesso del nome utente locale.
+L'opzione
+.Fl l
+o il formato
+.Pa username@host
+permette la specificazione del nome remoto.
+E' usata l'autenticazione Kerberos, e l'autorizzazione è determinata 
+come in
+.Xr rlogin  1  .
+.It Fl n
+L'opzione
+.Fl n
+redirige l'input dal dispositivo speciale
+.Pa /dev/null
+(vedere la sezione
+.Sx BUG
+di questa pagine manuale).
+.It Fl x
+L'opzione
+.Fl x
+attiva la cifratura
+.Tn DES
+per tutti i dati scambiati.
+Questo potrebbe introdurre un ritardo significativo nel tempo di 
+risposta.
+.El
+.Pp
+Se non viene specificato alcun
+.Ar comando
+il login sull'host remoto avverrà usando
+.Xr rlogin  1  .
+.Pp
+I metacaratteri shell che non sono quotati sono interpretati sulla 
+macchina locale, mentre i metacaratteri quotati sono interpretati sulla 
+macchina remota. Per esempio, il comando
+.Pp
+.Dl rsh otherhost cat remotefile >> localfile
+.Pp
+appende il file remoto
+.Ar remotefile
+al file locale
+.Ar localfile ,
+mentre
+.Pp
+.Dl rsh otherhost cat remotefile \&">>\&" other_remotefile
+.Pp
+appende
+.Ar remotefile
+a
+.Ar other_remotefile .
+.\" .Pp
+.\" Many sites specify a large number of host names as commands in the
+.\" directory /usr/hosts.
+.\" If this directory is included in your search path, you can use the
+.\" shorthand ``host command'' for the longer form ``rsh host command''.
+.Sh FILE
+.Bl -tag -width /etc/hosts -compact
+.It Pa /etc/hosts
+.El
+.Sh VEDERE ANCHE
+.Xr rlogin 1 ,
+.Xr kerberos 3 ,
+.Xr krb_sendauth 3 ,
+.Xr krb_realmofhost 3
+.Sh HISTORY
+Il comando
+.Nm rsh
+è apparso nella
+.Bx 4.2 .
+.Sh BUG
+Se si sta usando
+.Xr csh  1
+e si mette un
+.Nm rsh
+in background senza redirigere il suo input fuori dal terminale,
+esso si bloccherà anche se non viene postata nessuna lettura dal comando 
+remoto.
+Se non si desidera nessun input si può redirigere l'input di
+.Nm rsh
+verso
+.Pa /dev/null
+usando l'opzione
+.Fl n .
+.Pp
+Non si può eseguire un comando interattivo
+(come
+.Xr rogue  6
+o
+.Xr vi  1  )
+usando
+.Nm rsh  ;
+usare invece
+.Xr rlogin  1 .
+.Pp
+I segnali di stop arrestano solo il processo di
+.Nm rsh
+locale; ciò è intuitivamente sbagliato, ma attualmente difficile da 
+correggere per ragioni troppo complesse da spiegare qui.

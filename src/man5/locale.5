@@ -1,0 +1,584 @@
+.\" Hey Emacs, this is -*- nroff -*-
+.\"
+.\" This file is part of locale(1) which displays the settings of the
+.\" current locale.
+.\" Copyright (C) 1994  Jochen Hein (Hein@Student.TU-Clausthal.de)
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
+.\"
+.\" Traduzione by Ottavio G. Rizzo (otto@mast.queensu.ca)
+.\" Luglio 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\"
+.TH locale 5 "9 nov 1994" "National Language Support" "Linux User Manual"
+.SH NOME
+locale \- Descrive un file di definizione di localizzazione
+.SH DESCRIZIONE
+Un file di definizione di
+.B localizzazione
+contiene tutte le informazioni necessarie per essere convertito dal
+comando 
+.BR localedef (1)
+in un database binario di localizzazione.
+
+Il file di definizione è formato da sezioni, ciascuna delle quali
+descrive in dettaglio una categoria di localizzazione.
+.SH SINTASSI
+Il file di definizione di localizzazione inizia con un'intestazione
+che può essere
+formata da queste parole chiave:
+.TP
+.I <escape_char>
+è seguita da un carattere che viene usato come escape nel resto del
+file per indicare quei caratteri da interpretare in modo speciale. Il
+default è il backslash (
+.B \\\\  
+).
+.TP
+.I <comment_char>
+è seguita da un carattere che viene usato per indicare i commenti nel
+resto del file; per default è il cancelletto (#)
+
+.PP
+La definizione di localizzazione è suddivisa in una parte per ogni categoria
+di localizzazione. Ogni parte può essere copiata da un'altra localizzazione
+preesistente o può essere definita ex novo. Se la categoria dovesse
+essere copiata, l'unica parola chiave ad essere valida nella
+definizione sarebbe
+.B copy
+seguita dal nome della localizzazione che verrebbe copiata.
+
+.SS LC_CTYPE
+La definizione della categoria
+.B LC_CTYPE
+inizia con la stringa
+.I LC_CTYPE
+nella prima colonna.
+
+Sono ammesse le sequenti parole chiavi:
+
+.TP
+.I upper
+seguita da un elenco di lettere maiuscole. Le lettere da
+.B A
+a
+.B Z
+sono inculse automaticamente. Inoltre non sono permessi caratteri 
+specificati come
+.BR cntrl ,
+.BR digit ,
+.BR punct ,
+o
+.B space.
+
+
+.TP
+.I lower
+seguita da un elenco di lettere minuscole. Le lettere da
+.B a
+a
+.B z
+Sono incluse automaticamente. Inoltre non sono permessi caratteri 
+specificati come
+.BR cntrl ,
+.BR digit ,
+.BR punct ,
+o
+.B space.
+
+.TP
+.I alpha
+seguita da un elenco di lettere. Ttti i caratteri specificati come
+.B upper
+o
+.B lower
+Sono inclusi automaticamente. Inoltre non sono permessi caratteri
+.BR cntrl ,
+.BR digit ,
+.BR punct ,
+o
+.B space.
+
+.TP
+.I digit
+seguita dai caratteri classificati come cifre. Sono ammesse solo le
+cifre
+.B 0
+a
+.B 9.
+Esse sono incluse per default in questa classe.
+
+.TP
+.I space
+seguita da un elenco di caratteri definiti come white-space
+(spazio). Non sono ammessi caratteri specificati anche come
+.BR upper ,
+.BR lower ,
+.BR alpha ,
+.BR digit ,
+.BR graph ,
+o
+.B xdigit
+I caratteri
+.BR <space> ,
+.BR <form-feed> ,
+.BR <newline> ,
+.BR <carriage-return> ,
+.BR <tab> ,
+e
+.B <vertical-tab>
+sono automaticamente inclusi.
+
+.TP
+.I cntrl
+seguita da un elenco di caratteri di controllo. Non sono ammessi
+caratteri specificati anche come
+.BR upper ,
+.BR lower ,
+.BR alpha ,
+.BR digit ,
+.BR punct ,
+.BR graph ,
+.BR print ,
+o
+.B xdigit.
+
+.TP
+.I punct
+Seguito da un elenco di caratteri di punteggiatura. Non sono ammessi
+caratteri specificati anche come
+.BR upper ,
+.BR lower ,
+.BR alpha ,
+.BR digit ,
+.BR cntrl ,
+.BR xdigit ,
+o lo
+.B <spazio>.
+
+.TP
+.I graph
+seguita da un elenco di caratteri stampabili (printable), escluso
+.B <spazio>.
+I caratteri specificati come
+.BR upper ,
+.BR lower ,
+.BR alpha ,
+.BR digit ,
+.BR xdigit ,
+e
+.B punct
+sono automaticamente inclusi.
+Non sono ammessi caratteri specificati come
+.B cntrl.
+
+.TP
+.I print
+seguita da un elenco di caratteri stampabili, incluso 
+.B <spazio>.
+I caratteri definiti come
+.BR upper ,
+.BR lower ,
+.BR alpha ,
+.BR digit ,
+.BR xdigit ,
+.BR punct ,
+e lo
+.B <spazio>
+sono automaticamente inclusi.
+Non sono ammessi caratteri specificati anche come
+.B cntrl.
+
+.TP
+.I xdigit
+seguita da un elenco di caratteri classificati come cifre
+esadecimali. Devono essere incluse le cifre decimali seguite da uno o
+più insiemi di sei caratteri in ordine crescente. Sono inclusi di
+default gli intervalli:
+Da
+.B 0
+a
+.BR 9 ,
+da
+.B a
+a
+.BR f ,
+da
+.B A
+a
+.BR F .
+
+.TP
+.I blank
+seguita da un elenco di caratteri definiti come
+.BR blank .
+I caratteri
+.B <spazio>
+e
+.B <tab>
+Sono automaticamente inclusi.
+
+.TP
+.I toupper
+seguita da un elenco di applicazioni da minuscole a maiuscole. Ogni
+applicazione è formata da una coppia di minuscole e maiuscole separate
+con una
+.B ,
+e racchiuse fra parentesi tonde. I componenti dell'elenco sono
+separati con punti e virgola.
+
+.TP
+.I tolower
+seguita da un elenco di applicazioni da maiuscole a minuscole. Se la
+parola chiave tolower non è presente, viene usato l'inverso
+dell'elenco di toupper.
+
+
+.PP
+La definizione di
+.B LC_CTYPE
+termina con la stringa
+.I END LC_CYTPE.
+
+.SS LC_COLLATE
+La categoria
+.B LC_COLLATE 
+definisce le regole per la collazione dei caratteri. Non
+tutte le opzioni di POSIX sono implementate a causa di limitazioni di
+libc.
+
+La definizione inizia con la stringa
+.B LC_COLLATE
+nella prima colonna.
+
+Sono ammesse le sequenti parole chiave:
+
+.TP
+.I collating-element
+
+.TP
+.I collating-symbol
+
+.PP
+La definizione dell'ordinamento inizia con la riga:
+.TP
+.I order_start
+.PP
+seguita da un elenco di parole chiave:
+.BR forward ,
+.BR backward ,
+o
+.BR position .
+La definizione dell'ordinamento è formata da righe che descrivono
+l'ordinamento e termina con la parola chiave
+.TP
+.IR order_end .
+.PP
+
+Per maggiori dettagli, si vedano le sorgenti in
+.B /usr/lib/nls/src
+in particolare gli esempi
+.BR POSIX ,
+.B Example
+e
+.B Example2
+
+.PP
+La definizione di
+.B LC_COLLATE
+termina con la stringa
+.IR END LC_COLLATE .
+
+.SS LC_MONETARY
+La definizione inizia con la stringa
+.B LC_MONETARY
+nella prima colonna.
+ 
+Sono ammesse le sequenti parole chiave:
+
+.TP
+.I int_curr_symbol
+seguita dal simbolo monetario internazionale. Deve essere una stringa
+di quattro caratteri contenente il simbolo monetario internazionale
+come definito dallo standard ISO 4217 (tre caratteri) seguito da un
+separatore.
+.TP
+.I currency_symbol
+seguita dal simbolo monetario locale.
+.TP
+.I mon_decimal_point
+seguita dalla stringa da usarsi come separatore decimale nella
+formattazione di valori monetari.
+.TP
+.I mon_thousands_sep
+seguita dalla stringa da usarsi come separatore di gruppo nella
+formattazione di valori monetari.
+.TP
+.I mon_grouping
+seguita da una stringa che descrive la formattazione dei valori
+monetari.
+.TP
+.I positive_sign
+seguita da una stringa da usarsi per indicare un segno positivo per
+valori monetari.
+.TP
+.I negative_sign
+seguita da una stringa da usarsi per indicare un segno negativo per
+valori monetari.
+.TP
+.I int_frac_digits
+seguita dal numero di cifre decimali da usarsi formattando con
+.BR int_curr_symbol.
+.TP
+.I frac_digits
+seguita dal numero di cifre decimali da usarsi formattando con
+.BR currency_symbol.
+.TP
+.I p_cs_precedes
+seguita da un intero impostato a
+.B 1
+se il
+.I currency_symbol
+o l'
+.I int_curr_symbol
+deve precedere il valore monetario formattato oppure impostato a
+.B 0
+se il simbolo segue il valore.
+.TP
+.I p_sep_by_space
+seguita da un intero.
+.RS
+.TP
+.B 0
+significa che non bisogna stampare nessuno spazio fra il simbolo ed il
+valore.
+.TP
+.B 1
+significa che bisogna stampare uno spazio fra il simbolo ed il valore.
+.TP
+.B 2
+significa che bisogna stampare uno spazio fra il simbolo e la stringa
+del segno, se adiacenti.
+.RE
+.TP
+.I n_cs_precedes
+.RS
+.TP
+.B 0 
+- il simbolo segue il valore
+.TP
+.B 1
+- il simbolo precede il valore
+.RE
+.TP
+.I n_sep_by_space
+Un intero impostato a
+.B 0
+se nessuno spazio separa il
+.I currency_symbol
+né l'
+.I int_curr_symbol
+dal valore nel caso di una quantità negativa, impostato a
+.B 1
+se uno spazio separa il simbolo dal valore e impostato a 
+.B 2
+se uno spazio separa il simbolo e la stringa del segno, se adiacenti.
+.TP
+.I p_sign_posn
+.RS
+.TP
+.B 0
+Delle parentesi racchiudono la quantità e il
+.I currency_symbol
+o l'
+.IR int_curr_symbol.
+.TP
+.B 1
+La stringa di segno precede la quantità e il
+.I currency_symbol
+o l'
+.IR int_curr_symbol.
+.TP
+.B 2
+La stringa di segno segue la quantità e il
+.I currency_symbol
+o l'
+.IR int_curr_symbol.
+.TP
+.B 3
+La stringa di segno precede il
+.I currency_symbol
+o l'
+.IR int_curr_symbol.
+.TP
+.B 4
+La stringa di segno segue il
+.I currency_symbol
+o l'
+.IR int_curr_symbol.
+.RE
+.TP
+.I n_sign_posn
+.RS
+.TP
+.B 0
+Delle parentesi racchiudono la quantità e il
+.I currency_symbol
+o l'
+.IR int_curr_symbol.
+.TP
+.B 1
+La stringa di segno precede la quantità e il
+.I currency_symbol
+o l'
+.IR int_curr_symbol.
+.TP
+.B 2
+La stringa di segno segue la quantità e il
+.I currency_symbol
+o l'
+.IR int_curr_symbol.
+.TP
+.B 3
+La stringa di segno precede il
+.I currency_symbol
+o l'
+.IR int_curr_symbol.
+.TP
+.B 4
+La stringa di segno segue il
+.I currency_symbol
+o l'
+.IR int_curr_symbol.
+.RE
+.PP
+La definizione di
+.B LC_MONETARY
+termina con la stringa
+.I END LC_MONETARY.
+
+.SS LC_NUMERIC
+La definizione inizia con la stringa
+.B LC_NUMERIC
+nella prima colonna.
+
+Sono ammesse le sequenti parole chiave:
+
+.TP
+.I decimal_point
+seguita dalla stringa da usarsi come separatore decimale nella
+formattazione di valori numerici.
+.TP
+.I thousands_sep
+seguita dalla stringa da usarsi come separatore di gruppo nella
+formattazione di valori numerici.
+.TP
+.I grouping
+seguita da una stringa che descrive la formattazione dei valori
+numerici.
+.PP
+La definizione di
+.B LC_NUMERIC
+termina con la stringa
+.I END LC_NUMERIC.
+
+.SS LC_TIME
+La definizione inizia con la stringa
+.B LC_TIME
+nella prima colonna.
+
+Sono ammesse le sequenti parole chiave:
+
+.TP
+.I abday
+seguita da un elenco di abbreviazione dei giorni della
+settimana. L'elenco incomincia con la domenica (o con la sua
+traduzione).
+.TP
+.I day
+seguita da un elenco dei giorni della settimana. L'elenco incomincia
+con la domenica.
+.TP
+.I abmon
+seguita da un elenco di abbreviazione dei mesi.
+.TP
+.I mon
+seguita da un elenco dei mesi.
+.TP
+.I am_pm
+La rappresentazione appropriata delle stringhe
+.B am
+(ante meridiam) e
+.B pm
+(post meridiam).
+.TP
+.I d_t_fmt
+Il formato appropriato per la data e per l'ora.
+.TP
+.I d_fmt
+Il formato appropriato per la data.
+.TP
+.I t_fmt
+Il formato appropriato per l'ora.
+.TP
+.I t_fmt_ampm
+Il formato appropriato per l'ora col sistema a 12 ore.
+.PP
+La definizione di
+.B LC_TIME
+termina con la stringa
+.I END LC_TIME.
+
+.SS LC_MESSAGES
+La definizione inizia con la stringa
+.B LC_MESSAGES
+nella prima colonna.
+
+Sono ammesse le sequenti parole chiave:
+
+.TP
+.I yesexpr
+seguita da un'espressione regolare che descrive le possibili risposte
+positive.
+.TP
+.I noexpr
+seguita da un'espressione regolare che descrive le possibili risposte
+negative.
+
+.PP
+La definizione di
+.B LC_MESSAGES
+termina con la stringa
+.I END LC_MESSAGES.
+
+Si consulti lo standard POSIX.2 per i dettagli.
+.SH FILE
+/usr/lib/locale/
+\- database per le impostazioni correnti di localizzazione per quella
+categoria
+/usr/lib/nls/charmap/* \- file con le mappe di caratteri
+.SH BACHI
+Questa pagina di manuale non è completa.
+.\" .SH AUTORE
+.\" Jochen Hein (Hein@Student.TU-Clausthal.de)
+.SH CONFORME A
+POSIX.2
+.SH VEDERE ANCHE
+.BR locale (1),
+.BR localedef (1),
+.BR localeconv (3),
+.BR setlocale (3),
+.BR charmap (5)

@@ -1,0 +1,610 @@
+.\" 
+.\" $Id: ipfw.4,v 1.9 1996/06/17 10:13:19 jos Exp $
+.\" 
+.\" 
+.\" Copyright (c) 1995,1996 by X/OS Experts in Open Systems BV.
+.\" All rights reserved.
+.\" 
+.\" Author: Jos Vos <jos@xos.nl>
+.\" 
+.\" X/OS Experts in Open Systems BV
+.\" Kruislaan 419
+.\" 1098 VA  Amsterdam
+.\" The Netherlands
+.\" 
+.\" E-mail: info@xos.nl
+.\" WWW:    http://www.xos.nl/
+.\" 
+.\" 
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\" 
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\" 
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\" 
+.\" Traduzione italiana di Alessandro Rubini (rubini@linux.it)
+.\" Maggio 1997
+.TH "IPFW" "4" "17 giugno 1996" "" ""
+.SH "NOME"
+ipfw \- firewall e autenticazione per IP
+.SH "SINTASSI"
+.BR "#include <sys/types.h>"
+.br 
+.BR "#include <sys/socket.h>"
+.br 
+.BR "#include <netinet/in.h>"
+.br 
+.BR "#include <linux/ip.h>"
+.br 
+.BR "#include <linux/tcp.h>"
+.br 
+.BR "#include <linux/udp.h>"
+.br 
+.BR "#include <linux/icmp.h>"
+.br 
+.BR "#include <linux/if.h>"
+.br 
+.BR "#include <linux/ip_fw.h>"
+.sp 0.75
+.BI "int setsockopt (int " socket ", IPPROTO_IP, int " command ", void *" data ", int " length ")"
+.SH "DESCRIZIONE"
+Il firewall IP e le capacità di autenticazione
+del kernel Linux offrono un meccanismo per l'autenticazione dei
+pacchetti IP, per costruire firewall basati sul filtraggio dei pacchetti,
+per costruire firewall basati sul proxy trasparerente (ridirigendo
+i pacchetti ad un socket locale), e per mascherare i pacchetti inoltrati.
+La gestione di queste funzionalità è basata su quattro liste separate
+mantenute nel kernel, ciascuna delle quali contiene zero o più regole.
+Ogni regola specifica le informazioni sugli indirizzi del mittente
+e del destinatario, i protocolli, i numeri di porta e altre
+caratteristiche.
+Un pacchetto corrisponderà ad una regola quando le caratteristiche della
+regola corrispondono a quelle del pacchetto IP.
+Le quattro categorie di regole sono:
+.TP 
+Accounting
+Le regole di autenticazione sono usate per tutti i pacchetti IP che vengono trasmessi
+o ricevuti tramite una delle interfacce di rete locali.
+Ogni pacchetto viene confrontato con tutte le regole di questa lista, e ogni
+corrispondenza causerà un incremento nei contatori di pacchetti
+e di byte associati con quella regola.
+.TP 
+Firewall di ingresso
+Queste regole gestiscono l'accettazione di pacchetti in entrata.
+Tutti i pacchetti che entrano attraverso una delle interfacce di rete locali
+sono confrontati con le regole del firewall di ingresso.
+La prima regola che corrisponde ad un pacchetto determina il comportamento da tenere
+e provoca un aggiornamento dei contatori di pacchetti e di byte per la regola.
+Quando non vengono trovate corrispondenze, viene usata la politica predefinita per il
+firewall di ingresso.
+.TP 
+Firewall di uscita
+Queste regole definiscono i permessi per la trasmissione di pacchetti IP.
+Tutti i pacchetti pronti per essere trasmessi attraverso una delle
+interfacce di rete locali vengono confrontati con le regole del firewall di uscita.
+La prima regola che corrisponde ad un pacchetto determina il comportamento da tenere
+e provoca un aggioranamento dei contatori di pacchetti e di byte.
+Quando non vengono trovate corrispondenze, viene usata la politica predefinita per il
+firewall di uscita.
+.TP 
+Firewall di inoltro
+Queste regole definiscono i permessi per l'inoltro di pacchetti IP.
+Tutti i pacchetti spediti da un host remoto e destinati ad un altro host remoto
+vengono confrontati con le regole del firewall di inoltro.
+La prima regola che corrisponde ad un pacchetto determina il comportamento da tenere
+e provoca un aggioranamento dei contatori di pacchetti e di byte.
+Quando non vengono trovate corrispondenze, viene usata la politica predefinita per il
+firewall di inoltro.
+.PP 
+Tutte le regole di firewall (non quelle di autenticazione) contengono una politica
+che specifica l'azione da intraprendere quando un pacchetto corrisponde a tale regola.
+Ci sono 3 differenti politiche possibili:
+.I accept
+(lascia passare il pacchetto),
+.I reject
+(non accetta il pacchetto e manda un messaggio "ICMP host unreachable"
+al mittente del pacchetto come notifica),
+e
+.I deny
+(ignora il pacchetto senza mandare notifiche).
+Per tutti e tre i tipi di firewall esiste anche un comportamento predefinito,
+che si applica a tutti i pacchetti che non corrispondono ad alcuna regola.
+.PP 
+Le regole di ingresso determinano anche se i pacchetti devono
+essere rediretti ad un socket locale dopo essere stati accettati dal firewall di
+ingresso. In questo caso, il pacchetto verrà ricevuto da un processo locale, anche se
+era stato mandato ad un altro host e/o un altro numero di porta.
+Questa funzionalità può essere usata solo con pacchetti TCP o UDP.
+.PP 
+Le regole di inoltro definiscono anche se i pacchetti devono essere mascherati
+oppure no quando vengono ritrasmessi.
+In questo caso, l'indirizzo del mittente del pacchetto IP viene sostituito
+dall'indirizzo dell'host locale, e la porta che appare come mittente nell'header TCP o
+UDP viene rimpiazzata da un numero di porta temporaneo generato localmente prima di
+inoltrare il pacchetto.
+Siccome questo tipo di gestione viene effettuato dal kernel, i pacchetti di risposta
+(mandati al numero di porta temporanea dell'host locale) sono riconosciuti
+automaticamente.
+L'indirizzo di destinazione e il numero di porta di questi pacchetti verranno quindi
+rimpiazzati con l'indirizzo e il numero di porta originali, che sono stati salvati al
+momento della mascheratura del primo pacchetto.
+Questa funzionalità può essere usata solo con i pacchetti TCP o UDP.
+.PP 
+Questo paragrafo descrive il modo in cui un pacchetto attraversa
+il firewall e le regole di autenticazione.
+Un pacchetto ricevuto da una delle interfacce di rete locali passerà
+attraverso i seguenti gruppi di regole:
+.RS
+.I autenticazione
+(dispositivo di ingresso)
+.br 
+.I firewall di ingresso
+(dispositivo di ingresso)
+.RE
+Tra parentesi è indicato il dispositivo (interfaccia di rete) che viene usato quando
+si cerca di trovare una regola che corrisponda al pacchetto IP.
+Dopo questo passo, il pacchetto sarà opzionalmente rediretto ad un socket locale.
+Quando il pacchetto deve essere inoltrato ad un host remoto, passerà anche
+attraverso questo insieme di regole:
+.RS
+.I  firewall di inoltro
+(dispositivo di uscita)
+.RE
+Dopo questo passaggio un pacchetto potrà opzionalmente essere mascherato.
+Risposte ai pacchetti mascherati non passeranno mai dal firewall di inoltro
+(ma passeranno sia dal firewall di ingresso che da quello di uscita).
+Tutti i pacchetti inviati da una delle interfacce di rete locali, sia
+generati localmente che inoltrati, passeranno dal seguente insieme
+di regole:
+.RS
+.I firewall di uscita
+(dispositivo di uscita)
+.br 
+.I autenticazione
+(dispositivo di uscita)
+.RE
+Si noti che i pacchetti mascherati passeranno dal firewall di uscita e dalle
+regole di autenticazione con i nuovi header (dopo aver attraversato i firewall di
+ingresso e di inoltro con gli header originali).
+Inoltre, risposte a pacchetti mascherati avranno header diversi quando
+attraverseranno le regole dei firewall di ingresso e di uscita.
+.PP 
+La gestione del firewall e dell'autenticazione può essere cambiata attraverso
+chiamate a 
+.I R setsockopt (2).
+Le regole esistenti possono essere osservate guardando i seguenti quattro file nella
+directory
+.I /proc/net :
+.I R ip_acct ,
+.I R ip_input ,
+.I R ip_output ,
+e
+.I R ip_forward .
+La gestione attuale relativa alle sessioni mascherate
+si trova nel file
+.I ip_masquerade
+nella stessa directory
+(si noti che le regole che specificano quali sessioni vengono
+mascherate si trovano in
+.I R ip_forward ).
+.SH "COMANDI"
+I comandi per cambiare le liste di regole o i comportamenti predefiniti
+devono essere passati come opzioni alla chiamata di sistema
+.I R setsockopt (2),
+che opera su un socket IP raw.
+La maggior parte dei comandi richiede il passaggio di dati aggiuntivi.
+Un puntatore a questi dati e la loro lunghezza vengono passati a
+.I R setsockopt
+come valore della opzione e lunghezza della opzione stessa.
+Si possono usare i seguenti comandi:
+.PP 
+.B IP_ACCT_APPEND
+.br 
+.B IP_FW_APPEND_IN
+.br 
+.B IP_FW_APPEND_OUT
+.br 
+.B IP_FW_APPEND_FWD
+.RS
+Aggiungono una regola a uno degli elenchi di autenticazione o di firewall.
+In base al comando, la regola viene aggiunta all'elenco di
+autenticazione, al firewall di ingresso, di uscita, o a quello di inoltro,
+nell'ordine.
+La nuova regola viene aggiunta in coda all'elenco.
+Il dato passato con questi comandi è una struttura
+.I R ip_fw ,
+che definisce i contenuti della nuova regola.
+.RE
+.PP 
+.B IP_ACCT_INSERT
+.br 
+.B IP_FW_INSERT_IN
+.br 
+.B IP_FW_INSERT_OUT
+.br 
+.B IP_FW_INSERT_FWD
+.RS
+Questi comandi sono uguali ai comandi di aggiunta, tranne che la nuova regola
+è inserita all'inizio dell'elenco.
+.RE
+.PP 
+.B IP_ACCT_DELETE
+.br 
+.B IP_FW_DELETE_IN
+.br 
+.B IP_FW_DELETE_OUT
+.br 
+.B IP_FW_DELETE_FWD
+.RS
+Rimuovono una regola dall'elenco di autenticazione o di firewall.
+In base al comando, la regola viene rimossa dall'elenco per l'autenticazione,
+dal firewall di ingresso, di uscita, o da quello di inoltro,
+nell'ordine.
+Il dato passato con questi comandi è una struttura
+.I R ip_fw ,
+che definisce i contenuti della regola da rimuovere.
+Viene rimossa dall'elenco la prima regola che corrisponde alla descrizione.
+.RE
+.PP 
+.B IP_ACCT_ZERO
+.br 
+.B IP_FW_ZERO_IN
+.br 
+.B IP_FW_ZERO_OUT
+.br 
+.B IP_FW_ZERO_FWD
+.RS
+Azzerano i contatori di pacchetti e di byte in tutte le regole
+della lista di autenticazione, del firewall di ingresso, di uscita,
+o di quello di inoltro, nell'ordine.
+Si noti che occorre passare con questo comando un numero intero
+(inutile) come dato.
+Vedere anche la descrizione dei file
+.I /proc/net
+per sapere come stampare i contatori e azzerarli atomicamente.
+.RE
+.PP 
+.B IP_ACCT_FLUSH
+.br 
+.B IP_FW_FLUSH_IN
+.br 
+.B IP_FW_FLUSH_OUT
+.br 
+.B IP_FW_FLUSH_FWD
+.RS
+Rimuovono tutte le regole dalla lista di autenticazione, dal firewall di ingresso,
+di uscita,
+o di quello di inoltro, nell'ordine.
+Si noti che occorre passare un numero intero (inutile) come dato con questo
+comando.
+.RE
+.PP 
+.B IP_FW_POLICY_IN
+.br 
+.B IP_FW_POLICY_OUT
+.br 
+.B IP_FW_POLICY_FWD
+.RS
+Cambiano la risposta predefinita per il firewall di ingresso, quello di uscita e
+quello di inoltro.
+Il nuovo comportamento viene passato sotto forma di numero intero
+con questi possibili valori:
+.B IP_FW_F_ACCEPT
+(accetta il pacchetto),
+.B IP_FW_F_ICMPRPL
+(rifiuta il pacchetto
+mandando al mittente un messaggio di
+destinazione irraggiungibile), oppure 0
+(ignora il pacchetto senza mandare ulteriori notifiche).
+Il comportamento viene usato quando nessuna delle regole disponibili nella lista
+appropriata si applica al pacchetto in questione.
+Per il firewall di inoltro, il comportamento può anche essere
+.B 
+IP_FW_F_ACCEPT | IP_FW_F_MASQ
+.R
+(accetta un pacchetto da inoltrare, ma effettuando il mascheramento
+per i pacchetti TCP o UDP).
+.RE
+.PP 
+.B IP_FW_MASQ_TIMEOUTS
+.RS
+Imposta i valori di timeout usati per la mascheratura.
+Il dato passato con questo comando è una struttura che contiene tre campi di tipo
+.I R int ,
+rappresentanti i tempi massimi in "jiffies" (1/HZ di secondo) per le sessioni TCP,
+le sessioni TCP che hanno già ricevuto un pacchetto FIN e i pacchetti UDP,
+nell'ordine.
+Un valore di timeout pari a 0 significa che il valore attuale del campo
+corrispondente non deve essere modificato.
+.RE
+.PP 
+.B IP_FW_CHECK_IN
+.br 
+.B IP_FW_CHECK_OUT
+.br 
+.B IP_FW_CHECK_FWD
+.RS
+Controllano se un pacchetto verrebbe accettato, ignorato o rifiutato
+dal firewall di ingresso
+.RB ( IP_FW_CHECK_IN ),
+da quello di uscita
+.RB ( IP_FW_CHECK_OUT ),
+o da
+quello di inoltro
+.RB ( IP_FW_CHECK_FWD ).
+Il dato passato con questi comandi è una struttura
+.I R ip_fwpkt ,
+che definisce gli header del pacchetto da controllare e l'indirizzo dell'interfaccia.
+.RE
+.SH "STRUTTURE"
+La struttura
+.I ip_fw
+contiene i seguenti campi che devono essere riempiti al fine di aggiungere
+o cancellare una regola:
+.TP 
+struct in_addr fw_src, fw_dst
+Indirizzi IP del mittente e del destinatario.
+.TP 
+struct in_addr fw_smsk, fw_dmsk
+Maschere per gli indirizzi IP del mittente e del destinatario.
+Si noti che una maschera 0.0.0.0 corrisponderà a qualsiasi indirizzo.
+.TP 
+struct in_addr fw_via
+Indirizzo IP dell'interfaccia attraverso la quale il pacchetto è stato ricevuto dal
+sistema o sta per essere spedito.
+L'indirizzo 0.0.0.0 ha un significato speciale: corrisponderà a tutte
+le interfacce.
+.TP 
+char fw_vianame[IFNAMSIZ]
+Nome dell'interfaccia attraverso la quale il pacchetto è stato ricevuto dal sistema o
+sta per essere spedito.
+La stringa vuota ha un significato speciale: corrisponderà a tutti i dispositivi.
+.TP 
+unsigned short fw_flg
+Flag per questa regola.
+I bit per le differenti opzioni possono venire associati tramite un'operazione di OR.
+.sp 0.75
+Il protocollo (obbligatorio).
+I valori possibili sono
+.B IP_FW_F_TCP
+(TCP),
+.B IP_FW_F_UDP
+(UDP),
+.B IP_FW_F_ICMP
+(ICMP),
+o
+.B IP_FW_F_ALL
+(tutti i protocolli, definisce una regola universale di firewall o di autenticazione).
+.sp 0.75
+Il comportamento da tenere quando un pacchetto corrisponde a questa regola.
+Il comportamento può essere
+.B IP_FW_F_ACCEPT
+(accetta il pacchetto),
+.B IP_FW_F_ICMPRPL
+(rifiuta il pacchetto mandando al mittente un messaggio ICMP di
+destinazione irraggiungibile).
+Se nessuno di questi flag è specificato, il pacchetto è scartato
+senza mandare alcuna notifica.
+Si noti che questa politica non viene usata dalle regole di autenticazione.
+.sp 0.75
+Redirezione e mascheramento sono specificati anch'essi tramite due flag:
+.B IP_FW_F_REDIR
+redirige un pacchetto accettato ad un socket locale (specificato da un numero di
+porta, come descritto più avanti).
+Questo bit è valido solo nelle regole per il firewall di ingresso e può essere usato
+solo se il kernel è stato compilato con l'opzione
+.B CONFIG_IP_TRANSPARENT_PROXY
+attiva.
+.B IP_FW_F_MASQ
+maschera un pacchetto accettato.
+Questo bit è valido solo nelle regole del firewall di inoltro e può essere usato solo
+quando il kernel è stato compilato con l'opzione
+.B CONFIG_IP_MASQUERADE
+attiva.
+.sp 0.75
+Le altre opzioni sono:
+.B IP_FW_F_BIDIR
+(regola bidirezionale, che corrisponde sia in entrata che in uscita),
+.B IP_FW_F_TCPACK
+(seleziona solo i pacchetti TCP con il bit ACK impostato nell'header
+TCP, opzione ignorata con altri protocolli),
+.B IP_FW_F_TCPSYN
+(seleziona solo i pacchetti TCP con il bit SYN impostato e il bit
+ACK inattivo nell'header TCP, opzione ignorata con altri protocolli),
+.B IP_FW_F_ACCTIN
+e
+.B IP_FW_F_ACCTOUT
+(selezionano solo i pacchetti in entrata o in uscita; queste opzioni
+hanno effetto solo nelle regole di autenticazione),
+.BR IP_FW_F_SRNG ,
+e
+.BR IP_FW_F_DRNG
+(vedere sotto per una descrizione di questi flag).
+L'opzione
+.B IP_FW_F_PRN
+può essere usata per elencare informazioni sui pacchetti selezionati tramite 
+.I R printk ().
+Questa opzione ha effetto solo se il kernel è stato compilato
+con l'opzione
+.B CONFIG_IP_FIREWALL_VERBOSE
+attiva.
+.TP 
+unsigned short fw_nsp, fw_ndp, fw_pts[IP_FW_MAX_PORTS]
+Questi campi specificano il numero di porte del mittente, il numero di porte del
+destinatario e il vettore in cui queste porte sono immagazzinate, in questo ordine.
+Il vettore inizia con le porte del mittente, seguite senza interruzione dalle porte
+del destinatario.
+Se l'opzione
+.B IP_FW_F_REDIR
+viene usata, queste porte sono seguite dalla porta di redirezione.
+Se questa porta di redirezione è 0, la porta di destinazione
+del pacchetto viene usata come porta di redirezione.
+Il numero totale di porte è limitato a 
+.B IP_FW_MAX_PORTS
+(attualmente 10).
+Entrambe le liste di porte, sia quella del mittente che quella del destinatario,
+possono contenere non più un intervallo di porte.
+In questo caso, le prime due porte dell'elenco sono usate
+come il minimo e il massimo valore di tale intervallo.
+Per i pacchetti ICMP, le porte del mittente sono interpretate come tipi ICMP
+e le porte di destinazione sono ignorate.
+Siccome il secondo frammento e i seguenti di un pacchetto TCP o UDP
+non contengono numeri di porte, questi pacchetti IP ai fini dell'autenticazione
+saranno trattati come se entrambe le porte fossero 65535.
+Per la stessa ragione, il
+secondo e gli ulteriori frammenti di un pacchetto ICMP ai fini
+dell'autenticazione sono trattati come se il tipo di messaggio ICMP fosse 255.
+Inoltre, il secondo ed ulteriori frammenti di pacchetti TCP, UDP, ICMP vengono
+accettati da tutti e tre i firewall.
+I flag
+.BR IP_FW_F_SRNG
+e
+.BR IP_FW_F_DRNG
+nel campo
+.I fw_flg
+riferiscono se sono state specificate
+le porte del mittente e/o destinatario.
+.TP 
+unsigned char fw_tosand, fw_tosxor
+Queste maschere a 8 bit definiscono come bisogna cambiare il campo TOS nell'header IP
+quando un pacchetto viene accettato dalla regola di firewall.
+Il campo TOS viene prima sottoposto ad un'operazione AND bit\-a\-bit con
+.I fw_tosand
+e il risultato di questo viene sopposto ad un'operazione XOR con
+.I R fw_tosxor .
+Qeusti campi sono ignorati nelle regole di autenticazione
+e in quelle del firewall che rifiutano o ignorano i pacchetti.
+.PP 
+La struttura
+.I R ip_fwpkt ,
+usata nel controllo dei pacchetti,
+contiene i seguenti campi:
+.TP 
+struct iphdr fwp_iph
+L'header IP. Vedere
+.I <linux/ip.h>
+per una descrizione dettagliata della
+struttura
+.I R iphdr .
+.PP 
+struct tcphdr fwp_protoh.fwp_tcph
+.br 
+struct udphdr fwp_protoh.fwp_udph
+.br 
+struct icmphdr fwp_protoh.fwp_icmph
+.RS
+Gli header TCP, UDP, e ICMP, combinati in una unione chiamata
+.I R fwp_protoh .
+Vedere
+.I R <linux/tcp.h> ,
+.I R <linux/udp.h> ,
+o
+.I <linux/icmp.h>
+per una descrizione dettagliata delle rispettive strutture.
+.RE
+.TP 
+struct in_addr fwp_via
+L'indirizzo dell'interfaccia attraverso la quale il pacchetto
+viene ricevuto o trasmesso.
+.SH "VALORE RESTITUITO"
+In caso di successo viene ritornato zero.
+In caso di errore viene ritornato \-1 e 
+.I errno
+viene impostato di conseguenza.
+Vedere
+.I R setsockopt (2)
+per un elenco dei possibili valori di errore.
+Quando viene usato uno dei due comandi che controllano un pacchetto, viene restituito
+zero quando il pacchetto verrebbe accettato senza redirezione o mascheratura.
+Altrimenti, viene restituito \-1 e 
+.I errno
+viene impostato a
+.B ECONNABORTED
+(il pacchetto verrebbe accettato con redirezione),
+.B ECONNRESET
+(il pacchetto verrebbe accettato con mascheratura),
+.B ETIMEDOUT
+(il pacchetto verrebbe ignorato), o
+.B ECONNREFUSED
+(il pacchetto verrebbe rifiutato).
+.SH "REGOLE DI STAMPA"
+Nella directory
+.I /proc/net
+ci sono quattro file per elencare le regole attualmente in vigore
+per ciascuna categoria:
+.I ip_acct
+(per le regole di autenticazione IP),
+.I ip_input
+(per le regole del firewall di ingresso),
+.I ip_output
+(per le regole de firewall di uscita), e
+.I ip_forward
+(per le regole del firewall di inoltro).
+La lettura di questi file restituisce una riga di intestazione e una riga per ciascuna
+regola.
+Per tutti e tre i tipi di firewall, la riga di intestazione include alla fine una
+rappresentazione decimale del comportamento predefinito corrispondente
+(uno tra
+.BR IP_FW_F_ACCEPT ,
+.BR IP_FW_F_ICMPRPL ,
+e zero; il comportamento del firewall di inoltro può anche valere
+.B IP_FW_F_ACCEPT |
+.BR IP_FW_F_MASQ ).
+.PP 
+Ogni riga seguente elenca nel seguente ordine i contenuti di una regola:
+indirizzo e maschera del mittente, indirizzo e maschera del destinatario,
+indirizzo dell'interfaccia, flag, porte del mittente e del destinatario, contatori
+di pacchetti e byte, lista di porte, maschera AND per TOS e maschera XOR per TOS.
+Gli indirizzi IP e le maschere vengono stampati come otto cifre esadecimali, le
+maschere TOS vengono stampate con due cifre esadecimali precedute dalla lettera A o X,
+rispettivamente, e gli altri valori sono rappresentati in formato decimale.
+Ciascun campo è separato da uno spazio bianco, da un '/' (tra l'indirizzo e la
+corrispondente maschera) o da "\->" (tra le coppie di indirizzo/maschera
+per il mittente ed il destinatario).
+.PP 
+I file possono anche essere aperti in lettura/scrittura (ma solo root
+può farlo).
+In tal caso, i contatori dei pacchetti e dei byte per tutte le regole di quella
+categoria saranno ripristinati a zero dopo aver restituito il loro valore attuale.
+.PP 
+Il file
+.I /proc/net/ip_masquerade
+contiene la situazione corrente del masquerading nel kernel.
+Dopo una riga di intestazione, ogni sessione mascherata è descritta da una
+differente riga con i seguenti valori, separati da uno spazio o da un ':'
+(nelle coppie indirizzo/porta):
+nome del protocollo ("TCP" o "UDP"), indirizzo e numero di porta del mittente,
+indirizzo e numero di porta del destinatario,
+il nuovo numero di porta, il numero iniziale di sequenza cui viene
+aggiunta la differenza, la differenza, il valore precedente della differenza, e
+l'istante di timeout in jiffies (1/HZ di secondo).
+Tutti gli indirizzi e i valori numerici sono in formato esadecimate, eccetto gli
+ultimi tre, che sono rappresentati in decimale.
+.SH "FILE"
+.I /proc/net/ip_acct
+.br 
+.I /proc/net/ip_input
+.br 
+.I /proc/net/ip_output
+.br 
+.I /proc/net/ip_forward
+.br 
+.I /proc/net/ip_masquerade
+.\" 
+.SH "ERRORI"
+
+.SH "VEDERE ANCHE"
+setsockopt(2), socket(2), ipfwadm(8)
+.\" 
+.SH "AUTORE"
+.\" Jos Vos <jos@xos.nl>
+.\" .br 
+.\" X/OS Experts in Open Systems BV, Amsterdam, The Netherlands

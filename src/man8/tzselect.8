@@ -1,0 +1,50 @@
+.\" Questa pagina è nel pubblico dominio
+.\"
+.\" Traduzione italiana di Ottavio G. Rizzo, marzo 1999
+.\" Aggiornamento a man pages 2.34 di Giulio Daprelà, giugno 2006
+.\" Aggiornamento a man pages 2.57 di Elisabetta Galli, luglio 2007
+.\"
+.TH TZSELECT 8 "18 maggio 2007" "Linux System Administration"
+.SH NOME
+tzselect \- seleziona un fuso orario
+.SH SINTASSI
+.B tzselect
+.SH DESCRIZIONE
+Il programma
+.B tzselect
+pone domande all'utente sulla sua posizione geografica, e dà in
+risposta sullo standard output la descrizione del fuso orario: questa
+risposta può essere utilizzata come valore della variabile ambientale TZ.
+.PP
+Ogni interazione con l'utente è fatta tramite standard input e standard error.
+.SH "STATO DI USCITA"
+Lo stato di uscita è zero se un fuso orario è stato ottenuto
+dall'utente con successo, altrimenti è diverso da zero.
+.SH "AMBIENTE"
+.TP
+\fBAWK\fP
+Nome di un programma
+.I awk
+conforme a Posix (predefinito:
+.BR awk ).
+.TP
+\fBTZDIR\fP
+Directory contenente i dati sui fusi orari (predefinita:
+.IR /usr/share/zoneinfo )
+.\" o forse /usr/local/etc/zoneinfo in alcuni sistemi più vecchi.
+.SH FILE
+.TP
+\fBTZDIR\fP\fI/iso3166.tab\fP
+Tabella di codici ISO 3166 a due lettere e nomi di nazioni.
+.TP
+\fBTZDIR\fP\fI/zone.tab\fP
+Tabella di codici nazione, latitudini, longitudini, valori TZ e
+spiegazioni varie.
+.TP
+\fBTZDIR\fP\fI/\fP\fITZ\fP
+Dati sui fusi orari per \fITZ\fP.
+.SH "VEDERE ANCHE"
+.BR tzfile (5),
+.BR zdump (8),
+.BR zic (8)
+.\" @(#)tzselect.8	1.3

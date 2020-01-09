@@ -1,0 +1,152 @@
+.\" Copyright (c) 2006 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\"
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.
+.\"
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Traduzione da man-pages-2.43 di Davide Cendron <davcen@interfree.it>
+.\" gennaio 2007
+.\" Aggiornamento a man-pages-2.64 di Elisabetta Galli <lab@kkk.it>
+.\" agosto 2007
+.\"
+.TH ADJTIME 3 "26 luglio 2006" "Linux" "Linux Programmer's Manual"
+.SH NOME
+adjtime \- corregge l'orario per sincronizzare l'orologio di sistema
+.SH SINTASSI
+.nf
+.BI "int adjtime(const struct timeval *" delta ", struct timeval *" olddelta );
+.fi
+.sp
+.in -4n
+Test delle funzioni e requisiti delle macro per glibc (vedere
+.BR feature_test_macros (7)):
+.in
+.sp
+.BR adjtime ():
+_BSD_SOURCE
+.SH DESCRIZIONE
+La funzione
+.BR adjtime ()
+regola in modo graduale l'orario di sistema (restituito da
+.BR gettimeofday (2)).
+L'ammontare di tempo con cui regolare l'orologio è specificato
+nella struttura a cui punta
+.IR delta .
+Questa struttura ha la forma seguente:
+.in +0.25i
+.nf
+
+struct timeval {
+    time_t      tv_sec;     /* secondi */
+    suseconds_t tv_usec;    /* microsecondi */
+};
+.fi
+.in -0.25i
+.PP
+Se la regolazione in
+.I delta
+è positiva, l'orologio di sistema viene accellerato di qualche
+punto percentuale (per esempio aggiungendo una piccola
+quantità  di tempo al valore dell'orario per ogni secondo) finché la regolazione
+non è stata completata.
+Se la regolazione in
+.I delta
+è negativa, l'orologio viene rallentato in maniera simile.
+
+Se avviene una chiamata ad
+.BR adjtime ()
+mentre è in corso una regolazione dell'orario relativa
+ad una chiamata precedente di
+.BR adjtime ()
+, e
+.I delta
+non è NULL per l'ultima chiamata, la chiamata precedente viene terminata,
+senza però scartare nessuna correzione parziale già completata.
+
+Se
+.I olddelta
+non è NULL, allora il buffer a cui punta viene usato per restituire
+l'ammontare di tempo rimanente dalle precedenti correzioni
+non ancora completate.
+.SH "VALORE RESTITUITO"
+Se termina con successo,
+.BR adjtime ()
+restituisce 0. Se fallisce, viene restituito -1, e
+.I errno
+viene valorizzato per indicare l'errore.
+.SH ERRORI
+.TP
+.B EINVAL
+La correzione in
+.I delta
+è fuori dall'intervallo permesso.
+.TP
+.B EPERM
+Il chiamante non ha privilegi sufficienti per correggere l'orario.
+In Linux è richiesta
+l'abilitazione a
+.B CAP_SYS_TIME .
+.SH CONFORME A
+4.3BSD, System V.
+.SH NOTE
+La correzione che
+.BR adjtime ()
+effettua sull'orologio viene eseguita in modo che quest'ultimo
+venga sempre incrementato uniformemente.
+Usando
+.BR adjtime ()
+per correggere l'orario si evitano problemi di funzionamento per certe
+applicazioni (per esempio,
+.BR make (1))
+dovuti a improvvise variazioni positive o negative dell'orario di sistema.
+
+.BR adjtime ()
+è stato progettato per effettuare piccole correzioni all'orario di sistema.
+Molti sistemi impongono un limite alla correzione, che può essere specificato in
+.IR delta .
+Nell'implementazione di glibc,
+.I delta
+dev'essere minore o uguale a (INT_MAX / 1000000 - 2)
+e maggiore o uguale a (INT_MIN / 1000000 + 2)
+(rispettivamente 2145 e \-2145 secondi su i386).
+.SH BUG
+Attualmente, se
+.I delta
+viene valorizzato a NULL, a
+.IR olddelta
+non viene restituita alcuna informazione valida riguardo la correzione in sospeso dell'orologio.
+(In questo caso,
+.BR adjtime ()
+dovrebbe restituire la correzione dell'orario in sospeso, senza cambiarla.)
+Questo è il risultato di una limitazione del kernel.
+.\" FIXME .
+.\" È stato presentato un resoconto sul bug del kernel; si verifichi più avanti se
+.\" il problema è stato risolto.
+.\" http://bugzilla.kernel.org/show_bug.cgi?id=6761
+.SH "VEDERE ANCHE"
+.BR adjtimex (2),
+.BR gettimeofday (2),
+.BR time (7)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.75 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

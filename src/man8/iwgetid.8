@@ -1,0 +1,131 @@
+.\" Guus Sliepen - 2001
+.\" Completed and fixed up by Jean Tourrilhes - 2002-2003
+.\" iwgetid.8
+.\"
+.TH IWGETID 8 "02 December 2003" "wireless-tools" "Linux Programmer's Manual"
+.\"
+.\" NOME part
+.\"
+.SH NOME
+iwgetid \- Riporta l'ESSID, l'NWID o l'indirizzo dell'AP/della cella della rete wireless
+.\"
+.\" SINTASSI part
+.\"
+.SH SINTASSI
+.BI "iwgetid " [interface] " [--raw] [--scheme] [--ap] [--freq]"
+.br
+.BI "                   [--mode] [--protocol] [--channel]
+.br
+.\"
+.\" DESCRIZIONE part
+.\"
+.SH DESCRIZIONE
+.B iwgetid
+viene utilizzato per trovare l'NWID, l'ESSID o l'indirizzo dell'AP/della cella
+della rete wireless che viene utilizzata al momento. L'informazione
+riportata è la stessa che viene mostrata da
+.BR iwconfig ", ma " iwgetid
+è più facile da integrare negli script.
+.br
+Per default,
+.B iwgetid
+mostrerà l'
+.I ESSID
+del dispositivo, e se non avrà alcun ESSID, stamperà il suo
+.IR NWID .
+.br
+La formattazione predefinita è facilmente visualizzabile.
+.\"
+.\" OPZIONI part
+.\"
+.SH OPZIONI
+.TP
+.B --raw
+Questa opzione disabilita la visualizzazione facilitata delle
+informazioni. Questa impostazione è opposta alle altre opzioni (esclusa
+.BR --scheme ),
+cosicché, con le combinazioni di opzioni appropriate, è possibile
+stampare il valore raw dell'ESSID, l'indirizzo dell'AP o la modalità.
+.br
+Questo formato è ideale quando si salva il risultato di iwgetid
+in una variabile di script
+.I Shell
+o 
+.I Perl
+oppure bisogna fornire il risultato come un argomento alla linea di
+comando di
+.BR iwconfig .
+.TP
+.B --scheme
+Questa opzione è simile alla precedente, disabilita la visualizzazione
+facilitata delle informazioni e rimuove tutti i caratteri che non
+sono alfanumerici (come spazi, punteggiatura e caratteri di controllo).
+.br
+L'output è un valido schema identificativo per Pcmcia (cioè può
+essere utilizzato come un valido argomento del comando
+.BR "cardctl scheme" ).
+Questo formato è ideale quando il risultato di iwgetid viene
+utilizzato come selettore in script
+.I Shell
+o
+.I Perl
+o come il nome di un file.
+.TP
+.B --ap
+Mostra il MAC address dell'
+.I Access Point
+Wireless o della
+.IR Cella .
+.TP
+.B --freq
+Mostra la frequenza (
+.I frequency
+) attuale o il canale (
+.I channel
+) usato dall'interfaccia.
+.TP
+.B --channel
+Mostra il canale (
+.I channel
+) corrente utilizzato dall'interfaccia. Il canale viene determinato
+utilizzando la frequenza corrente e la lista di frequenze fornite
+dall'interfaccia.
+.TP
+.B --mode
+Mostra la modalità corrente (
+.I mode
+) dell'interfaccia.
+.TP
+.B --protocol
+Mostra il nome del protocollo (
+.I protocol name
+) dell'interfaccia. Questo permette di
+identificare tutte le schede che sono compatibili con qualunque
+altra e accettano lo stesso tipo di configurazione.
+.br
+Questo può anche essere utilizzato per verificare il supporto alle
+Estensioni Wireless (
+.I Extension Wireless
+) dell'interfaccia, poichè questo è l'unico attributo che tutti
+i driver che supportano le Wireless Extension sono obbligati ad avere.
+.\"
+.\" AUTORE part
+.\"
+.SH AUTORE
+Jean Tourrilhes \- jt[AT]hpl.hp.com
+.\"
+.\" TRADUZIONE part
+.\"
+.SH TRADUZIONE
+Traduzione dall'inglese: Ferronato Claudio (wireless_tools.27)
+.br
+Questa traduzione è migliorabile. Se hai migliorie da proporre, perfavore
+scrivimi all'indirizzo claiudio[AT]libero.it
+.\"
+.\" VEDERE ANCHE part
+.\"
+.SH VEDERE ANCHE
+.BR iwconfig (8),
+.BR ifconfig (8),
+.BR iwspy (8),
+.BR iwpriv (8).

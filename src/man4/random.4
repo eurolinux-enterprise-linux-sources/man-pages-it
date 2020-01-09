@@ -1,0 +1,177 @@
+.\" Copyright (c) 1997 John S. Kallal (kallal@voicenet.com)
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" Some changes by tytso and aeb.
+.\"
+.\" 2004-12-16, John V. Belmonte/mtk, Updated init and quit scripts
+.\" 2004-04-08, AEB, Improved description of read from /dev/urandom
+.\"
+.\" Traduzione in italiano di Ottavio G. Rizzo <rizzo@pluto.linux.it>
+.\" Gennaio 1999
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.62 di Elisabetta Galli <lab@kkk.it>
+.\" luglio 2007
+.\"
+.TH RANDOM 4 "10 gennaio 2008" "Linux" "Linux Programmer's Manual"
+.SH NOME
+random, urandom \- dispositivi kernel che producono numeri aleatori
+.SH DESCRIZIONE
+I file speciali a caratteri \fB/dev/random\fP e \fB/dev/urandom\fP
+(presenti sin da Linux 1.3.30) forniscono un'interfaccia al generatore
+del kernel di numeri aleatori. Il file \fB/dev/random\fP ha numero
+primario 1 e numero secondario 8. Il file \fB/dev/urandom\fP ha numero
+primario 1 e numero secondario 9.
+.LP
+Il generatore di numeri aleatori raccoglie rumore di fondo dai device
+driver e da altre sorgenti nel pozzo d'entropia. Il generatore
+mantiene anche una stima del numero di bit di rumore nel pozzo di
+entropia. Da questo pozzo di entropia vengono creati i numeri aleatori.
+.LP
+Quando viene letto, \fB/dev/random\fP restituisce solo un numero di
+byte aleatori compatibili con la stima dei bit di rumore nel
+pozzo d'entropia. \fB/dev/random\fP dovrebbe essere adatto ad usi che
+richiedono un alto grado di aleatorietà, come la generazione di
+chiavi. Quando il pozzo d'entropia è vuoto, le letture di
+\fB/dev/random\fP vengono bloccate finché non viene raccolto
+abbastanza rumore ambientale.
+.LP
+Quando viene letto, \fB/dev/urandom\fP restituisce tanti byte quanti
+ne sono stati richiesti. Di conseguenza, se non c'è abbastanza
+entropia nel pozzo d'entropia, i valori restituiti sono teoricamente
+vulnerabili ad un attacco criptografico sull'algoritmo usato dal
+dispositivo. Nella letteratura (non coperta da segreto militare) non
+c'è conoscenza di un metodo per fare ciò, ma è in teoria possibile che
+esista un simile metodo. Se questo è fonte di problemi per il proprio
+programma, si usi invece \fB/dev/random\fP.
+.SS Configurazione
+Se il sistema non comprende già \fB/dev/random\fP né
+\fB/dev/urandom\fP, li si può creare coi seguenti comandi:
+
+.nf
+        mknod \-m 644 /dev/random c 1 8
+        mknod \-m 644 /dev/urandom c 1 9
+        chown root:root /dev/random /dev/urandom
+.fi
+
+Quando un sistema Linux viene avviato senza molta interazione da parte
+di un utente, il pozzo d'entropia potrebbe essere in una condizione
+tutto sommato prevedibile. Questo porta a sovrastimare la quantità di
+rumore realmente presente nel pozzo d'entropia. Per contrastare questo
+effetto, può aiutare riportare le informazioni nel pozzo d'entropia
+fra un arresto e un riavvio. Per farlo, si aggiunga le righe
+seguenti ad uno script appropriato che venga eseguito durante le
+procedure di avvio di un sistema Linux:
+
+.nf
+	echo "Inizializzazione del generatore di numeri aleatori..."
+	random_seed=/var/run/random-seed
+	# Porta il seme aleatorio da un avvio al successivo
+	# Carica e successivamente salva l'intero pozzo di entropia
+	if [ \-f $random_seed ]; then
+	    cat $random_seed >/dev/urandom
+	else
+	    touch $random_seed
+	fi
+	chmod 600 $random_seed
+	poolfile=/proc/sys/kernel/random/poolsize
+	[ \-r $poolfile ] && bytes=`cat $poolfile` || bytes=512
+	dd if=/dev/urandom of=$random_seed count=1 bs=$bytes
+.fi
+
+Inoltre, si aggiungano le righe seguenti ad uno script appropriato
+che venga eseguito durante le procedure di arresto di un sistema
+Linux:
+
+.nf
+	# Riporta un seme aleatorio dall'arresto al riavvio.
+	# Salva l'intero pozzo di entropia
+	echo "Salvataggio del seme aleatorio..."
+	random_seed=/var/run/random-seed
+	touch $random_seed
+	chmod 600 $random_seed
+	poolfile=/proc/sys/kernel/random/poolsize
+	[ \-r $poolfile ] && bytes=`cat $poolfile` || bytes=512
+	dd if=/dev/urandom of=$random_seed count=1 bs=$bytes
+.fi
+.SS "Interfaccia /proc"
+I file nella directory
+.I /proc/sys/kernel/random
+(presente da 2.3.16) forniscono un'interfaccia aggiuntiva al
+dispositivo
+.I /dev/random.
+.LP
+Il file in sola lettura
+.I entropy_avail
+fornisce l'entropia disponibile.
+Normalmente questo sarà 4096 (bit),
+un pozzo di entropia pieno.
+.LP
+Il file
+.I poolsize
+fornisce la dimensione del pozzo di entropia.
+La semantica di questo file è diversa a seconda della versione del kernel:
+.RS
+.TP 12
+Linux 2.4:
+Questo file indica la dimensione del posso di entropia in
+.IR byte .
+Normalmente questo file ha valore 512, ma è scrivibile e
+può essere cambiato in qualunque valore per il quale sia disponibile un algoritmo.
+Le scelte sono: 32, 64, 128, 256, 512, 1024 o 2048.
+.TP
+Linux 2.6:
+Questo file è di sola lettura, e indica la dimensione del pozzo di entropia in
+.IR bit .
+Contiene il valore 4096.
+.RE
+.LP
+Il file
+.I read_wakeup_threshold
+contiene il numero di bit di entropia richiesti per svegliare i processi
+che dormono in attesa dell'entropia da
+.BR /dev/random .
+Il valore predefinito è 64.
+Il file
+.I write_wakeup_threshold
+contiene il numero di bit di entropia sotto i quali svegliamo i
+processi che eseguono un
+.IR select ()
+o
+.IR poll ()
+per accedere in scrittura a
+.BR /dev/random .
+Questi valori possono venire cambiati scrivendo sui file.
+.LP
+I file in sola lettura
+.I uuid
+e
+.I boot_id
+contengono stringhe casuali come 6fd5a44b-35f4-4ad4-a9b9-6b9be13e1fe9.
+Il più vecchio è generato di nuovo a ciascuna lettura, l'ultimo viene
+generato una volta.
+.SH FILE
+/dev/random
+.br
+/dev/urandom
+.SH AUTORE
+Il generatore di numeri aleatori è stato scritto da Theodore Ts'o
+(tytso@athena.mit.edu). 
+.SH "VEDERE ANCHE"
+mknod (1)
+.br
+RFC\ 1750, "Randomness Recommendations for Security"
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.76 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

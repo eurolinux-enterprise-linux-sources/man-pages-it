@@ -1,0 +1,115 @@
+.\" $Revision: 6.21 $
+.TH PSC\ 6.21\  1
+.SH NOME
+psc \- prepara i file sc
+.SH SINTASSI
+.B psc
+[
+.I -fLkrSPv
+]
+[
+.I -s cella
+]
+[
+.I -R n
+]
+[
+.I -C n
+]
+[
+.I -n n
+]
+[
+.I -d c
+]
+
+.SH DESCRIZIONE
+.I Psc
+si usa per preparare dati per l'input al foglio di calcolo
+.I sc(1).
+Esso accetta dati ascii normali sullo standard input. Lo standard output
+è un file
+.I sc.
+Senza alcuna opzione,
+.I psc
+inizia il foglio di calcolo nella cella A0. Le stringhe sono allineate a destra.
+Tutti i dati su una linea sono inseriti sulla stessa riga; ogni nuova linea di 
+input determina un incremento di una riga nell'output. I delimitatori predefiniti
+sono il tab e lo spazio. I formati delle colonne sono impostati ad un valore maggiore
+rispetto al numero di caratteri richiesto per contenere il valore più grande
+presente nella colonna.
+
+Opzioni:
+
+.IP "\-f"
+Omette il calcolo della larghezza della colonna. Questa opzione serve per
+preparare i dati da unire a quelli di un foglio di calcolo esistente. Se
+l'opzione non è specificata, le larghezze della colonna calcolate per i dati letti da 
+.I psc
+sovrascriveranno quelli già impostati nel foglio di calcolo esistente.
+
+.IP "\-L"
+Allinea a sinistra le stringhe.
+
+.IP "\-k"
+Tiene tutti i delimitatori. Questa opzione produce un cambiamento nella cella 
+di output su ogni nuovo delimitatore incontrato nel flusso di dati di input.
+L'azione predefinita è di condensare delimitatori multipli in uno, così 
+che la cella cambia solo una volta per ogni oggetto di dati in input.
+
+.IP "\-r"
+I dati in output sono ordinati prima per riga poi per colonna.
+Per un input consistente di una singola colonna, questa opzione
+provocherà un output di una riga con colonne multiple
+invece di un foglio di calcolo con una singola colonna.
+
+.IP "\-s cella"
+Inizia l'angolo in alto a sinistra del foglio di calcolo in
+.I cella.
+Per esempio, 
+.I "-s B33"
+organizzerà i dati di output in modo che il
+foglio di calcolo inizi dalla colonna B, riga 33.
+
+.IP "\-R n"
+Incrementa di 
+.I n 
+ogni nuova riga di output.
+
+.IP "\-C n"
+Incrementa di
+.I n 
+ogni nuova colonna di output.
+
+.IP "\-n n"
+Produce un output di
+.I n
+righe prima di avanzare alla colonna successiva. Questa opzione è usata
+quando l'input è organizzato in un singola colonna e il foglio di calcolo
+consiste di colonne multiple, ognuna delle quali deve essere lunga
+.I n.
+
+.IP "\-d c"
+Usa il singolo carattere
+.I c
+come delimitatore tra i campi di input.
+
+.IP "\-P"
+Solo numeri piani.
+Un campo è un numero solo quando non c'è imbeded [-+eE].
+
+.IP "\-S"
+Tutti i numeri sono stringhe.
+
+.IP "\-v"
+Stampa sullo schermo la versione di 
+psc
+
+.SH VEDERE ANCHE
+sc(1)
+
+.SH AUTORE
+
+Robert Bond
+Traduzione e adattamenti in Italiano a cura di Hugh Hartmann <hhartmann@libero.it>.
+Revisione a cura di Elisabetta Galli <lab@kkk.it>

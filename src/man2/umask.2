@@ -1,0 +1,140 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" Copyright (c) 2006, 2008, Michael Kerrisk (mtk-manpages@gmail.com)
+.\" (A few fragments remain from an earlier (1992) version written in
+.\" 1992 by Drew Eckhardt <drew@cs.colorado.edu>.)
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Modified by Michael Haardt <michael@moria.de>
+.\" Modified Sat Jul 24 12:51:53 1993 by Rik Faith <faith@cs.unc.edu>
+.\" Modified Tue Oct 22 22:39:04 1996 by Eric S. Raymond <esr@thyrsus.com>
+.\" Modified Thu May  1 06:05:54 UTC 1997 by Nicolás Lichtmaier
+.\"  <nick@debian.com> with Lars Wirzenius <liw@iki.fi> suggestion
+.\" 2006-05-13, mtk, substantial rewrite of description of 'mask'
+.\" 2008-01-09, mtk, a few rewrites and additions.
+.\"
+.\" Tradotto da Goffredo Baroncelli il 25/3/1998 (kreijack@usa.net)
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.33 di Giulio Daprelà <giulio@pluto.it>
+.\" maggio 2006
+.\" Aggiornamento a man-pages-2.37 di Giulio Daprelà <giulio@pluto.it>
+.\" agosto 2006
+.\"
+.TH UMASK 2 9 gennaio 2008 "Linux" "Linux Programmer's Manual"
+.SH NOME
+umask \- imposta la maschera di creazione del modo di un file
+.SH SINTASSI
+.B #include <sys/types.h>
+.br
+.B #include <sys/stat.h>
+.sp
+.BI "mode_t umask(mode_t " mask );
+.SH DESCRIZIONE
+.BR umask ()
+imposta la maschera di creazione dei permessi dei file del processo chiamante (umask) a
+.I mask
+& 0777 (cioè vengono usati solo i bit dei permessi dei file di
+.I mask ),
+e restituisce il valore precedente della maschera.
+
+La umask è usata da
+.BR open (2),
+.BR mkdir (2),
+e altre chiamate di sistema che creano file
+.\" per esempio, mkfifo(), creat(), mknod(), sem_open(), mq_open(), shm_open()
+.\" ma NON le chiamate System V IPC *get()
+per modificare i permessi dati ai nuovi file o directory.
+Nello specifico i permessi nella umask sono disattivati
+dall'argomento \fImode\fP in
+.BR open (2)
+e
+.BR mkdir (2).
+
+Le costanti che possono essere utilizzate per specificare la
+.I mask
+sono descritte sotto
+.BR stat (2).
+
+Il tipico valore predefinito per il processo umask è
+.I S_IWGRP\ |\ S_IWOTH
+(ottale 022).
+Nel caso comune in cui l'argomento
+.I mode
+di
+.BR open (2)
+sia specificato come:
+.nf
+
+    S_IRUSR | S_IWUSR | S_IRGRP | S_IWRGRP | S_IROTH | S_IWOTH
+
+.fi
+(ottale 0666) quando si crea un nuovo file, i permessi sul file 
+risultante saranno:
+.nf
+
+    S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+
+.fi
+(perché 0666 & ~022 = 0644; cioè rw\-r\-\-r\-\-).
+.SH "VALORE RESTITUITO"
+Questa chiamata di sistema ha sempre successo, e restituisce il valore 
+precedente della maschera.
+.SH "CONFORME A"
+SVr4, 4.3BSD, POSIX.1-2001.
+.SH NOTE
+Un processo figlio creato attraverso
+.BR fork (2)
+eredita la umask del genitore.
+La umask viene lasciata inalterata da
+.BR execve (2).
+
+L'impostazione di umask influenza anche i permessi assegnati agli oggetti IPC POSIX
+.RB ( mq_open (3),
+.BR sem_open (3),
+.BR shm_open (3)),
+FIFO
+.RB ( mkfifo (3)),
+e sui socket di dominio Unix
+.RB (unix (7))
+creati dai processi.
+L'umask non influenza i permessi assegnati
+agli oggetti IPC System V creati dal processo (usando
+.BR msgget (2),
+.BR semget (2),
+.BR shmget (2)).
+.SH "VEDERE ANCHE"
+.BR chmod (2),
+.BR mkdir (2),
+.BR open (2),
+.BR stat (2)
+.\" FIXME . eventually: .BR acl (5)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.76 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

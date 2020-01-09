@@ -1,0 +1,100 @@
+.\" Copyright (C) 2007 Michael Kerrisk <mtk.manpages@gmail.com>
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\"
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\"
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" 2007-10-23 mtk: moved the _syscallN specific material to the
+.\"     new _syscall(2) page, and substantially enhanced and rewrote
+.\"     the remaining material on this page.
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Ottobre 1996
+.\" Aggiornamento alla versione 1.15 di Alessandro Rubini (rubini@linux.it)
+.\" Maggio 1997
+.\" Revisione e aggiornamento di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\" Aggiornamento a man pages 2.26 di Giulio Daprelà <giulio@pluto.it>
+.\" aprile 2006
+.\" Aggiornamento a man pages 2.68 di Elisabetta Galli <lab@kkk.it>
+.\" novembre 2007
+.\"
+.TH INTRO 2 "23 ottobre 2007" "Linux" "Linux Programmer's Manual"
+.SH NOME
+intro \- Introduzione alle chiamate di sistema
+.SH DESCRIZIONE
+La sezione 2 del manuale descrive le chiamate di sistema di Linux.
+Una chiamata di sistema è un punto d'ingresso nel kernel Linux.
+Di solito le chiamate di sistema non vengono invocate direttamente:
+invece, la maggior parte delle chiamate di sistema hanno corrispondenti
+funzioni wrapper nella libreria C che compiono i passi richiesti
+(per esempio, bloccare in modalità kernel) per invocare
+la chiamata di sistema.
+Così, effettuare una chiamata di sistema assomiglia ad invocare una normale
+libreria di sistema.
+
+Per una lista delle chiamate di sistema di Linux vedere
+.BR syscalls (2).
+.SH VALORE RESTITUITO
+In caso di errore la maggior parte delle chiamate di sistema restituisce un numero di errore negativo
+(cioè il valore opposto di una delle costanti definite in 
+.BR errno (3)).
+Il wrapper della libreria C nasconde questo dettaglio al chiamante: quando una
+chiamata di sistema restituisce un valore negativo, il wrapper copia il
+valore assoluto nella variabile
+.I errno ,
+e restituisce \-1 come valore restituito dal wrapper.
+
+Il valore restituito da una chiamata di sistema eseguita con successo dipende dalla chiamata stessa.
+Molte chiamate di sistema restituiscono 0, ma alcune possono restituire valori diversi da zero
+in caso di successo.
+I dettagli sono descritti nelle singole pagine di manuale.
+
+In alcuni casi
+il programmatore deve definire una macro con funzione di test per ottenere
+la dichiarazione di una chiamata di sistema dal file di intestazione specificato
+nella sezione SINTASSI della pagina di manuale.
+In questi casi la macro richiesta è descritta nella pagina di manuale.
+Per maggiori informazioni sulle macro con funzione di test si veda
+.BR feature_test_macros (7).
+.SH "CONFORME A"
+Alcuni termini e abbreviazioni vengono usati per indicare varianti di Unix e
+standard ai quali le chiamate descritte in questa sezione si adeguano.
+Vedere
+.BR standards (7).
+.SH NOTE
+.SS "Chiamata diretta"
+In molti casi, non è necessario invocare direttamente una chiamata di sistema,
+ma alcune volte la libreria C Standard non implementa
+una funzione che soddisfi le proprie necessità.
+In questo caso il programmatore deve invocare manualmente la chiamata di sistema usando
+.BR syscall (2).
+Storicamente era possibile farlo anche usando una delle macro di _syscall
+descritte in
+.BR _syscall (2).
+.SS Autori e termini di copyright
+Si veda l'intestazione del sorgente della pagina di manuale per l'autore
+e per le condizioni di copyright.
+Si noti che possono essere diversi da pagina a pagina.
+.SH "VEDERE ANCHE"
+.BR _syscall (2),
+.BR syscall (2),
+.BR errno (3),
+.BR feature_test_macros (7),
+.BR standards (7)

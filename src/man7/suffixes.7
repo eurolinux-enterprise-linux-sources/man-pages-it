@@ -1,0 +1,285 @@
+'\" t
+.\" (c) 1993 by Thomas Koenig (ig25@rz.uni-karlsruhe.de)
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\" License.
+.\" Modified Sat Jul 24 17:35:15 1993 by Rik Faith <faith@cs.unc.edu>
+.\" Modified Sun Feb 19 22:02:32 1995 by Rik Faith <faith@cs.unc.edu>
+.\" Modified Tue Oct 22 23:28:12 1996 by Eric S. Raymond <esr@thyrsus.com>
+.\" Modified Sun Jan 26 21:56:56 1997 by Ralph Schleicher
+.\"    <rs@purple.UL.BaWue.DE>
+.\" Modified Mon Jun 16 20:24:58 1997 by Nicolas Lichtmaier <nick@debian.org>
+.\" Modified Sun Oct 18 22:11:28 1998 by Joseph S. Myers <jsm28@cam.ac.uk>
+.\" Modified Mon Nov 16 17:24:47 1998 by Andries Brouwer <aeb@cwi.nl>
+.\" Modified Thu Nov 16 23:28:25 2000 by David A. Wheeler
+.\"    <dwheeler@dwheeler.com>
+.\"
+.\" Traduzione by Ottavio G. Rizzo (otto@mast.queensu.ca)
+.\" Giugno 1998
+.\" Aggiornamento a 1.21 di Ottavio G. Rizzo <rizzo@maths.univ-rennes1.fr>
+.\" Novembre 1998
+.\" Aggiornamento a 1.22 di Ottavio G. Rizzo <rizzo@maths.univ-rennes1.fr>
+.\" Gennaio 1999
+.\" Aggiornamento alla versione 1.27, febbraio 2000
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\"
+.TH SUFFIXES 7  "16 novembre 2000" "Linux" "Linux Programmer's Manual"
+.SH NOME
+suffixes \- elenco dei suffissi dei file
+.SH DESCRIZIONE
+Per consuetudine il contenuto di un file viene indicato dal suo
+suffisso: un punto seguito da una o più lettere. Molte utility di
+base, come i compilatori, usano il suffisso per riconoscere il tipo di
+file con cui hanno a che fare. Il funzionamento del programma
+.BR make (1)
+è fondato su regole basate sui suffissi.
+.PP
+Questo è un elenco dei suffissi che è facile incontrare su una
+macchina Linux.
+.PP
+.TS 
+l | l
+_ | _
+lI |  l .
+Suffisso	Tipo di file
+ ,v	file per RCS (Revision Control System)
+ -	file di backup
+ .C	sorgente C++
+ .F	sorgente Fortran con direttive \fBcpp\fP(1)
+	oppure file compresso con freeze
+ .S	sorgente assembler con direttive \fBcpp\fP(1)
+ .Y	file compresso con yabba
+ .Z	file compresso con \fBcompress\fP(1)
+ .[0-9]+gf	caratteri generici (Generic Font) di TeX
+ .[0-9]+pk	caratteri generici (Packed Font) di TeX
+ .[1-9]	pagina di manuale nella sezione corrispondente
+ .[1-9][a-z]	pagina di manuale nella sezione più sottosezione
+ .a	libreria statica (static object code library)
+ .ad	file di risorse di default di un'applicazione X
+ .ada	Sorgente Ada (può essere corpo, spec, o una combinazione)
+ .adb	Corpo sorgente Ada
+ .ads	spec sorgente Ada
+ .afm	metrica di caratteri PostScript
+ .al	file di autoload di Perl
+ .am	file di input di \fBautomake\fP(1)
+ .arc	archivio \fBarc\fP(1)
+ .arj	archivio \fBarj\fP(1)
+ .asc	dati criptati in PGP ASCII
+ .asm	file sorgente assembler (GNU)
+ .au	file di Audio
+ .aux	file ausiliare di LaTeX
+ .avi	filmato (msvideo)
+ .awk	programma in linguaggio AWK
+ .b	immagine LILO
+ .bak	file di backup
+ .bash	scritto della shell \fBbash\fP(1)
+ .bb	elenco dei blocchi di base prodotto da
+	gcc -ftest-coverage
+ .bbg	grafo dei blocchi di base prodotto da
+	gcc -ftest-coverage
+ .bbl	output di BibTeX
+ .bdf	file di caratteri X
+ .bib	database bibliografico di TeX, input di BibTeX
+ .bm	sorgente bitmap
+ .bmp	bitmap
+ .bz2	file compresso usando \fBbzip2\fP(1)
+ .c	sorgente C
+ .cat	catalogo di  messaggi
+ .cc	sorgente C++
+ .cf	file di configurazione
+ .cfg	file di configurazione
+ .cgi	scritto o programma generatore di contenuti WWW
+ .cls	Definizione di classe LaTeX
+ .class	byte-code Java compilato
+ .conf	file di configurazione
+ .config	file di configurazione
+ .cpp	equivalente a \fI.cc\fR
+ .csh	scritto della shell \fBcsh\fP(1)
+ .cxx	equivalente a \fI.cc\fR
+ .dat	file di dati
+ .deb	pacchetto software di Debian
+ .def	sorgente Modula-2  per moduli di definizione
+ .def	altri file di definizione
+ .desc	parte iniziale di una mail scompattata con
+	\fBmunpack\fP(1)
+ .diff	file di differenze (output di diff(1))
+ .dir	file di directory del database dbm
+ .doc	file di documentazione
+ .dsc	Debian Source Control (pacchetto sorgente)
+ .dtx	file sorgente di un pacchetto LaTeX
+ .dvi	device independent output di TeX
+ .el	sorgente Emacs-Lisp 
+ .elc	sorgente Emacs-Lisp compilata
+ .eps	PostScript incapsulato
+ .exp	Codice sorgente Expect
+ .f	sorgente Fortran
+ .f77	Sorgente Fortran 77
+ .f90	Sorgente Fortran 90
+ .fas	Common-Lisp pre-compilato
+ .fi	file include di Fortran 
+ .fig	file immagine FIG (usato da \fBxfig\fR(1))
+ .fmt	file di formato di TeX
+ .gif	formato grafico Compuserve (Graphics Image File)
+ .gmo	catalogo di messaggi GNU di formato
+ .gsf	caratteri Ghostscript
+ .gz	file compressi com \fBgzip\fP(1)
+ .h	file header C o C++ 
+ .help	file d'aiuto
+ .hf	equivalente a \fI.help\fP
+ .hlp	equivalente a \fI.help\fP
+ .htm	\fI.html\fP per poveretti
+ .html	documento HTML 
+ .hqx	file Macintosh codificato a 7 bit
+ .i	sorgente C preprocessata
+ .icon	sorgente bitmap
+ .idx	indice di referenze o dati per sistemi ipertestuali o database
+ .image	sorgente bitmap
+ .in	template di configurazione, soprattutto per l'Autoconf GNU
+ .info	file per il browser di info per Emacs
+ .info-[0-9]+	file spezzatati di info
+ .ins	istruzioni d'installazione per docstrip di un pacchetto LaTeX
+ .itcl	codice sorgente itcl;
+	itcl ([incr Tcl]) è una estensione OO di tcl
+ .java	sorgente Java
+ .jpeg	formato grafico Joint Photographic Experts Group
+ .jpg	\fI.jpeg\fP per poveretti
+ .kmap  keymap per \fBlyx\fP(1)
+ .l	equivalente a \fI.lex\fP or \fI.lisp\fP
+ .lex	file di \fBlex\fP(1) o \fBflex\fP(1)
+ .lha	archivio lharc
+ .lib	libreria Common-Lisp 
+ .lisp	sorgente Lisp
+ .ln	file per \fBlint\fP(1)
+ .log	file di log, in particolare di TeX
+ .lsm	voce nella Linux Software Map
+ .lsp	sorgente Common-Lisp 
+ .lzh	archivio lharc
+ .m	codice sorgente Objective-C
+ .m4	sorgente \fBm4\fP(1) 
+ .mac	macro per programmi vari
+ .man	pagina di manuale (sorgente piuttosto che già formattata)
+ .map	file di mappe per programmi vari
+ .me	sorgente Nroff per il pacchetto di macro me
+ .mf	sorgente Metafont (generatore di caratteri per TeX)
+ .mgp	file MagicPoint
+ .mm	sorgente \fBgroff\fP(1) in formato mm
+ .mo	file binario di catalogo di messaggi
+ .mod	sorgente Modula-2  moduli d'implementazione
+ .mov	filmato (quicktime)
+ .mp	sorgente Metapost
+ .mp2	file (audio) MPEG Layer 2
+ .mp3	file (audio) MPEG Layer 3
+ .mpeg	filmato
+ .o	file oggetto
+ .old	file vecchio (old) o di backup
+ .orig	versione di backup (originale) di un file, da \fBpatch\fP(1)
+ .out	file output, spesso un'eseguibile (a.out)
+ .p	sorgente Pascal
+ .pag	file di dati del database dbm
+ .patch	file di differenze per \fBpatch\fP(1)
+ .pbm	formato bitmap portatile (Portable Bitmap Format)
+ .pcf	caratteri X11
+ .pdf	Adobe Portable Data Format (usa Acrobat/\fBacroread\fP o \fBxpdf\fP)
+ .perl	sorgente Perl
+ .pfa	file di definizione di caratteri PostScript, formato ASCII
+ .pfb	file di definizione di caratteri PostScript, formato binario
+ .pgm	formato portatili a scala di grigi (Portable Greymap Format)
+ .pgp	dati binari PGP
+ .ph	header di Perl
+ .php	file programma PHP
+ .php3	file programma PHP3
+ .pid	file per conservare il pid di un demone (per es. crond.pid)
+ .pl	property list di TeX o libreria Perl
+ .pm	modulo di Perl
+ .png	file grafico (Portable Network Graphics)
+ .po	sorgente di catalogo di messaggi
+ .pod	file di \fBperldoc\fP(1)
+ .ppm	formato pixmap portatile (Portable Pixmap Format)
+ .pr	sorgente bitmap
+ .ps	file PostScript
+ .py	sorgente Python
+ .pyc	Python compilato
+ .qt	filmato quicktime
+ .r	sorgente RATFOR (obsoleto)
+ .rej	patch che \fBpatch\fP(1) non ha potuto applicare
+ .rpm	pacchetto software di RedHat
+ .rtf	file in Rich Text Format
+ .rules	regole per qualcosa
+ .s	sorgente assembler
+ .sa	stub libraries per shared libraries a.out 
+ .sc	comandi per il foglio elettronico \fBsc\fP(1)
+ .scm	codice sorgente Scheme
+ .sed	file sorgente sed
+ .sgml	sorgente SGML
+ .sh	script \fBsh\fP(1)
+ .shar	archivio \fBshar\fP(1)
+ .so	libreria condivisa o oggetto caricaribile dinamicamente
+ .sql	sorgente SQL
+ .sqml	schema SQML o programma di query 
+ .sty	style file di LaTeX
+ .sym	moduli di  definizione compilati Modula-2
+ .tar	archivio \fBtar\fP(1)
+ .tar.Z	archivio tar(1) compresso con \fBcompress\fP(1)
+ .tar.bz2	archivio tar(1) compresso con \fBbzip2\fP(1)
+ .tar.gz	archivio tar(1) compresso con \fBgzip\fP(1)
+ .taz	archivio \fBtar\fP(1) compresso con \fBcompress\fP(1)
+ .tcl	codice sorgente tcl
+ .tex	sorgente TeX o LaTeX 
+ .texi	equivalente a \fI.texinfo\fP
+ .texinfo	sorgente di documentazione Texinfo
+ .text	file di testo
+ .tfm	metrica di caratteri TeX (Font Metric File)
+ .tgz	archivio \fBtar\fP(1) compresso con \fBgzip\fP(1)
+ .tif	\fI.tiff\fP per poveretti
+ .tiff	formato grafico Tagged Image File Format
+ .tk	scritto tcl/tk
+ .tmp	file temporaneo
+ .tmpl	file di template
+ .txt	equivalente a \fI.text\fP
+ .uu	equivalente a \fI.uue\fP
+ .uue	file binario codificato con \fBuuencode\fP(1)
+ .vf	carattere virtuale TeX (Virtual Font)
+ .vpl	property list virtuale TeX
+ .w	CWEB alla Silvio Levi
+ .wav	file audio wave
+ .web	WEB alla Donald Knuth
+ .wml	file sorgente per il Web Meta Language
+ .xbm	sorgente bitmap X11
+ .xcf	grafica GIMP
+ .xml	file eXtended Markup Language
+ .xsl	foglio di stile XSL
+ .xpm	sorgente pixmap X11
+ .xs	file xsub di Perl prodotto da h2xs
+ .y	file \fByacc\fP(1) o \fBbison\fP(1) 
+ .z	file compresso con \fBpack\fP(1) (o un vecchio \fBgzip\fP(1))
+ .zip	archivio \fBzip\fP(1)
+ .zoo	archivio \fBzoo\fP(1)
+ ~	file di backup di Emacs o \fBpatch\fP(1)
+ rc	file di startup (Run Control), per es. \fI.newsrc\fP
+.TE
+.SH "CONFORME A"
+Convenzioni generali UNIX.
+.SH BACHI
+Questa lista non è esauriente.
+.SH "VEDERE ANCHE"
+.BR file (1),
+.BR make (1)

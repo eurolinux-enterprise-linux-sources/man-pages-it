@@ -1,0 +1,139 @@
+.\" Copyright (c) 1983, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" Traduzione da inetutils-1.4.2 di Giulio Daprelà <giulio@pluto.it>
+.\" gennaio 2006
+.\"
+.\"     @(#)rexecd.8	8.3 (Berkeley) 6/1/94
+.\"
+.Dd 1 giugno 1994
+.Dt REXECD 8
+.Os BSD 4.2
+.Sh NOME
+.Nm rexecd
+.Nd server di esecuzione remota
+.Sh SINTASSI
+.Nm rexecd
+.Sh DESCRIZIONE
+.Nm Rexecd
+è il server per la routine
+.Xr rexec 3 .
+Il server fornisce servizi di esecuzione remota con autenticazione 
+basata su nomi degli utenti e password.
+.Pp
+.Nm Rexecd
+ascolta le richieste di servizio alla porta indicata nelle specifiche 
+del servizio ``exec''; vedere
+.Xr services 5 .
+Quando una richiesta di servizio è ricevuta è iniziato il seguente 
+protocollo:
+.Bl -enum
+.It
+Il server legge caratteri dal socket fino a un byte NUL
+.Pq Ql \e0 .
+La stringa risultante è interpretata come un numero
+.Tn ASCII
+base 10.
+.It
+Se il numero ricevuto al passo 1 è non-zero,
+esso è interpretato come numero di porta di un flusso secondario
+da usare per
+.Em stderr .
+Una seconda connessione è quindi creata sulla porta specificata sulla
+macchina client.
+.It
+Un nome utente che termina con NUL di almeno 16 caratteri è trovato sul
+socket iniziale
+.It
+Una password che termina con NUL, non cifrata, di almeno 16 caratteri,
+è trovata sul socket iniziale.
+.It
+Un comando che termina con NUL da passare a una shell
+è trovato sul socket iniziale. La lunghezza del comando è limitata dal 
+limite superiore sulla dimensione dell'elenco degli argomenti di sistema.
+.It
+.Nm Rexecd
+quindi valida l'utente come fatto al momento del login e,
+se l'autenticazione ha successo, si sposta sulla home directory dell'
+utente, e stabilisce le protezioni di utente e gruppo dell'utente.
+Se uno di questi passi fallisce la connessione è abortita e viene 
+restituito un messaggio di diagnostica.
+.It
+Viene restituito un byte NUL sul socket iniziale e la linea di comando
+è passata alla shell di login normale dell'utente. La shell eredita le 
+connessioni della rete stabilite da
+.Nm rexecd .
+.El
+.Sh DIAGNOSTICA
+Tranne che per l'ultimo elencato in precedenza, tutti i messaggi di 
+diagnostica sono restituiti sul socket inziale, dopo di che tutte le 
+connessioni di rete sono chiuse. Un errore è indicato con un byte 
+iniziale con un valore di 1 (lo 0 è restituito al passo 7 precedente in 
+seguito al completamento con successo di tutti i passi precedenti all'
+esecuzione del comando).
+.Pp
+.Bl -tag -width Ds
+.It Sy username too long
+Il nome è più lungo di 16 caratteri.
+.It Sy password too long
+La password è più lunga di 16 caratteri.
+.It Sy command too long
+La linea di comando passata supera la dimensione dell'elenco argomenti
+(come configurato nel sistema).
+.It Sy Login incorrect.
+Non esiste alcun campo nel file delle password per il nome utente.
+.It Sy Password incorrect.
+E' stata fornita una password errata.
+.ne 1i
+.It Sy \&No remote directory.
+Il comando
+.Xr chdir
+nella home directory è fallito.
+.It Sy Try again.
+Un
+.Xr fork
+del server è fallito.
+.It Sy <shellname>: ...
+La shell di login dell'utente non può essere avviata.
+Questo messaggio è restituito sulla connessione associata con
+.Em stderr ,
+e non è preceduto da un byte flag.
+.El
+.Sh VEDERE ANCHE
+.Xr rexec 3
+.Sh BUG
+Indicare ``Login incorrect'' invece che ``Password incorrect''
+è una falla di sicurezza che permette alle persone di cercare nel 
+sistema utenti con password nulla.
+.Pp
+Un servizio per permettere a tutti gli scambi di dati e password di 
+essere cifrati deve essere presente.
+.Sh STORIA
+Il comando
+.Nm
+è apparso in
+.Bx 4.2 .

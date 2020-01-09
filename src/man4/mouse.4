@@ -1,0 +1,168 @@
+'\" t
+.\"roff.\" Copyright
+.\" This manpage is Copyright (C) 1996 Michael Haardt.
+.\" Updates Nov 1998, Andries Brouwer
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Settembre 1996
+.\" Aggiornamento alla versione 1.15 di Alessandro Rubini (rubini@linux.it)
+.\" Maggio 1997
+.\" Aggiornamento alla versione 1.22 di Ottavio Rizzo (rizzo@pluto.linux.it)
+.\" Gennaio 1999
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\"
+.TH MOUSE 4 "10 febbraio 1996" "File speciali" "Linux Programmer's Manual"
+.SH NOME
+mouse \- interfaccia per il mouse seriale
+.SH CONFIGURAZIONE
+I mouse seriali sono connessi a una linea seriale dialout RS232/V24.
+Si veda
+.BR ttyS (4)
+per una descrizione.
+.SH DESCRIZIONE
+.SS Introduzione
+La piedinatura della solita presa a 9 pin usata per i mouse seriali è:
+
+.TS
+center;
+r c l.
+pin	name	used for
+2	RX	Data
+3	TX	-12 V, Imax = 10 mA
+4	DTR	+12 V, Imax = 10 mA
+7	RTS	+12 V, Imax = 10 mA
+5	GND	Ground
+.TE
+
+Queste sono le specifiche, ma di fatto 9 V sono sufficienti per la
+maggior parte dei mouse.
+.PP
+Il driver del mouse può riconoscere un mouse portando basso RTS e
+rialzandolo di nuovo. Circa 14 ms dopo, il mouse invierà 0x4D («M»)
+nella linea dati. Dopo ulteriori 63 ms i mouse a tre bottoni
+compatibili Microsoft invieranno 0x33 («3»).
+.PP
+Il movimento relativo del mouse è inviato come \fIdx\fP (un valore
+positivo indica verso destra) e \fIdy\fP (un valore positivo indica
+verso il basso).
+Diversi mouse possono operare a velocità differenti. Per selezionare
+le velocità, bisogna provare tutte le  velocità 9600, 4800, 2400 e 1200
+bit/s, ogni volta scrivendo i due caratteri della tabella sotto e
+aspettando 0.1 secondi. La seguente tabella mostra le velocità
+disponibili e le stringhe che le selezionano:
+
+.TS
+center;
+l l.
+bit/s	stringa
+9600	*q
+4800	*p
+2400	*o
+1200	*n
+.TE
+
+Come si può notare il primo byte del pacchetto di dati può essere
+usato per la sincronizzazione.
+.SS "Protocollo Microsoft"
+Il protocollo \fBMicrosoft\fP usa 1 bit di start, 7 bit di dati,
+nessuna parità e un bit di stop alla velocità di 1200 bit/s. I
+dati sono inviati a RxD in pacchetti di 3 byte. I movimenti \fIdx\fP e
+\fIdy\fP sono inviati in complemento a due. \fIlb\fP (\fIrb\fP) viene
+attivato quando il tasto sinistro (destro) è premuto:
+
+.TS
+center;
+r c c c c c c c.
+byte	d6	d5	d4	d3	d2	d1	d0
+1	1	lb	rb	dy7	dy6	dx7	dx6
+2	0	dx5	dx4	dx3	dx2	dx1	dx0
+3	0	dy5	dy4	dy3	dy2	dy1	dy0
+.TE
+
+.SS "Protocollo Microsoft a tre bottoni"
+I mouse Microsoft originali hanno solo due tasti. Nonostante ciò, ci
+sono alcuni mouse a tre tasti che usano il protocollo Microsoft. La
+pressione o il rilascio del bottone di mezzo è riportata dall'invio di
+un pacchetto con nessun movimento e nessun tasto premuto
+(perciò, a differenza degli altri due bottoni, lo stato del bottone di
+mezzo non è riportato in ogni pacchetto).
+.SS "Protocollo Logitech"
+I mouse Logitech seriali a tre bottoni usa un'estensione diversa del
+protocollo Microsoft: quando il bottone di mezzo è su, il pacchetto da
+tre byte di più sopra è inviato; quando il bottone di mezzo è giù, un
+pacchetto da quattro byte è inviato, dove il quarto byte ha il valore
+0x20 (o, per lo meno, ha il bit 0x20 impostato). In particolare, la
+pressione del bottone di mezzo è riportata come 0,0,0,0x20 se nessun
+altro bottone viene schiacciato.
+.SS "Protocollo Mousesystems"
+Il protocollo \fBMousesystems\fP usa un bit di start, 8 bit di dati,
+nessuna parità e due bit di stop alla velocità di 1200 bit/s. I dati
+sono spediti a RxD in pacchetti da 5 byte. \fIdx\fP è spedito come
+somma dei due valori in complemento a due, \fIdy\fP è spedito come
+somma negata dei due valori in complemento a due. \fIlb\fP (\fImb\fP,
+\fIrb\fP) viene portato basso (0) quando il tasto sinistro
+(centrale, destro) sono premuti:
+
+.TS
+center;
+r c c c c c c c c.
+byte	d7	d6	d5	d4	d3	d2	d1	d0
+1	1	0	0	0	0	lb	mb	rb
+2	0	dxa6	dxa5	dxa4	dxa3	dxa2	dxa1	dxa0
+3	0	dya6	dya5	dya4	dya3	dya2	dya1	dya0
+4	0	dxb6	dxb5	dxb4	dxb3	dxb2	dxb1	dxb0
+5	0	dyb6	dyb5	dyb4	dyb3	dyb2	dyb1	dyb0
+.TE
+
+I byte 4 e 5 descrivono il cambiamento avvenuto a seguito della
+trasmissione dei byte 2 e 3.
+.SS "Protocollo Sun"
+Il protocollo \fBSun\fP è la versione a tre byte del protocollo
+Mousesystems a cinque byte di più sopra: gli ultimi due byte non sono
+inviati. 
+.SS "Protocollo MM"
+Il protocollo \fBMM\fP usa un bit di start, 8 bit di dati, parità
+dispari e un bit di stop alla velocità di 1200 bit/s. I dati sono
+spediti a RxD in pacchetti da 3 byte. \fIdx\fP e \fIdy\fP sono spediti
+come singoli valori con segno, e il bit di segno indica un valore
+negativo. \fIlb\fP (\fImb\fP, \fIrb\fP) vengono attivati quando il
+tasto sinistro (centrale, destro) sono premuti:
+
+.TS
+center;
+r c c c c c c c c.
+byte	d7	d6	d5	d4	d3	d2	d1	d0
+1	1	0	0	dxs	dys	lb	mb	rb
+2	0	dx6	dx5	dx4	dx3	dx2	dx1	dx0
+3	0	dy6	dy5	dy4	dy3	dy2	dy1	dy0
+.TE
+
+.SH FILE
+.TP
+.I /dev/mouse
+un link simbolico usato comunemente come puntatore al dispositivo del mouse.
+
+.SH "VEDERE ANCHE"
+.BR ttyS (4),
+.BR gpm (8)
