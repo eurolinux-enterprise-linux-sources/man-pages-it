@@ -1,0 +1,165 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" Copyright (c) 1995 Michael Chastain (mec@shell.portal.com), 15 April 1995.
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\"
+.\" Modified 1997-01-31 by Eric S. Raymond <esr@thyrsus.com>
+.\" Modified 1997-07-30 by Paul Slootman <paul@wurtel.demon.nl>
+.\" Modified 2004-05-27 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\"
+.\" Traduzione da man-pages-2.43 di Davide Cendron <davcen@interfree.it>
+.\" gennaio 2007
+.\"
+.TH ADJTIMEX 2 "27 Maggio 2004" "Linux" "Manuale del Programmatore Linux"
+.SH NAME
+adjtimex \- regola l'orologio del kernel
+.SH SINTASSI
+.B #include <sys/timex.h>
+.sp
+.BI "int adjtimex(struct timex *" "buf" );
+.SH DESCRIZIONE
+Linux usa l'algoritmo di correzione dell'orario di David L. Mill (vedere RFC 1305).
+La chiamata di sistema
+.BR adjtimex ()
+legge e imposta opzionalmente i parametri di correzione per questo algoritmo.
+Accetta un puntatore a una struttura
+.I timex ,
+aggiorna i parametri del kernel in base ai valori dei campi
+e restituisce la medesima struttura con i valori correnti del kernel.
+La struttura è dichiarata nel seguento modo:
+.PP
+.in +4n
+.nf
+struct timex {
+    int modes;           /* selettore modalità  */
+    long offset;         /* spostamento orario (usec) */
+    long freq;           /* spostamento frequenza (scaled ppm) */
+.\" FIXME -- what is the scaling unit?  2^16 ?
+    long maxerror;       /* errore massimo (usec) */
+    long esterror;       /* errore stimato (usec) */
+    int status;          /* stato/comando orologio */
+    long constant;       /* costante di tempo pll */
+    long precision;      /* precisione orologio (usec) (sola lettura) */
+    long tolerance;      /* tolleranza frequenza orologio (ppm)
+                            (sola lettura) */
+    struct timeval time; /* orario attuale (sola lettura) */
+    long tick;           /* usec tra i battiti dell'orologio */
+};
+.fi
+.in
+.PP
+Il campo
+.I modes
+determina quale eventuale parametro impostare.
+Può contenere una combinazione
+.RI bitwise-or
+(OR bit-a-bit) di zero o più dei seguenti bit:
+.PP
+.RS
+.nf
+#define ADJ_OFFSET            0x0001 /* spostamento orario */
+#define ADJ_FREQUENCY         0x0002 /* spostamento frequenza */
+#define ADJ_MAXERROR          0x0004 /* errore tempo massimo */
+#define ADJ_ESTERROR          0x0008 /* errore tempo stimato */
+#define ADJ_STATUS            0x0010 /* stato orologio */
+#define ADJ_TIMECONST         0x0020 /* costante di tempo pll */
+#define ADJ_TICK              0x4000 /* valore battito */
+#define ADJ_OFFSET_SINGLESHOT 0x8001 /* vecchio adjtime() */
+.fi
+.RE
+.PP
+Gli utenti ordinari sono limitati al valore zero per
+.IR mode .
+Solo il superutente può impostare qualunque parametro.
+.br
+.ne 12v
+.SH "VALORE RESTITUITO"
+In caso di successo,
+.BR adjtimex ()
+restituisce lo stato dell'orologio:
+.PP
+.RS
+.nf
+#define TIME_OK   0 /* orologio sincronizzato */
+#define TIME_INS  1 /* inserire secondo intercalare */
+#define TIME_DEL  2 /* cancellare secondo intercalare */
+#define TIME_OOP  3 /* secondo intercalare in corso */
+#define TIME_WAIT 4 /* secondo intercalare avvenuto */
+#define TIME_BAD  5 /* orologio non sincronizzato */
+.fi
+.RE
+.PP
+Se fallisce,
+.BR adjtimex ()
+restituisce \-1 e imposta
+.IR errno .
+.SH ERRORI
+.TP
+.B EFAULT
+.I buf
+non punta ad una zona di memoria scrivibile.
+.TP
+.B EINVAL
+Si è tentato di impostare
+.I buf.offset
+ad un valore fuori dall'intervallo \-131071 e +131071,
+o di impostare
+.I buf.status
+ad un valore diverso da quelli elencati in precedenza,
+o di impostare
+.I buf.tick
+ad un valore non incluso nell'intervallo
+.RB 900000/ HZ
+e
+.RB 1100000/ HZ ,
+dove
+.B HZ
+E' la frequenza dell'interrupt del timer di sistema.
+.TP
+.B EPERM
+.I buf.mode
+non è zero e il chiamante non ha privilegi sufficienti.
+In Linux è richiesta l'abilitazione a
+.B CAP_SYS_TIME
+\.
+.SH "CONFORME A"
+\fBadjtimex\fP() è specifico di Linux e non dovrebbe essere usato in programmi
+pensati per la portabilità .
+Vedere
+.BR adjtime (3)
+per un maggiormente portabile, ma meno flessibile
+metodo di correzione dell'orologio di sistema.
+.SH "VEDERE ANCHE"
+.BR settimeofday (2),
+.BR adjtime (3),
+.BR capabilities (7)
+.BR time (7)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 3.01 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

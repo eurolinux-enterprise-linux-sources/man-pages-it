@@ -1,0 +1,70 @@
+.\" -*- nroff -*-
+.\"
+.\" This man-page is Copyright (C) 1997 John S. Kallal
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" correction, aeb, 970825
+.\"
+.\" Traduzione in italiano di Ottavio G. Rizzo <rizzo@pluto.linux.it>
+.\" Gennaio 1999
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\"
+.TH FULL 4 "24 novembre 2007" "Linux" "Linux Programmer's Manual"
+.SH NOME
+full \- dispositivo sempre pieno
+.SH CONFIGURAZIONE
+Se il sistema non comprende già \fB/dev/full\fP, lo si può creare coi
+seguenti comandi:
+.nf
+
+        mknod \-m 666 /dev/full c 1 7
+        chown root:root /dev/full
+.fi
+.SH DESCRIZIONE
+Il file \fB/dev/full\fP ha numero primario di dispositivo 1 e numero
+secondario 7.
+.LP
+Le scritture sul dispositivo \fB/dev/full\fP falliscono con
+un errore
+.B ENOSPC.
+Questo errore può essere usato per testare come un programma gestisce gli errori di disco pieno.
+
+Le letture dal dispositivo \fB/dev/full\fP restituiscono caratteri \\0.
+
+Le operazioni di ricerca su \fB/dev/full\fP hanno sempre successo.
+.SH FILE
+/dev/full
+.SH "VEDERE ANCHE"
+.BR mknod (1),
+.BR null (4),
+.BR zero (4)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.69 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

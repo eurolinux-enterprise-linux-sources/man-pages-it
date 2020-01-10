@@ -1,0 +1,101 @@
+.\" -*- nroff -*-
+.\"
+.\" (C)opyright 1993 by Dan Miner (dminer@nyx.cs.du.edu)
+.\"
+.\"  Permission is granted to freely distribute or modify this file
+.\"  for the purpose of improving Linux or its documentation efforts.
+.\"  If you modify this file, please put a date stamp and HOW you
+.\"  changed this file.  Thanks.   -DM
+.\"
+.\" Modified Sat Jul 24 12:35:12 1993 by Rik Faith <faith@cs.unc.edu>
+.\" Modified Tue Oct 22 22:29:51 1996 by Eric S. Raymond <esr@thyrsus.com>
+.\" Modified Mon Aug 25 16:06:11 1997 by Nicolás Lichtmaier <nick@debian.org>
+.\"
+.\" Tradotto da Goffredo Baroncelli, 25/4/1998 <kreijack@usa.net>
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.68 di Elisabetta Galli <lab@kkk.it>
+.\" novembre 2007
+.\"
+.TH SYSINFO 2 "15 novembre 2007" "Linux 2.0" "Linux Programmer's Manual"
+.SH NOME
+sysinfo \- restituisce informazioni sulle statististiche di sistema globali
+.SH SINTASSI
+.B #include <sys/sysinfo.h>
+.sp
+.BI "int sysinfo(struct sysinfo *" info );
+.SH DESCRIZIONE
+Fino a Linux 2.3.16,
+.BR sysinfo ()
+restituiva informazioni nella seguente struttura:
+
+.nf
+.in +0.25i
+struct sysinfo {
+	long uptime;              /* Secondi dall'avvio */
+	unsigned long loads[3];   /* Carico medio negli ultimi 15, 5, ed 1 minuto */
+	unsigned long totalram;   /* Dimensione totale della memoria principale utilizzabile */
+	unsigned long freeram;    /* Dimensione della memoria disponibile */
+	unsigned long sharedram;  /* Quantità di memoria condivisa */
+	unsigned long bufferram;  /* Memoria usata dai buffer */
+	unsigned long totalswap;  /* Dimensione totale dello spazio di swap */
+	unsigned long freeswap;   /* Spazio di swap ancora disponibile */
+	unsigned short procs;     /* Numero di processi attuali */
+	char _f[22];              /* Riempie una struttura a 64 byte */
+};
+.in -0.25i
+.fi
+.PP
+e le dimensioni erano in byte.
+
+A partire da Linux 2.3.23 (i386), 2.3.48
+(tutte le architetture) la struttura è
+
+.nf
+.in +0.25i
+struct sysinfo {
+	long uptime;             /* Secondi dall'avvio */
+	unsigned long loads[3];  /* Carico medio negli ultimi 15, 5, ed 1 minuto */
+	unsigned long totalram;  /* Dimensione totale della memoria principale utilizzabile */
+	unsigned long freeram;   /* Dimensione della memoria disponibile */
+	unsigned long sharedram; /* Quantità di memoria condivisa */
+	unsigned long bufferram; /* Memoria usata dai buffer */
+	unsigned long totalswap; /* Dimensione totale dello spazio di swap */
+	unsigned long freeswap;  /* Spazio di swap ancora disponibile */
+	unsigned short procs;    /* Numero di processi attuali */
+	unsigned long totalhigh; /* Dimensione totale della memoria alta */
+	unsigned long freehigh;  /* Dimensione della memoria alta libera */
+	unsigned int mem_unit;   /* Dimensione in byte dell'unità di memoria */
+	char _f[20\-2*sizeof(long)\-sizeof(int)]; /* Riempimento per libc5 */
+};
+.in -0.25i
+.fi
+.PP
+e le dimensioni sono indicate come multipli di \fImem_unit\fP byte.
+
+.BR sysinfo ()
+fornisce un modo semplice per ottenere statistiche globali di sistema. 
+Questo è più
+portabile che leggere \fI/dev/kmem\fP.
+.SH "VALORI RESTITUITI"
+In caso di successo viene restituito zero,
+altrimenti \-1, e
+.I errno
+verrà impostato di conseguenza.
+.SH ERRORI
+.TP
+.B EFAULT
+il puntatore alla \fIstruct\ sysinfo\fP non è valido
+.SH "CONFORME A"
+Questa funzione è specifica di Linux, e non dovrebbe essere usata in programmi
+che si vogliono portare su altre piattaforme.
+.sp
+Il kernel Linux ha una chiamata di sistema
+.BR sysinfo ()
+a partire da 0.98.pl6.
+Linux libc contiene una routine
+.BR sysinfo ()
+a partire da 5.3.5, e
+glibc ne ha una da 1.90.
+.SH "VEDERE ANCHE"
+.BR proc (5)

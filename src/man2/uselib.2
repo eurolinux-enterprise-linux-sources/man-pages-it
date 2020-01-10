@@ -1,0 +1,105 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" Copyright (c) 1992 Drew Eckhardt (drew@cs.colorado.edu), March 28, 1992
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Modified by Michael Haardt <michael@moria.de>
+.\" Modified 1993-07-24 by Rik Faith <faith@cs.unc.edu>
+.\" Modified 1996-10-22 by Eric S. Raymond <esr@thyrsus.com>
+.\" Modified 2004-06-23 by Michael Kerrisk <mtk16@ext.canterbury.ac.nz>
+.\" Modified 2005-01-09 by aeb
+.\"
+.\" Tradotto da Goffredo Baroncelli il 3/4/1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\"
+.TH USELIB 2 "Aprile 1998" "Linux 0.99.11" "Linux Programmer's Manual"
+.SH NOME
+uselib \- seleziona una shared library
+.SH SINTASSI
+.B #include <unistd.h>
+.sp
+.BI "int uselib(const char *" library );
+.SH DESCRIZIONE
+\fBuselib\fP seleziona la libreria condivisa che sarà usata dal processo.
+Viene dato un pathname. L'indirizzo da cui caricare si trova nella 
+stessa libreria. La libreria può avee qualunque formato binario 
+riconosciuto.
+.SH "VALORI RESTITUITI"
+In caso di esito positivo viene restituito zero, altrimenti \-1 e
+.I errno
+contine il codice dell'errore verificatosi.
+.SH ERRORI
+In aggiunta a tutti i codici di erore restituiti da
+.BR open (2)
+e
+.BR mmap (2),
+possono essere restituiti anche i seguenti:
+
+.TP
+.B EACCES
+La libreria specificata da
+.I library
+non ha permessi in lettura o esecuzione, o il chiamante non ha permessi
+di ricerca per una delle directory nel percorso.
+(Vedere anche
+.BR path_resolution (2).)
+.TP
+.B ENFILE
+E' stato raggiunto il limite di sistema sul numero totale di file aperti.
+.TP
+.B ENOEXEC
+Il file specificato da
+.I library
+non è un eseguibile o un tipo conosciuto,
+es., non ha i magic number corretti.
+.SH "CONFORME A"
+\fBuselib\fP() è specifico di Linux, e non deve essere usato in 
+programmi pensati per essere portabili.
+.SH NOTE
+\fBuselib\fP() fu usata dai primi codici di avvio di libc per caricare
+le librerie condivise con nomi trovati in un array di nomi nel binario.
+.LP
+.\" libc 4.3.1f - changelog 1993-03-02
+A partire da libc 4.3.2, il codice di avvio prova a anteporre a questi 
+nomi "/usr/lib", "/lib" e "" prima di rinunciare.
+.\" libc 4.3.4 - changelog 1993-04-21
+In libc 4.3.4 e successive questi nomi sono cercati nelle directory
+trovate in LD_LIBRARY_PATH, e, se non si trovano lì,
+vengono provati i prefissi "/usr/lib", "/lib" and "/".
+.LP
+A partire da libc 4.4.4 viene caricata solo la libreria "/lib/ld.so",
+così che la libreria dinamica possa caricare le restanti librerie 
+necessarie (usando di nuovo questa chiamata).
+Questo è anche lo stato dell'arte in libc5.
+.LP
+glibc2 non usa questa chiamata.
+.SH "VEDERE ANCHE"
+.BR ar (1),
+.BR gcc (1),
+.BR ld (1),
+.BR ldd (1),
+.BR mmap (2),
+.BR open (2),
+.BR dlopen (3),
+.BR capability (7),
+.BR ld.so (8)

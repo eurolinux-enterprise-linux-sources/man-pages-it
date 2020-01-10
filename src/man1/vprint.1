@@ -1,0 +1,50 @@
+.\" Pagina di manuale minimale per vprint
+.\" Copyright 1998 (C) Dirk Eddelbuettel <edd@debian.org> 
+.TH VPRINT 1 "Novembre 1998" "Debian Project" "Debian GNU/Linux"
+.SH NOME
+vprint \- filtro di stampa per interrompere righe lunghe
+.SH SINTASSI
+.B vprint 
+[
+.I dimensioni
+] [
+.I file
+]
+.SH DESCRIZIONE
+.B vprint
+è un filtro di stampa che permette di stampare un file che ha linee molto
+lunghe, facendo proseguire una riga lunga su un'altra pagina. E` stato scritto
+specificatamente per stampare un foglio di calcolo.
+
+Attualmente
+.B vprint 
+fornisce un supporto incorporato per le stampanti HPdeskjet in modo Landscape 
+(orizzontale). Tuttavia può essere usato con ogni altra stampante specificando
+il numero di righe e colonne.
+.SH ESEMPI
+.B vprint 
+è stato scritto per il foglio di calcolo
+.B slsc, 
+ma, probabilmente, può essere usato altrettanto bene con altri programmi. Per
+.BR slsc,
+scrivere qualcosa come
+
+   set printer "| vprint -deskjet | lpr"
+
+nel file 
+.I slsc.rc.  
+Se non si dispone di una stampante deskjet, usare qualcosa come:
+
+   set printer "| vprint 50x80 | lpr"
+
+In questo esempio si assume che la stampante abbia 50 righe e 80 colonne.
+.SH AUTORE
+John E. Davis.
+Traduzione e adattamenti in italiano a cura di Hugh Hartmann 
+<hhartmann@libero.it>. Revisione a cura di Elisabetta Galli <lab@kkk.it>
+.SH "CURATORE DEBIAN GNU/LINUX"
+Dirk Eddelbuettel <edd@debian.org>
+.SH "VEDERE ANCHE"
+.BR lpr (1),
+.BR slsc (1)
+

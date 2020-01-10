@@ -1,0 +1,507 @@
+.\" (c) 1993 by Thomas Koenig (ig25@rz.uni-karlsruhe.de)
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\" License.
+.\" Modified Sun Jul 25 11:05:58 1993 by Rik Faith (faith@cs.unc.edu)
+.\" Modified Sat Feb 10 16:18:03 1996 by Urs Thuermann (urs@isnogud.escape.de)
+.\" Modified Mon Jun 16 20:02:00 1997 by Nicolas Lichtmaier <nick@debian.org>
+.\" Modified Mon Feb  6 16:41:00 1999 by Nicolás Lichtmaier <nick@debian.org>
+.\" Modified Tue Feb  8 16:46:45 2000 by Chris Pepper <pepper@tgg.com>
+.\" Modified Fri Sep  7 20:32:45 2001 by Tammy Fox <tfox@redhat.com>
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Ottobre 1996
+.\" Aggiornamento a man-pages-1.20 di Ottavio G. Rizzo (otto@mast.queensu.ca)
+.\" Giugno 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\" Aggiornamento a man-pages-2.64 di Elisabetta Galli <lab@kkk.it>
+.\" settembre 2007
+.\"
+.TH HIER 7  "7 settembre 2001" "Linux" "Linux Programmer's Manual"
+.SH NOME
+hier \- Descrizione della gerarchia del file system
+.SH DESCRIZIONE
+Un tipico sistema Linux ha, tra le altre, le seguenti directory:
+.TP
+.I /
+Questa è la directory root.
+È dove inizia l'intero albero.
+.TP
+.I /bin
+Questa directory contiene gli eseguibili dei programmi che sono
+necessari in modalità single user e per attivare il sistema o per ripararlo. 
+.TP
+.I /boot
+Contiene i file statici per il boot loader.
+Questa directory contiene solo i file
+necessari durante il processo di avvio.
+Il map installer e i
+file di configurazione dovrebbero essere in 
+.I /sbin
+e
+.IR /etc .
+.TP
+.I /dev
+File speciali o device, che fanno riferimento a dispositivi fisici.
+Si veda
+.BR mknod (1).
+.TP
+.I /etc
+Contiene i file di configurazione locali alla macchina.
+Alcuni
+pacchetti software molto grandi, come X11, possono avere le proprie
+sottodirectory sotto
+.IR /etc .
+I file di configurazione globali possono essere messi qua o in
+.IR /usr/etc .
+Ciò nonostante, i programmi potrebbero sempre cercare questi file in 
+.I /etc
+e li si deve linkare a
+.IR /usr/etc .
+.TP
+.I /etc/opt
+File di configurazione specifici dell'host per applicazioni aggiuntive 
+installate in
+.IR /opt .
+.TP
+.I /etc/sgml
+Questa directory contiene i file di configurazione per SGML e XML (opzionale).
+.TP
+.I /etc/skel
+Quando si crea un account per un nuovo utente, i file di questa
+directory sono solitamente copiati nella home directory dell'utente.
+.TP
+.I /etc/X11
+File di configurazione per il sistema a finestre X11 (opzionale).
+.TP
+.I /home
+Su macchine con directory di home per gli utenti, queste sono di solito,
+direttamente o no, al di sotto di questa directory.
+La struttura di questa directory
+dipende dalle decisioni dell'amministrazione locale.
+.TP
+.I /lib
+Questa directory dovrebbe contenere quelle librerie condivise necessarie
+all'avvio del sistema e per eseguire i programmi nel file system root.
+.TP
+.I /media
+Questa directory contiene i punti di mount per supporti rimovibili come CD
+e DVD o penne USB
+.TP
+.I /mnt
+È il mount point per un file system montato temporaneamente.
+In alcune distribuzioni
+.I /mnt
+contiene sottodirectory da usare come mount point per diversi
+file system temporanei.
+.TP
+.I /opt
+Questa directory deve contenere pacchetti aggiuntivi che contengono file statici.
+.TP
+.I /proc
+È il mount point per il file system
+.I proc ,
+che fornisce informazioni sui processi in esecuzione e sul
+kernel.
+Questo pseudo-file system è descritto più in dettaglio in
+.BR proc (5).
+.TP
+.I /root
+Questa directory di solito è la home directory dell'utente root (opzionale).
+.TP
+.I /sbin
+Come
+.IR /bin ,
+questa directory contiene i comandi necessari per il boot del sistema,
+ma che che di solito non sono eseguiti dagli utenti normali.
+.TP
+.I /tmp
+Questa directory contiene file temporanei che possono essere cancellati senza
+alcun preavviso da un normale processo e all'avvio del sistema. 
+.TP
+.I /usr
+Questa directory solitamente è montata da una partizione separata.
+Dovrebbe contenere solo dati condivisibili e a sola lettura, in modo tale possa essere montata
+da diverse macchine che fanno girare Linux.
+.TP
+.I /usr/X11R6
+Il sistema X\-Window, versione 11 release 6 (opzionale).
+.TP
+.I /usr/X11R6/bin
+Eseguibili che appartengono al sistema X\-Windows; spesso, c'è un link
+simbolico dalla più tradizionale 
+.I /usr/bin/X11
+a questa directory.
+.TP
+.I /usr/X11R6/lib
+File dati associati con il sistema X\-Windows.
+.TP
+.I /usr/X11R6/lib/X11
+Questa contiene vari file necessari per far girare X. Spesso c'è un
+link simbolico da 
+.I /usr/lib/X11
+a questa directory.
+.TP
+.I /usr/X11R6/include/X11
+Contiene i file include necessari per compilare programmi che usano l'X11
+window system.
+Spesso c'è un link simbolico da
+.I /usr/include/X11
+a questa directory.
+.TP
+.I /usr/bin
+Questa è la directory primaria per i programmi eseguibili.
+Molti programmi
+eseguiti dagli utenti normali che non sono necessari per l'avvio
+o per riparare il sistema e che non sono installati localmente
+dovrebbero essere piazzati in questa directory.
+.TP
+.I /usr/bin/X11
+è il posto tradizionale dove cercare gli eseguibili di X11; in Linux,
+è solitamente un link simbolico a 
+.IR /usr/X11R6/bin .
+.TP
+.I /usr/dict
+Sostituita da
+.IR /usr/share/dict .
+.TP
+.I /usr/doc
+Sostituita da
+.IR /usr/share/doc .
+.TP
+.I /usr/etc
+I file di configurazione del sito che sono condivisi tra diverse
+macchine possono essere messi in questa directory.
+Comunque, i comandi dovrebbero sempre
+far riferimento a questi file usando la
+directory 
+.IR /etc .
+I link dai file in 
+.I /etc
+dovrebbero puntare ai file appropriati in 
+.IR /usr/etc .
+.TP
+.I /usr/games
+Binari per giochi e programmi educativi (opzionale).
+.TP
+.I /usr/include
+File include per il compilatore C.
+.TP
+.I /usr/include/X11
+File include per il compilatore C e il sistema X\-Windows.
+Questa è
+solitamente un link simbolico a 
+.IR /usr/X11R6/include/X11 .
+.TP
+.I /usr/include/asm
+File include che dichiarano alcune funzioni assembler.
+Di solito, questa
+era un link simbolico a 
+.IR /usr/src/linux/include/asm ,
+.TP
+.I /usr/include/linux
+Contiene informazioni che possono cambiare da rilascio a rilascio
+del sistema ed era di solito un link simbolico a
+.I /usr/src/linux/include/linux
+per ottenere le informazioni specifiche del sistema operativo.
+
+(Notare che è necessario avere include file qui che funzionano correttamente con
+la libc corrente in user space.
+Tuttavia il sorgente del kernel non è
+progettato per essere usato con programmi utente, e non sa nulla
+della libc in uso.
+È molto probabile che le cose non funzionino
+se si permette che
+.I /usr/include/asm
+e
+.I /usr/include/linux
+puntino ad un albero casuale del kernel.
+Debian si comporta diversamente e
+usa header di una versione del kernel notoriamente buona,
+forniti dal pacchetto libc*-dev).
+.TP
+.I /usr/include/g++
+File include da usare con il compilatore GNU C++.
+.TP
+.I /usr/lib
+Librerie oggetto, incluse le librerie dinamiche, più alcuni eseguibili
+che di solito non sono invocati direttamente.
+I programmi più complicati potrebbero
+avere qua intere sottodirectory.
+.TP
+.I /usr/lib/X11
+Posto usuale per i file di dati associati con i programmi X, e file di
+configurazione del sistema X stesso.
+In Linux, è solitamente un link
+simbolico a 
+.IR /usr/X11R6/lib/X11 .
+.TP
+.I /usr/lib/gcc-lib
+contiene eseguibili e file include per il compilatore C della GNU
+.BR gcc (1).
+.TP
+.I /usr/lib/groff
+File per il sistema di formattazione documenti della GNU groff(1).
+.TP
+.I /usr/lib/uucp
+File per
+.BR uucp (1).
+.TP
+.I /usr/local
+È dove vanno messi tipicamente i programmi locali al sito.
+.TP
+.I /usr/local/bin
+Gli eseguibili dei programmi locali al sito vanno qui.
+.TP
+.I /usr/local/doc
+Documentazione locale.
+.TP
+.I /usr/local/etc
+Contiene file di configurazione associati con programmi installati localmente.
+.TP
+.I /usr/local/games
+Binari per giochi installati localmente.
+.TP
+.I /usr/local/lib
+I file associati con programmi installati localmente vanno qua. 
+.TP
+.I /usr/local/include
+File header per il compilatore C locale.
+.TP
+.I /usr/local/info
+Pagine info associate con programmi installati localmente.
+.TP
+.I /usr/local/man
+Pagine di manuale associate con programmi installati localmente.
+.TP
+.I /usr/local/sbin
+Programmi di amministrazione di sistema installati localmente.
+.TP
+.I /usr/local/share
+Dati di applicazioni locali che possono essere condivisi tra differenti 
+architetture dello stesso OS.
+.TP
+.I /usr/local/src
+Sorgenti del software installato localmente.
+.TP
+.I /usr/man
+Sostituita da
+.IR /usr/share/man .
+.TP
+.I /usr/sbin
+Questa directory contiene i programmi binari per l'amministrazione del
+sistema che non sono essenziali per il processo di avvio, per montare 
+.IR /usr ,
+o per riparare il sistema.
+.TP
+.I /usr/share
+Questa directory contiene sottodirectory con dati specifici di applicazioni, 
+che possono essere condivisi tra differenti architetture dello stesso OS.
+Spesso qui si trovano cose che in passato erano in
+.I /usr/doc
+o
+.I /usr/lib
+o
+.IR /usr/man .
+.TP
+.I /usr/share/dict
+Contiene gli elenchi di parole usati dai correttori ortografici.
+.TP
+.I /usr/share/doc
+Documentazione sui programmi installati.
+.TP
+.I /usr/share/games
+File dati statici per giochi in
+.IR /usr/games .
+.TP
+.I /usr/share/info
+Le pagine info vanno qui.
+.TP
+.I /usr/share/locale
+Le informazioni locali vanno qui.
+.TP
+.I /usr/share/man
+Le pagine di manuale vanno in sottodirectory in funzione delle loro sezioni.
+.TP
+.I /usr/share/man/<locale>/man[1\-9]
+Queste directory contengono pagine di manuale per
+localizzazioni specifiche in forma di codice sorgente.
+I sistemi che usano un unico linguaggio e insieme di codice per tutte le pagine di manuale
+possono omettere la sottostringa <locale>.
+.TP
+.I /usr/share/misc
+Dati vari che possono essere condivisi tra differenti architetture dello
+stesso OS.
+.TP
+.I /usr/share/nls
+I cataloghi messaggi per il supporto al linguaggio nativo vanno qui.
+.TP
+.I /usr/share/sgml
+File per SGML e XML.
+.TP
+.I /usr/share/terminfo
+Il database per terminfo.
+.TP
+.I /usr/share/tmac
+Macro troff che non sono distribuite con groff.
+.TP
+.I /usr/share/zoneinfo
+File di informazione sul fuso orario.
+.TP
+.I /usr/src
+Sorgenti per le diverse parti del sistema, inclusi alcuni pacchetti
+a scopo di riferimento.
+Evitare di lavorare qui con i propri progetti, poiché i file
+sotto /usr devono essere in sola letture tranne quando si  installa il software.
+.TP
+.I /usr/src/linux
+Questo era il posto tradizionale per i sorgenti del kernel.
+Alcune distribuzioni mettono qui i sorgenti del kernel di default che forniscono.
+Sarebbe meglio utilizzare un'altra directory quando si costruisce il proprio kernel.
+.TP
+.I /usr/tmp
+Obsoleta.
+Dovrebbe essere un link
+a
+.IR /var/tmp .
+Questo link è presente solo per compatibilità e non dovrebbe essere usato.
+.TP
+.I /var
+Questa directory contiene file che possono cambiare di dimensione,
+come file di spool e di log.
+.TP
+.I /var/adm
+Questa directory è stata soppiantata da 
+.I /var/log
+e dovrebbe essere un link simbolico a
+.IR /var/log .
+.TP
+.I /var/backups
+Riservata per ragioni storiche.
+.TP
+.I /var/cache
+Dati cache dei programmi.
+.TP
+.IR /var/catman/cat[1\-9] " o " /var/cache/man/cat[1\-9]
+Queste directory contengono le pagine di manuale preformattate in
+accordo con le loro sezioni di pagina di manuale.
+(L'uso di pagine di manuale preformattate è deprecato).
+.TP
+.I /var/cron
+Riservata per ragioni storiche.
+.TP
+.I /var/lib
+Informazioni variabili di stato dei programmi.
+.TP
+.I /var/local
+Dati variabili di
+.IR /usr/local .
+.TP
+.I /var/lock
+I file di lock sono messi in questa directory.
+La convenzione sul nome
+per i file di lock dei dispositivi è
+.I LCK..<device>
+dove
+.I <device>
+è il nome del dispositivo nel file system.
+Il formato usato è quello dei file di lock di HDU UUCP, cioè i file di
+lock contengono un PID espresso come un numero decimale di 10 byte in
+ASCII, seguito da un carattere newline.
+.TP
+.I /var/log
+Vari file di log.
+.TP
+.I /var/opt
+Dati variabili per
+.IR /opt .
+.TP
+.I /var/mail
+Caselle di posta degli utenti.
+Sostituisce
+.IR /var/spool/mail .
+.TP
+.I /var/msgs
+Riservata per ragioni storiche.
+.TP
+.I /var/preserve
+Riservata per ragioni storiche.
+.TP
+.I /var/run
+File variabili di run-time, come i file che contengono gli identificatori
+del processo (PID) o le informazioni registrate sugli utenti
+.IR (utmp) .
+I file in questa directory sono usualmente ripuliti all'avvio del sistema.
+.TP
+.I /var/spool
+File di spool (o in coda) per i diversi programmi.
+.TP
+.I /var/spool/at
+Lavori accodati per
+.BR at (1).
+.TP
+.I /var/spool/cron
+Lavori accodati per
+.BR cron (1).
+.TP
+.I /var/spool/lpd
+Coda di stampa.
+.TP
+.I /var/spool/mail
+Sostituita da
+.IR /var/mail .
+.TP
+.I /var/spool/mqueue
+Mail accodate in uscita.
+.TP
+.I /var/spool/news
+Directory di spool per le news.
+.TP
+.I /var/spool/rwho
+File accodati per
+.BR rwhod (8).
+.TP
+.I /var/spool/smail
+File di spool per il
+programma di recapito mail
+.BR smail (1).
+.TP
+.I /var/spool/uucp
+File di spool per
+.BR uucp (1).
+.TP
+.I /var/tmp
+Come
+.I /tmp,
+questa directory contiene file temporanei immagazzinati per un tempo non specificato.
+.SH "CONFORME A"
+Il Filesystem Hierarchy Standard, Versione 2.2 <http://www.pathname.com/fhs/>
+.SH BACHI
+Questa lista non è esaustiva; sistemi differenti possono essere stati
+configurati in modo differente.
+.SH "VEDERE ANCHE"
+.BR find (1),
+.BR ln (1),
+.BR proc (5),
+.BR mount (8)
+
+The Filesystem Hierarchy Standard

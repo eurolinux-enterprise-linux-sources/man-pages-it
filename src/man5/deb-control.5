@@ -1,0 +1,217 @@
+.\" Hey, Emacs!  This is an -*- nroff -*- source file.
+.\" Autore: Raul Miller
+.\" Include testo dalle Linee Guida della Debian di Ian Jackson, Ian Murdock
+.TH DEB-CONTROL 5 "Gennaio 2000" "Progetto Debian" "dpkg utilities"
+.SH NOME
+deb\-control \- Formato del file principale di controllo dei pacchetti Debian 
+.SH SINTASSI
+control
+.SH DESCRIZIONE
+Ogni pacchetto Debian contiene il file principale `control', che contiene
+un certo numero di campi.  Ogni campo inizia con una etichetta, come:
+.B Package
+o
+.B Version
+(insensibile alle maiuscole/minuscole), seguita da ':', e il corpo del campo.
+I campi sono delimitati solo dalle etichette del campo. In altre parole,
+il testo del campo puo` essere lungo diverse righe, ma gli strumenti
+di installazione generalmente uniranno le righe quando verra` elaborato
+il corpo del campo (eccetto nel caso del campo 
+.B Description, 
+vedere di seguito).
+.SH CAMPI RICHIESTI
+.TP
+.BR "Package: " "<nome pacchetto>"
+Il valore di questo campo determina il nome del pacchetto, ed è usato
+dalla maggior parte degli strumenti di installazione per generare i nomi
+dei file.
+.TP
+.BR "Version: " "<stringa della versione>"
+Tipicamente, questo è il numero della versione originale del pacchetto
+in qualsiasi forma usata dall'autore del programma. Puo` includere anche 
+un numero di revisione Debian (per pacchetti non nativi). Se sono fornite 
+entrambe, sia la versione che la revisione, queste sono separate da un 
+trattino, `-'. Per questa ragione, la versione originale non puo` avere
+un trattino nel suo numero di versione.
+.TP
+.BR "Maintainer: " "<nome completo email>"
+Dovrebbe essere nel formato `Joe Bloggs <jbloggs@foo.com>', ed è 
+tipicamente la persona che ha creato il pacchetto, piuttosto 
+che l'autore del software che è stato impacchettato.
+.TP
+.BR "Description: " "<breve descrizione>"
+.BR " " "<lunga descrizione>"
+.br
+Il formato per la descrizione del pacchetto è un breve riassunto nella
+prima riga (dopo il campo "Description"). Le righe seguenti possono essere
+usate come una lunga, e piu` dettagliata descrizione. Ogni riga della
+descrizione lunga deve essere preceduta da uno spazio, e le righe bianche, nella
+descrizione lunga, devono contenere un singolo '.' che segue lo spazio precedente.
+.SH CAMPI OPZIONALI
+.TP
+.BR "Section: " "<sezione>"
+Questo è un campo generale che assegna al pacchetto una categoria basata
+sul software che esso installa. Alcune sezioni comuni sono: `utils', `net',
+`mail', `text', `x11', etc.
+.TP
+.BR "Priority: " "<priorita`>"
+Imposta l'importanza di questo pacchetto in relazione all'intero sistema.
+Priorita` comuni sono: `required', `standard', `optional', `extra', etc.
+.LP
+In Debian, i campi
+.B Section
+e
+.B Priority
+hanno un insieme definito di valori accettabili in base al Manuale
+della Policy Debian. Essi sono usati per decidere come i pacchetti sono 
+disposti nell'archivio.
+Una lista di questi valori puo` essere ottenuta dall'ultima versione del
+pacchetto
+.B debian-policy.
+.TP
+.BR "Essential: " "<yes|no>"
+Questo campo è usualmente necessario solo quando la risposta è `si`'. 
+Esso denota un pacchetto che è richiesto per il corretto funzionamento del 
+sistema. Dpkg o qualsiasi altro strumento di installazione non permettera` che
+un pacchetto 
+.B Essential
+sia rimosso (almeno non senza usare una delle opzioni di forzatura).
+.TP
+.BR "Architecture: " "<arch|all>"
+L'architettura specifica per quale tipo di hardware questo pacchetto è
+stato compilato. Architetture comuni sono: `i386', `m68k', `sparc', `alpha', 
+`powerpc', etc. Notare che l'opzione
+.B all
+è pensata per pacchetti che sono indipendenti dall'architettura. 
+Alcuni esempi di questi pacchetti sono rappresentati da script shell o 
+Perl, o documentazione.
+.TP
+.BR "Source: " "<nome sorgente>"
+Il nome del pacchetto sorgente da cui deriva questo pacchetto binario, se
+è differente rispetto al nome del pacchetto stesso.
+.TP
+.BR "Depends: " "<lista di pacchetti>"
+Lista dei pacchetti che sono richiesti da questo pacchetto per fornire una 
+quantita` non banale di funzionalita`.  Il software di manutenzione dei
+pacchetti non permettera` l'installazione di un pacchetto senza  
+installare anche quelli elencati nel suo campo
+.B Depends
+, almeno non senza usare le opzioni di forzatura, ed eseguira` gli script 
+postinst dei pacchetti elencati nei campi Depends: prima di quelli dei pacchetti che 
+dipendono da essi, ed esegue prima gli script prerm.
+.TP
+.BR "Pre-Depends: " "<lista di pacchetti>"
+Lista dei pacchetti che devono essere installati
+.B e
+configurati prima che questo pacchetto possa essere installato. È 
+usato generalmente nel caso in cui questo pacchetto richieda un altro
+pacchetto per l'esecuzione dei suoi script preinst.
+.TP
+.BR "Recommends: " "<lista di pacchetti>"
+Elenca i pacchetti che dovrebbero trovarsi insieme a questo pacchetto 
+in tutte le installazioni usuali.  Il software di manutenzione dei pacchetti 
+avvisa l'utente se installa un pacchetto senza quelli elencati nel suo 
+campo
+.B Recommends.
+.TP
+.BR Suggests: \ <pacchetto\ lista>
+Elenca pacchetti che sono correlati a questo e che 
+forse possono accrescere la sua utilita`, ma senza i quali l'installazione di
+questo pacchetto è perfettamente ragionevole.
+.LP
+La sintassi dei campi
+.B Depends,
+.B Pre-Depends,
+.B Recommends
+e
+.B Suggests
+è una lista di gruppi di pacchetti alternativi.  Ogni 
+gruppo è una lista di pacchetti separati da una barra verticale (o `pipe'), 
+`|'.  I gruppi sono separati da virgole.  Le virgole devono essere lette come 
+`AND', e le pipe come `OR', con le pipe aventi precedenza.  
+Ogni elemento è un nome di un pacchetto seguito opzionalmente da un numero di 
+versione specificato tra parentesi.
+.LP
+Un numero di versione puo` iniziare con un `>>', in tal caso ogni versione
+successiva andra` bene, e può specificare o omettere il numero di revisione
+di impacchettamento Debian (separato da un trattino). Relazioni tra versioni 
+accettate sono ">>" per maggiore di, "<<" per minore di, ">=" per maggiore o 
+eguale a, "<=" per minore o eguale a, e "=" per eguale a.
+.TP
+.BR "Conflicts: " "<lista di pacchetti>"
+Elenca i pacchetti che vanno in conflitto con questo pacchetto, per esempio
+quando contengono file aventi lo stesso nome. Il software di manutenzione dei
+pacchetti non permettera` a pacchetti che sono in conflitto di essere installati
+ contemporaneamente. Due pacchetti in conflitto dovrebbero includere ognuno
+una riga
+.B Conflicts
+che menziona l'altro pacchetto.
+.TP
+.BR "Replaces: " "<lista di pacchetti>"
+Lista di pacchetti, i cui file questo pacchetto è autorizzato a sostituire.
+È usato per permettere al pacchetto di sovrascrivere i file
+di un altro pacchetto ed è usato di solito con il campo
+.B Conflicts
+per forzare la rimozione dell'altro pacchetto, se questo ha anche gli
+stessi file del pacchetto in conflitto.
+.TP
+.BR Provides: \ <pacchetto\ lista>
+Questa è una lista di pacchetti virtuali che il pacchetto stesso 
+fornisce. Solitamente questa lista è usata nel caso in cui diversi
+pacchetti forniscano tutti lo stesso servizio. Per esempio, sendmail
+e exim possono servire come server di posta, perciò forniscono un 
+pacchetto comune (`mail-transport-agent') da cui possono dipendere
+altri pacchetti. Questo permettera` a sendmail o a exim di servire come 
+una valida opzione per soddisfare la dipendenza. Ciò evita per 
+i pacchetti che dipendono da un mail server, la necessità di conoscere
+i nomi di tutti questi pacchetti, e di usare il carattere `|' per separare la 
+lista.
+.LP
+La  sintassi di
+.B Conflicts,
+.B Replaces
+e
+.B Provides
+è una lista di nomi di pacchetti, separata da virgole (e spazi bianchi 
+opzionali).
+Nel campo
+.B Conflicts, 
+la virgola dovrebbe essere letta come `OR'. Può anche essere fornita una
+versione opzionale con la stessa sintassi di quella precendente per i campi
+.B Conflicts
+e
+.B Replaces.
+.SH ESEMPIO
+.\" .RS
+.nf
+Package: grep
+Essential: yes
+Priority: required
+Section: base
+Maintainer: Wichert Akkerman <wakkerma@debian.org>
+Architecture: sparc
+Version: 2.4-1
+Pre-Depends: libc6 (>= 2.0.105)
+Provides: rgrep
+Conflicts: rgrep
+Description: GNU grep, egrep and fgrep.
+ The GNU family of grep utilities may be the "fastest grep in the west".
+ GNU grep is based on a fast lazy-state deterministic matcher (about
+ twice as fast as stock Unix egrep) hybridized with a Boyer-Moore-Gosper
+ search for a fixed string that eliminates impossible text from being
+ considered by the full regexp matcher without necessarily having to
+ look at every character. The result is typically many times faster
+ than Unix grep or egrep. (Regular expressions containing backreferencing
+ will run more slowly, however.)
+.fi
+.\" .RE
+.SH VEDERE ANCHE
+.BR deb (5),
+.BR dpkg (8),
+.BR dpkg-deb (1).
+
+.SH AUTORI
+Raul Miller, Ian Jackson, Ian Murdock.
+Traduzione ed adattamenti in italiano a cura di Hugh Hartmann <hhartmann@libero.it>. 
+Revisione a cura di Beatrice Torracca <beatricet@libero.it>.
+

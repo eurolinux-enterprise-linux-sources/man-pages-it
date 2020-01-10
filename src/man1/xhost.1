@@ -1,0 +1,161 @@
+.\" $Xorg: xhost.man,v 1.4 2001/02/09 02:05:46 xorgcvs Exp $
+.\" $XdotOrg: app/xhost/xhost.man,v 1.2 2004/04/23 19:54:49 eich Exp $
+.\"
+.\" Copyright 1988, 1998  The Open Group
+.\" Copyright 2004 Sun Microsystems, Inc.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, and/or sell copies of the Software, and to permit persons
+.\" to whom the Software is furnished to do so, provided that the above
+.\" copyright notice(s) and this permission notice appear in all copies of
+.\" the Software and that both the above copyright notice(s) and this
+.\" permission notice appear in supporting documentation.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+.\" OF THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+.\" HOLDERS INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL
+.\" INDIRECT OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING
+.\" FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+.\" NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+.\" WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of a copyright holder
+.\" shall not be used in advertising or otherwise to promote the sale, use
+.\" or other dealings in this Software without prior written authorization
+.\" of the copyright holder.
+.\"
+.\" X Window System is a trademark of The Open Group.
+.\"
+.\" $XFree86: xc/programs/xhost/xhost.man,v 1.8tsi Exp $
+.\"
+.TH XHOST 1 "xhost 1.0.1" "X Version 11"
+.SH NOME
+xhost \- programma di controllo degli accessi al server X
+.SH SINTASSI
+.B xhost
+[[+\-]name ...]
+.SH DESCRIZIONE
+Il programma \fIxhost\fP
+E' utilizzato per aggiungere e cancellare nomi di host o nomi di utente
+dalla lista abilitata a connettersi al server X. Nel caso degli host,
+ciò costituisce una rudimentale forma di controllo della privacy e della
+sicurezza. E' sufficiente solo per un ambiente workstation
+(singolo utilizzatore), sebbene esso limiti i peggiori abusi. Ambienti
+che richiedano misure più sofisticate dovrebbero implementare il
+meccanismo "user-based" o utilizzare gli hook nel protocollo per
+passare altri dati di autenticazione al server.
+.SH OPZIONI
+\fIXhost\fP accetta le seguenti opzioni a linea di comando descritte
+sotto. Per sicurezza, le opzioni che effettuano il controllo di accesso
+possono essere avviate solo dal "host di controllo". Per le workstation,
+questo è la stessa macchina server. Per terminali X, è l'host di login.
+.TP 8
+.B \-help
+Stampa un messaggio sull'utilizzo.
+.TP 8
+.BI "[+]" "nome"
+Il dato \fIname\fP (il segno più è opzionale) è aggiunto alla lista
+abilitata alla connessione al server X. Il "nome" può essere un nome di
+host o un nome di utente.
+.TP 8
+.BI \- "name"
+Il dato \fIname\fP è rimosso dalla lista degli abilitati alla
+connessione al server X. Il "nome" può essere un nome di host o un nome
+di utente. Le connessioni in corso non vengono interrotte ma le nuove
+connessioni vengono negate.
+Notare che la macchina utilizzata per la connessione è abilitata ad
+essere rimossa; tuttavia ulteriori connessioni (incluso il tentativo di
+aggiungerla alla lista) non saranno permesse.
+Riavviare il server (interrompendo così tutte le connessioni in corso) è
+l'unica via per riattivare le connessioni locali.
+.TP 8
+.B \+
+L'accesso è possibile per chiunque, anche se non presente nell'elenco
+(ovvero il controllo degli accessi è disabilitato).
+.TP 8
+.B \-
+L'accesso è consentito solo a coloro che sono sulla lista di accesso
+(ovvero il controllo degli accessi e attivato).
+.TP 8
+.I niente
+Se non viene passato nessun argomento sulla linea di comando, un
+messaggio stampato indica se o meno il controllo degli accessi è
+abilitato, seguito dalla lista di quelli abilitati alla connnessione.
+Questa è l'unica opzione che può essere utilizzata da macchine diverse
+dell'host di controllo.
+.SH NOMI
+Un nome completo ha la sintassi
+``famiglia:nome'' dove "famiglia" può essere come le seguenti:
+.PP
+.nf
+.ta 1i
+inet	Internet host (IPv4)
+inet6	Internet host (IPv6)
+dnethost DECnet
+nis	Secure RPC network name
+krb	Kerberos V5 principale
+local	contiene solo un nome, la stringa vuota
+si	Server Interpreted (interpretato dal server)
+.fi
+.PP
+La "famiglia" non è sensibile alle maiuscole.
+Il formato del "nome" varia a seconda della "famiglia".
+.PP
+Quando viene utilizzata una connessione Secure RPC può essere
+specificato l'indirizzo relativo della rete (es.,
+"nis:unix.\fIuid\fP@\fIdomainname\fP"), o può essere specificato un
+utente locale con solo il nome utente seguito dal simbolo at (es.,
+"nis:pat@").
+.PP
+Per la compatibilità  all'indietro con i nomi di host Pre-R6
+che contengono il simbolo at (@), \fIxhost\fP presume che appartengano
+alla famiglia nis.
+Altrimenti si presume che siano indirizzi internet. Se compilato con il
+supporto IPv6, allora tutti gli indirizzi IPv4 e IPv6 ricevuti da
+getaddrinfo(3) sono aggiunti alla lista degli accessi nella famiglia
+inet o inet6 appropriata.
+.PP
+Gli indirizzi interpretati dal server sono composti da caratteri
+case-sensitive, tag e stringhe rappresentanti un valore dato, separati
+da ":". Per esempio, "si:hostname:almas" è l'indirizzo interrpretato di
+un server di tipo \fIhostname\fP, con valore di \fIalmas\fP.
+.SH DIAGNOSTICA
+Per ogni nome aggiunto alla lista di controllo degli accessi viene
+stampata una linea della forma "\fIname\fP being added to access control
+list".
+Per ogni nome rimosso dalla lista di controllo degli accessi, viene
+stampata una linea della forma "\fIname\fP being removed from access
+control list".
+.SH FILE
+/etc/X*.hosts
+.SH "VEDERE ANCHE"
+X(7), Xsecurity(7), Xserver(1), xdm(1), xauth(1), getaddrinfo(3)
+.SH AMBIENTE
+.TP 8
+.B DISPLAY
+per assegnare l'host e il display predefiniti da usare.
+.SH BUG
+.PP
+Non si può specificare un display sulla linea di comando, poichè
+.B \-display
+è un argomento valido per la linea di comando (che indica che si vuole
+rimuovere la macchina chiamata
+.I ``display''
+dalla lista di controllo degli accessi.)
+.PP
+Il server X carica gli indirizzi di rete, non i nomi degli host, a meno
+che non si usino gli indirizzi degli host "server-interpreted".
+Se in qualche modo si cambia un indirizzo di rete di un host mentre
+il server è ancora in funzione, e si sta utilizzando un form di
+autenticazione basato sugli indirizzi di rete, \fIxhost\fP può essere
+usato per aggiungere il nuovo indirizzo e/o rimuovere il vecchio
+indirizzo.
+.SH AUTORI
+Bob Scheifler, MIT Laboratory for Computer Science,
+.br
+Jim Gettys, MIT Project Athena (DEC).

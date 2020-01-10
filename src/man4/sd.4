@@ -1,0 +1,155 @@
+.\" sd.4
+.\" Copyright 1992 Rickard E. Faith (faith@cs.unc.edu)
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Settembre 1996
+.\" Aggiornamento alla versione 1.15 di Alessandro Rubini (rubini@linux.it)
+.\" Maggio 1997
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.63 di Elisabetta Galli <lab@kkk.it>
+.\" luglio 2007
+.\" Aggiornamento a man-pages-2.75 di Elisabetta Galli <lab@kkk.it>
+.\" gennaio 2008
+.\"
+.TH SD 4 "17 dicembre 1992" "Linux" "Linux Programmer's Manual"
+.SH NOME
+sd \- Dispositivi per i dischi SCSI
+.SH SINTASSI
+.nf
+.BR "#include <linux/hdreg.h>        " "/* per HDIO_GETGEO */"
+.BR "#include <linux/fs.h>           " "/* per BLKGETSIZE e BLKRRPART */"
+.fi
+.SH CONFIGURAZIONE
+Il nome del dispositivo a blocchi ha la seguente forma:
+.BI sd lp,
+dove
+.I l
+è una lettera che denota il dispositivo fisico, e
+.I p
+è un numero che denota la partizione in tale dispositivo fisico.
+Spesso, il numero della partizione,
+.IR p ,
+è tralasciato quando il dispositivo corrisponde all'intero disco.
+
+I dischi SCSI hanno un numero primario di dispositivo di 8, e un numero secondario
+della forma (16 *
+.IR numero_drive ") + " numero_partizione ,
+dove 
+.I numero_drive
+è il numero del disco fisico in ordine di rilevamento all'accensione del sistema, e 
+.I numero_partizione
+è definito come segue:
+.sp
+la partizione 0 è l'intero disco
+.br
+le partizioni 1-4 sono le partizioni DOS "primarie"
+.br
+le partizioni 5-8 sono le partizioni DOS "estese" (o "logiche").
+
+Per esempio,
+.I /dev/sda
+avrà numero primario 8, secondario 0, e farà riferimento all'intero
+primo drive SCSI nel sistema; e
+.I /dev/sdb3
+avrà numero primario 8, secondario 19, e farà riferimento alla terza
+partizione DOS "primaria" nel secondo drive SCSI nel sistema.
+
+Ad oggi sono forniti solo dispositivi a blocchi.
+I dispositivi raw non sono ancora stati implementati.
+.SH DESCRIZIONE
+Sono fornite le seguenti
+.IR ioctl:
+.TP
+HDIO_GETGEO
+.RS
+Restituisce i parametri BIOS del disco nella seguente struttura:
+.in +4n
+.nf
+
+struct hd_geometry {
+      unsigned char testine;
+      unsigned char settori;
+      unsigned short cilindri;
+      unsigned long start;
+};
+.fi
+.in
+
+Un puntatore a questa struttura è passato come
+parametro di 
+.BR ioctl (2).
+
+Le informazioni ritornate nel parametro sono la geometria del drive 
+.I "com'è vista dal DOS!"
+Tale geometria
+.I non
+è la geometria fisica del disco.
+È comunque quella usata quando si costruisce
+la tabella delle partizioni del disco, ed è necessaria per le operazioni
+di
+.BR fdisk (1),
+.BR efdisk (1),
+e
+.BR lilo (1).
+Se non sono disponibili le informazioni sulla geometria, verrà
+restituito zero per tutti i parametri.
+.RE
+.TP
+BLKGETSIZE
+Restituisce la dimensione del dispositivo in settori.
+Il parametro di
+.BR ioctl (2)
+dovrebbe essere un puntatore a 
+.IR long .
+.TP
+.B BLKRRPART
+Richiede la rilettura della tabella delle partizioni del disco SCSI. Non
+è necessario alcun parametro.
+
+Sono supportate
+anche le operazioni
+.BR scsi (4)
+.BR ioctl (2).
+Se è richiesto un parametro per 
+.BR ioctl (2),
+e questo è NULL, allora 
+.IR ioctl (2)
+fallirà, restituendo l'errore
+.BR EINVAL .
+.SH FILE
+/dev/sd[a\-h]: i dispositivi completi
+.br
+/dev/sd[a\-h][0\-8]: le singole partizioni a blocchi
+.\".SH "VEDERE ANCHE"
+.\".BR scsi (4)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.75 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

@@ -1,0 +1,45 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" This manpage is Copyright (C) 2003 Matthew Wilcox
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel is constantly changing, this manual page may
+.\" be incorrect or out-of-date.  The author(s) assume no responsibility
+.\" for errors or omissions, or for damages resulting from the use of the
+.\" information contained herein.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Traduzione di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\"
+.TH KSOFTIRQD 9 24 agosto 2003 "Linux 2.6.0" "Linux Programmer's Manual"
+.SH NOME
+ksoftirqd \- demone softirq
+.SH DESCRIZIONE
+.B ksoftirqd
+è un thread del kernel che funziona quando la macchina è sottoposta ad 
+un carico pesante di soft-interrupt. I soft-interrupt normalmente sono 
+serviti in risposta ad un interrupt hardware, ma è possibile che i soft 
+interrupt vengano innescati più velocemente di quanto possano essere 
+serviti. Se un soft interrupt è innescato una seconda volta mentre 
+vengono eseguiti altri soft interrupt il demone
+.B ksoftirq
+viene lanciato per gestire i soft interrupt nel contesto del processo.
+Se
+.B ksoftirqd
+richiede più che una piccola percentuale del tempo CPU ciò indica che
+la macchina è sottoposta ad un forte carico di soft interrupt.
+.SH STORIA
+.B ksoftirqd
+fu introdotto durante lo sviluppo delle serie 2.3 come parte del lavoro
+softnet da Alexey Kuznetsov e David Miller.

@@ -1,0 +1,320 @@
+.\" Copyright Andries Brouwer, 2000
+.\" 
+.\" This page is distributed under GPL.
+.\" Some fragments of text came from the time-1.7 info file.
+.\" Inspired by kromJx@crosswinds.net.
+.\" 
+.\" Traduzione di Giulio Daprelà, ottobre 2005 <giulio@pluto.it>
+.\" Aggiornamento a man-pages-2.62 di Elisabetta Galli, luglio 2007 <lab@kkk.it>
+.\" Aggiornamento a man-pages-3.14 di Elisabetta Galli, novembre 2008 <lab@kkk.it>
+.\" 
+.TH "TIME" "1" "14 novembre 2008" "" "Linux User's Manual"
+.SH "NOME"
+time \- temporizza un semplice comando o informa sull'uso delle risorse
+.SH "SINTASSI"
+.BI "time [" opzioni "] " comando " [" argomenti... "] "
+.SH "DESCRIZIONE"
+Il comando
+.B time
+esegue il programma
+.I comando
+specificato con gli argomenti dati.
+Quando
+.I comando
+termina,
+.B time
+scrive un messaggio sullo standard error, che fornisce le statistiche temporali
+sull'esecuzione del programma.
+Queste statistiche consistono nel (i) tempo reale trascorso
+tra chiamata e termine, (ii) tempo utente della CPU
+(la somma dei valori di
+.I tms_utime
+e
+.I tms_cutime
+in formato
+.I "struct tms"
+come restituito da
+.BR times (2)),
+e (iii) tempo di sistema della CPU (la somma dei valori di
+.I  tms_stime
+e
+.I tms_cstime
+in formato
+.I "struct tms"
+come restituito da
+.BR times (2)).
+
+Nota: alcune shell (per esempio
+.BR bash (1))
+hanno un comando
+.B time
+precompilato che fornisce meno funzionalità rispetto al comando qui descritto.
+Per accedere al programma reale, potrebbe essere necessario specificarne il percorso
+(qualcosa come
+.I R /usr/bin/time ).
+.SH "OPZIONI"
+.TP 
+.B \-p
+Quando si è in ambiente POSIX usare l'esatto formato tradizionale
+.IP 
+.in +4n
+"real %f\enuser %f\ensys %f\en"
+.in
+.IP 
+(con numeri in secondi)
+dove il numero di decimali nell'output per %f non è specificato, ma è 
+almeno uno, ed è sufficiente per esprimere l'accuratezza dell'orologio.
+.SH "STATO DI USCITA"
+Se è stato invocato il
+.I comando
+lo stato di uscita è quello del
+.I R comando .
+Altrimenti è 127 se
+.I comando
+non può essere trovato, 126 se può essere trovato ma non può essere 
+chiamato, e qualche altro valore diverso da zero (1\-125) se qualcosa è andato storto.
+.SH "AMBIENTE"
+Le variabili
+.BR LANG ,
+.BR LC_ALL ,
+.BR LC_CTYPE ,
+.BR LC_MESSAGES ,
+.BR LC_NUMERIC ,
+.BR NLSPATH
+e
+.B PATH
+sono utilizzate.
+L'ultima serve per la ricerca del
+.I R comando .
+Le rimanenti per il testo e la formattazione dell'output.
+.SH "VERSIONE GNU"
+Di seguito una descrizione della versione GNU 1.7 di
+.BR time .
+Indipendentemente dal nome dell'utilità, GNU emette molte informazioni 
+utili, non solo sul tempo utilizzato, ma anche su altre risorse come
+memoria, I/O e chiamate IPC (ove disponibili).
+L'output è formattato usando un formato stringa che può essere 
+specificato usando l'opzione
+.I \-f
+o la
+variabile d'ambiente
+.B TIME.
+.LP 
+Il formato stringa predefinito è
+.PP 
+.in +4n
+%Uuser %Ssystem %Eelapsed %PCPU (%Xtext+%Ddata %Mmax)k
+.br 
+%Iinputs+%Ooutputs (%Fmajor+%Rminor)pagefaults %Wswaps
+.br 
+.in
+.LP 
+Quando è indicata l'opzione
+.I \-p,
+si usa il formato di output (portabile)
+.PP 
+.in +4n
+real %e
+.br 
+user %U
+.br 
+sys %S
+.br 
+.in
+.PP 
+
+.SS "Il formato stringa"
+Il formato è interpretato nel solito modo in stile printf.
+I caratteri ordinari sono copiati direttamente, tab, newline
+e backslash vengono generati con i caratteri di escape usando \et, \en 
+e \e\e, un segno di percentuale è rappresentato da %%, mentre invece %
+indica una conversione.
+Il programma
+.B time
+aggiungerà sempre da sè una newline finale.
+Seguono le conversioni.
+Sono supportate tutte quelle
+usate da
+.BR tcsh (1) .
+.LP 
+.B "Tempo"
+.TP 
+.B %E
+Tempo reale trascorso (in [ore:]minuti:secondi).
+.TP 
+.B %e
+(Non in tcsh.) Tempo reale trascorso (in secondi).
+.TP 
+.B %S
+Numero totale di secondi\-CPU che il processo ha speso in kernel mode.
+.TP 
+.B %U
+Numero totale di secondi\-CPU che il processo ha speso in user mode.
+.TP 
+.B %P
+Percentuale di CPU che questo lavoro ha preso, conteggiata come (%U + %S) / %E.
+.LP 
+.B "Memoria"
+.TP 
+.B %M
+Massima dimensione dell'insieme residente del processo durante la sua esistenza, in Kbyte.
+.TP 
+.B %t
+(Non in tcsh.) Dimensione media dell'insieme residente del processo, in Kbyte.
+.TP 
+.B %K
+Media totale (data+stack+text) della memoria usata dal processo,
+in Kbytes.
+.TP 
+.B %D
+Dimensione media delle aree dati non condivise dei processi, in Kbyte.
+.TP 
+.B %p
+(Non in tcsh) Dimensione media dello spazio stack non condiviso dei processi in Kbyte.
+.TP 
+.B %X
+Dimensione media dello spazio di testo condiviso dei processi, in Kbyte.
+.TP 
+.B %Z
+(Non in tcsh.) Dimensione della pagina di sistema, in byte.
+Questa è una costante di sistema, ma varia tra i sistemi.
+.TP 
+.B %F
+Numero di errori maggiori di pagina accaduti durante il funzionamento del processo.
+Sono errori in cui la pagina deve essere registrata dal disco.
+.TP 
+.B %R
+Numero di errori minori di pagina, o recuperabili.
+Sono errori per pagine che non sono valide ma che non sono ancora
+state reclamate da altre pagine virtuali.
+Di conseguenza il dato nella
+pagina è ancora valido, ma le tabelle di sistema devono venire aggiornate.
+.TP 
+.B %W
+Numero di volte che il processo è stato spostato fuori dalla memoria principale.
+.TP 
+.B %c
+Numero di volte che il processo è stato scambiato involontariamente nel 
+contesto (perché la porzione di tempo è scaduta).
+.TP 
+.B %w
+Numero di attese: volte che il programma è stato scambiato volontariamente nel
+contesto, per esempio mentre era in attesa del completamente di un'operazione di I/O.
+.LP 
+.B "I/O"
+.TP 
+.B %I
+Numero di input del processo nel file system.
+.TP 
+.B %O
+Numero di output del processo nel file system.
+.TP 
+.B %r
+Numero di messaggi di socket ricevuti dal processo.
+.TP 
+.B %s
+Numero di messaggi di socket inviati dal processo.
+.TP 
+.B %k
+Numero di segnali recapitati al processo.
+.TP 
+.B %C
+(Non in tcsh.) Nome argomenti da linea di comando del comando che è stato misurato.
+.TP 
+.B %x
+(Non in tcsh.) Exit status del comando.
+.SS "Opzioni GNU"
+.TP 
+.BI "\-f " FORMATO ", \-\-format=" FORMATO
+Specifica il formato di output, possibilmente sovrascrivendo il formato 
+specificato nella variabile d'ambiente TIME.
+.TP 
+.B "\-p, \-\-portability"
+Usa il formato di output portabile.
+.TP 
+.BI "\-o " FILE ", \-\-output=" FILE
+Non invia i risultati a stderr, ma sovrascrive il file specificato.
+.TP 
+.B "\-a, \-\-append"
+(Usato assieme a \-o.) Non sovrascrive ma aggiunge.
+.TP 
+.B "\-v, \-\-verbose"
+Fornisce un output con molti dettagli su tutto ciò che il programma sa.
+.SS "Opzioni GNU standard"
+.TP 
+.B "\-\-help"
+Stampa un messaggio di uso sullo standard output ed esce con successo.
+.TP 
+.B "\-V, \-\-version"
+Stampa informazioni sulla versione sullo standard output ed esce con successo.
+.TP 
+.B "\-\-"
+Termina l'elenco delle opzioni.
+.SH "BUG"
+Non tutte le risorse sono misurate da tutte le versioni di Unix,
+perciò alcuni valori potrebbero essere riportati come zeri.
+La presente selezione è stata ispirata per la maggior parte dai dati
+forniti dalle versioni 4.2 o 4.3 di BSD.
+.LP 
+GNU time versione 1.7 non è ancora localizzata.
+Perciò non implementa i requisiti POSIX.
+.LP 
+La variabile d'ambiente
+.BR TIME
+è stata scelta malamente.
+Non è inusuale per sistemi come
+.BR autoconf (1)
+o
+.BR make (1)
+usare variabili d'ambiente con il nome di un'utilità per sovrascrivere l'utilità da
+usare.
+Usi come MORE o TIME per le opzioni di programmi
+(invece dei nomi di percorso del programma) tende a generare difficoltà.
+.LP 
+Sembra sfortunato che
+<i>\-o
+sovrascriva invece di aggiungere.
+(Perciò l'opzione
+.I \-a
+dovrebbe essere quella predefinita).
+.LP 
+Inviare suggerimenti via posta e rapporti di errore per il comando GNU
+.B time
+a
+.br 
+.I bug\-utils@prep.ai.mit.edu
+.br 
+Per favore includere la versione di
+.BR time ,
+che si può ottenere eseguendo
+.br 
+.I time \-\-version
+.br 
+e il sistema operativo
+e compilatore C usati.
+.\" 
+.SH "AUTORI"
+.\" .TP 
+.\" .IP "David Keppel"
+.\" Versione originale
+.\" .IP "David MacKenzie"
+.\" POSIXization, autoconfiscation, GNU getoptization,
+.\" documentation, other bug fixes and improvements.
+.\" .IP "Arne Henrik Juul"
+.\" Ha aiutato con la portabilità
+.\" .IP "Francois Pinard"
+.\" Ha aiutato con la portabilità
+.SH "VEDERE ANCHE"
+.BR tcsh (1),
+.BR times (2),
+.BR wait3 (2)
+.SH "COLOPHON"
+Questa pagina fa parte del rilascio 3.14 del progetto
+.I man\-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man\-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

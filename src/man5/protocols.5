@@ -1,0 +1,102 @@
+.\" Copyright (c) 1995 Martin Schulze <joey@infodrom.north.de>
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\"
+.\" 1995-10-18  Martin Schulze  <joey@infodrom.north.de>
+.\"	* first released
+.\" 2002-09-22  Seth W. Klein  <sk@sethwklein.net>
+.\"     * protocol numbers are now assigned by the IANA
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Ottobre 1996
+.\" Aggiornamento a man-pages-1.15 di Alessandro Rubini (rubini@linux.it)
+.\" Febbraio 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-3.10 di Elisabetta Galli <lab@kkk.it>
+.\" ottobre 2008
+.\"
+.TH PROTOCOLS 5 "23 settembre 2008" "Linux" "Linux Programmer's Manual"
+.SH NOME
+protocols \- il file di definizione dei protocolli
+.SH DESCRIZIONE
+Questo file è un normale file ASCII, che descrive i diversi protocolli
+DARPA di internet disponibili per il sottosistema TCP/IP.
+Dovrebbe essere
+consultato invece di usare i numeri nei file include di ARPA, o,
+ancora peggio, provare a indovinarli.
+Questi numeri appaiono nel
+campo protocollo di ogni header IP.
+
+Si mantenga questo file invariato, in quanto i cambiamenti renderebbero i pacchetti IP
+errati.
+I numeri e i nomi di protocollo sono specificati da IANA
+(Internet Assigned Numbers Authority).
+.\" .. dal DDN Network Information Center.
+
+Ogni riga ha il seguente formato:
+
+.RS
+.I protocollo numero alias ...
+.RE
+
+in cui i campi sono delimitati da spazi o tab.
+Le righe vuote vengono ignorate.
+Se una riga contiene il carattere #, esso e la parte seguente
+della riga verranno ignorati.
+
+Le descrizioni dei campi sono:
+.TP
+.I protocollo
+il nome nativo del protocollo.
+Per esempio
+.IR ip ,
+.IR tcp
+o
+.IR udp.
+.TP
+.I numero
+il numero ufficiale per questo protocollo come apparirà all'interno
+dell'header IP.
+.TP
+.I alias
+alias opzionali per il protocollo.
+.LP
+Questo file potrebbe essere distribuito su una rete che usa un servizio
+di naming valido per tutta la rete come Yellow Pages/NIS o BIND/Hesiod.
+.SH FILE
+.TP
+.I /etc/protocols
+Il file di definizione dei protocolli
+.SH VEDERE ANCHE
+.BR getprotoent (3)
+
+http://www.iana.org/assignments/protocol-numbers
+.SH COLOPHON
+Questa pagina fa parte del rilascio 3.10 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

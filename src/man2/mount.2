@@ -1,0 +1,444 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\" 
+.\" Copyright (C) 1993 Rickard E. Faith <faith@cs.unc.edu>
+.\" and Copyright (C) 1994 Andries E. Brouwer <aeb@cwi.nl>
+.\" and Copyright (C) 2002, 2005 Michael Kerrisk <mtk-manpages@gmx.net>
+.\" 
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\" 
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\" 
+.\" Modified 1996-11-04 by Eric S. Raymond <esr@thyrsus.com>
+.\" Modified 2001-10-13 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\" Added note on historical behaviour of MS_NOSUID
+.\" Modified 2002-05-16 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\" Extensive changes and additions
+.\" Modified 2002-05-27 by aeb
+.\" Modified 2002-06-11 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\" Enhanced descriptions of MS_MOVE, MS_BIND, and MS_REMOUNT
+.\" Modified 2004-06-17 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\" 2005-05-18, mtk, Added MNT_EXPIRE, plus a few other tidy-ups.
+.\" 2008-10-06, mtk: move umount*() material into separate umount.2 page.
+.\" 2008-10-06, mtk: Add discussion of namespaces.
+.\" 
+.\" Traduzione da man-pages-2.16 di Giulio Daprelà <giulio@pluto.it>
+.\" dicembre 2005
+.\" Aggiornamento a man pages 2.34 di Giulio Daprelà - giugno 2006
+.\" Aggiornamento a man pages 2.41 di Giulio Daprelà - ottobre 2006
+.\" Aggiornamento a man pages 2.44 di Giulio Daprelà - giugno 2007
+.\" Aggiornamento a man pages 2.51 di Giulio Daprelà - giugno 2007
+.\" Aggiornamento a man pages 3.14 di Elisabetta Galli - novembre 2008
+.\" 
+.TH "MOUNT" "2" "20 novembre 2008" "Linux" "Linux Programmer's Manual"
+.SH "NOME"
+mount \- monta i file system
+.SH "SINTASSI"
+.nf 
+.B "#include <sys/mount.h>"
+.sp
+.BI "int mount(const char *" source ", const char *" target ,
+.BI "          const char *" filesystemtype ", unsigned long " mountflags ,
+.BI "          const void *" data );
+.fi 
+.SH "DESCRIZIONE"
+.BR mount ()
+collega il file system specificato da
+.I source
+(che è spesso un nome di dispositivo, ma può anche essere un nome di
+directory o un nome fittizio) alla directory specificata da
+.I R target .
+
+Sono necessari privilegi appropriati (Linux: capacità
+.B CAP_SYS_ADMIN)
+per montare i file system.
+
+A partire da Linux 2.4 un singolo file system può essere visibile su
+punti di mount multipli, e sullo stesso punto di mount possono essere 
+impilati montaggi multipli.
+.\" Montaggi multipli sullo stesso punto di mount: a partire da 2.3.99pre7.
+
+I valori dell'argomento
+.I filesystemtype
+supportati dal kernel sono elencati in
+.I /proc/filesystems
+(come "minix", "ext2", "ext3", "jfs", "xfs", "reiserfs",
+"msdos", "proc", "nfs", "iso9660" ecc.).
+Possono essere disponibili altri tipi di file system caricando i
+moduli appropriati.
+
+L'argomento
+.I mountflags
+può avere il magic number 0xC0ED (\fBMS_MGC_VAL\fP)
+nei 16 bit più alti (era necessario nelle versioni di kernel 
+precedenti a 2.4, ma non è più necessario ed è ignorato se specificato),
+e vari flag di montaggio (come definito in \fI<linux/fs.h>\fP per libc4 e
+libc5 e in \fI<sys/mount.h>\fP per glibc2) nei 16 bit di ordine basso:
+.\" FIXME 2.6.15 ha aggiunto flag per le funzionalità "shared sub\-tree":
+.\" MS_UNBINDABLE, MS_PRIVATE, MS_SHARED, MS_SLAVE
+.\" Devono essere documentate in questa pagina.
+.\" Vedere:
+.\" Documentation/filesystems/sharedsubtree.txt
+.\"
+.\" http://lwn.net/Articles/159077/
+.\"
+.\" http://myweb.sudhaa.com:2022/~ram/sharedsubtree/paper/sharedsubtree.1.pdf
+.\" Shared\-Subtree Concept, Implementation, and Applications in Linux
+.\" Al Viro viro@ftp.linux.org.uk
+.\" Ram Pai linuxram@us.ibm.com
+.\"
+.\" http://foss.in/2005/slides/sharedsubtree1.pdf
+.\" Shared Subtree Concept and Implementation in the Linux Kernel
+.\" Ram Pai
+.\"
+.TP 
+.BR MS_BIND " (da Linux 2.4 in poi)"
+.\" a partire da 2.4.0\-test9
+Esegue un montaggio bind, rendendo un file o un sottoalbero di directory
+visibile a un altro punto dentro un file system.
+I montaggi bind possono attraversare i file system e oltrepassare
+le gabbie
+.BR chroot (2) .
+Gli argomenti
+.I R filesystemtype
+e
+.I R data
+sono ignorati.
+A partire da Linux 2.6.26,
+è ignorato anche
+.I mountflags
+.\" con l'eccezione del bit "nascosto" di mountflag MS_REC
+(i montaggi bind hanno le stesse opzioni di montaggio del punto
+di mount sottostante).
+A partire da Linux 2.6.26, il flag
+.B MS_RDONLY
+viene onorato quando si effettua un montaggio bind.
+.TP 
+.BR MS_DIRSYNC " (a partire da Linux 2.5.19)"
+Sincronizza i cambiamenti di directory in questo file system.
+(Questa proprietà può essere ottenuta per directory individuali
+o sottoalberi usando
+.BR chattr (1).)
+.TP 
+.B MS_MANDLOCK
+Permette il blocco obbligatorio sui file in questo file system.
+(Il blocco obbligatorio deve sempre essere abilitato in base ai file,
+come descritto in
+.BR fcntl (2).)
+.\" FIXME Dire di più su MS_MOVE
+.TP 
+.B MS_MOVE
+Sposta un sottoalbero.
+.I source
+specifica un punto di mount esistente e
+.I target
+specifica la nuova posizione.
+Lo spostamento è atomico: il sottoalbero non viene smontato in nessun momento.
+Gli argomenti
+.I R filesystemtype ", " mountflags ", e " data
+sono ignorati.
+.TP 
+.B MS_NOATIME
+Non aggiorna l'ora di accesso per (tutti i tipi di) file su questo file system.
+.TP 
+.B MS_NODEV
+Non permette l'accesso a dispositivi (file speciali) in questo file system.
+.TP 
+.B MS_NODIRATIME
+Non aggiorna l'ora di accesso per directory su questo file system.
+Questo flag fornisce un sottoinsieme di funzioni messe a disposizione da
+.BR MS_NOATIME ;
+vale a dire che
+.BR MS_NOATIME
+implica
+.BR MS_NODIRATIME .
+.TP 
+.B MS_NOEXEC
+Non permette l'esecuzione di programmi su questo file system.
+.\" (Può essere utile per un file system contenente eseguibili non Linux.
+.\" Si usa spesso come funzione di sicurezza, per esempio per assicurarsi che utenti
+.\" con restrizioni non possano caricare file usando ftp o simili.)
+.TP 
+.B MS_NOSUID
+Non onora i bit set\-user\-ID e set\-group\-ID quando si eseguono programmi
+da questo file system.
+.\" (È una funzione di sicurezza, per evitare che gli utenti eseguano programmi
+set\-user\-ID e set\-group\-ID da dischi rimovibili.)
+.TP 
+.B MS_RDONLY
+Monta file system in sola lettura.
+.\"
+.\" FIXME Documentare MS_REC, disponibile da 2.4.11.
+.\" Questo flag ha senso se usato insieme a MS_BIND, e
+.\" anche con i flag del sottoalbero condiviso.
+.TP 
+.BR MS_RELATIME " (A partire da Linux 2.6.20)"
+Quando si accede a un file in questo file system,
+aggiorna solo l'ora dell'ultimo accesso al file (atime) se il valore attuale di atime
+è minore o uguale a quello dell'ultima modifica del file (mtime)
+o all'ora dell'ultimo cambiamento di stato (ctime).
+Questa opzione è utile per programmi come
+.BR mutt (1),
+che hanno bisogno di sapere quando un file è stato letto dall'ultima modifica.
+.TP 
+.B MS_REMOUNT
+Monta di nuovo un montaggio esistente.
+Questo permette di cambiare
+.I mountflag
+e
+.I dati
+di un montaggio esistente senza dover smontare e rimontare il file system.
+.I source
+e
+.I target
+devono avere gli stessi valori specificati nella chiamata
+.BR mount ()
+iniziale;
+.I filesystemtype
+è ignorato.
+
+I seguenti
+.I mountflag
+possono essere cambiati:
+.BR MS_RDONLY ,
+.BR MS_SYNCHRONOUS ,
+.BR MS_MANDLOCK ;
+prima del kernel 2.6.16 potevano essere cambiati anche i seguenti:
+.BR MS_NOATIME
+e
+.BR MS_NODIRATIME;
+e, in aggiunta, prima del kernel 2.4.10, potevano essere cambiati anche questi:
+.BR MS_NOSUID ,
+.BR MS_NODEV ,
+.BR MS_NOEXEC .
+.TP 
+.BR MS_SILENT " (a partire da Linux 2.6.17)"
+Sopprime la visualizzazione di alcuni messaggi di avvertimento
+.RI ( printk ())
+nelle registrazioni del kernel.
+Questo flag sostituisce il flag
+.BR MS_VERBOSE ,
+obsoleto e chiamato nel modo sbagliato (disponibile da Linux 2.4.12), che ha lo stesso significato.
+.TP 
+.B MS_SYNCHRONOUS
+Rende sincrone le scritture su questo file system (come se
+il flag
+.B O_SYNC
+di
+.BR open (2)
+fosse specificato per tutti i file aperti su questo file system).
+.PP 
+Da Linux 2.4 in poi, i flag
+.BR MS_NODEV ", " MS_NOEXEC ", e " MS_NOSUID
+possono essere impostati basandosi sul punto di mount.
+Dal kernel 2.6.16 in poi,
+.B MS_NOATIME
+e
+.B MS_NODIRATIME
+possono essere impostati basandosi sui punti di mount.
+Anche il flag
+.B MS_RELATIME
+può essere impostato basandosi sui punti di mount.
+.PP 
+L'argomento
+.I R data
+è interpretato da differenti file system.
+Tipicamente è una stringa di opzioni separate da virgole
+capita da questo file system.
+Vedere
+.BR mount (8)
+per dettagli delle opzioni disponibili per ciascun tipo di filesystem.
+.SH "VALORE RESTITUITO"
+In caso di successo viene restituito zero.
+In caso di errore viene restituito \-1 , e
+.I errno
+viene impostato di conseguenza.
+.SH "ERRORI"
+I valori di errore indicati di seguito sono causati da errori indipendenti dal 
+tipo di file system.
+Ciascun tipo di file system può avere i propri errori
+speciali e il suo comportamento speciale.
+Vedere il codice sorgente del kernel per dettagli.
+.TP 
+.B EACCES
+Un componente di un percorso non poteva essere cercato.
+(Vedere anche
+.BR path_resolution (2).)
+Oppure è stato tentato il montaggio di un file system in sola lettura senza dare
+il flag
+.B MS_RDONLY .
+Oppure il dispositivo a blocchi
+.I source
+si trova su un filesystem montato con
+l'opzione
+.B MS_NODEV
+.\" mtk: Probabilmente sono richiesti permessi di scrittura per MS_BIND, provocando
+.\" l'errore EPERM se non presenti; è richiesto CAP_DAC_OVERRIDE.
+.TP 
+.B EBUSY
+.I source
+è già montato.
+Oppure non può essere rimontato in sola lettura,
+perché contiene ancora file aperti in scrittura.
+Oppure non può essere montato su
+.I target
+perché
+.I target
+è ancora occupato (è la directory di lavoro di qualche task,
+il punto di mount di un altro dispositivo, ha file aperti, ecc.).
+.TP 
+.B EFAULT
+Uno degli argomenti puntatori punta fuori dallo spazio di indirizzamento dell'utente.
+.TP 
+.B EINVAL
+.I source
+ha un superblocco non valido.
+Oppure è stato tentato un rimontaggio
+.RB ( MS_REMOUNT ),
+ma
+.I source
+non era ancora montato su
+.I R target .
+Oppure è stato tentato uno spostamento
+.RB ( MS_MOVE ),
+ma
+.I source
+non era un punto di mount, o era \(aq/\(aq.
+.TP 
+.B ELOOP
+Troppi link incontrati durante la risoluzione di un percorso.
+Oppure è stato tentato uno spostamento, mentre
+.I target
+è discendente di
+.I R source .
+.TP 
+.B EMFILE
+(Nel caso non sia necessario un dispositivo a blocchi:)
+La tabella dei dispositivi fittizi è piena.
+.TP 
+.B ENAMETOOLONG
+Un nome di percorso è più lungo di
+.BR MAXPATHLEN .
+.TP 
+.B ENODEV
+.I filesystemtype
+non configurato nel kernel.
+.TP 
+.B ENOENT
+Un nome di percorso era vuoto o aveva un componente inesistente.
+.TP 
+.B ENOMEM
+Il kernel non può allocare una pagina libera in cui copiare nomi di file o dati.
+.TP 
+.B ENOTBLK
+.I source
+non è un dispositivo a blocchi (ed era necessario un dispositivo).
+.TP 
+.B ENOTDIR
+.I R target ,
+o un prefisso di
+.I R souce, 
+non è una directory.
+.TP 
+.B ENXIO
+Il major number del dispositivo a blocchi
+.I source
+è fuori limite.
+.TP 
+.B EPERM
+Il chiamante non ha i privilegi necessari.
+.SH "CONFORME A"
+Questa funzione è specifica di Linux e non deve essere usata in
+programmi pensati per essere portabili.
+.SH "NOTE"
+Il flag originale
+.B MS_SYNC
+fu rinominato
+.B MS_SYNCHRONOUS
+in 1.1.69
+quando fu aggiunto un diverso
+.B MS_SYNC
+a \fI<mman.h>\fP.
+.LP 
+Prima di Linux 2.4, un tentativo di eseguire un programma set\-user\-ID o set\-group\-ID
+su un file system montato con
+.B MS_NOSUID
+falliva con
+.BR EPERM .
+A partire da Linux 2.4 i bit set\-user\-ID e set\-group\-ID in questo caso
+sono ignorati silenziosamente.
+.\" Cambiato in patch\-2.4.0\-prerelease.
+.SS Spazi dei nomi in base al processo
+A partire dal kernel 2.4.19, Linux fornisce
+spazi dei nomi di montaggio in base al processo.
+Uno spazio dei nomi di montaggio è l'insieme di montaggi di file system che
+un processo può vedere.
+Gli spazi dei nomi dei punti di mount possono essere (e di solito lo sono)
+condivisi tra processi multipli,
+e i cambiamenti provocati da un processo (cioé montaggi e smontaggi)
+sono visibili a tutti i processi che condividano lo stesso spazio dei nomi.
+(La situazione prima di Linux pre\-2.4.19 prevedeva che un singolo spazio dei nomi
+venisse condiviso da tutti i processi nel sistema.)
+
+Un processo figlio creato da
+.BR fork (2)
+condivide lo spazio dei nomi di montaggio del suo genitore:
+lo spazio dei nomi di montaggio viene preservato tramite un
+.BR execve (2).
+
+Un processo può ottenere uno spazio dei nomi di montaggio privato se:
+è stato creato usando il
+flag di
+.BR clone ()
+.BR CLONE_NEWNS ,
+e in questo caso il suo nuovo spazio dei nomi viene inizializzato come
+.I copia
+degli spazi dei nomi del processo che ha chiamato
+.BR clone ():
+o se chiama
+.BR unshare (2)
+con il
+flag
+.BR CLONE_NEWNS ,
+che permette allo spazio dei nomi del chiamante di ottenere una copia privata
+dello spazio dei nomi che in precedenza condivideva con altri processi,
+in modo che chiamate a montaggi e smontaggi futuri siano invisibili
+agli altri processi (ad eccezione di processi figli creati successivamente
+dal chiamante), e viceversa.
+
+Il file specifico di Linux
+.I /proc/PID/self
+mostra l'elenco di punti di mount negli spazi dei nomi dei processi con l'ID
+specificato. Vedere
+.BR proc (5)
+per i dettagli.
+.SH "VEDERE ANCHE"
+.BR umount (2),
+.BR path_resolution (7),
+.BR mount (8),
+.BR umount (8)
+.SH "COLOPHON"
+Questa pagina fa parte del rilascio 3.14 del progetto
+.I man\-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man\-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

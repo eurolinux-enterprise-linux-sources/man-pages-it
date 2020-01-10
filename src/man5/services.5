@@ -1,0 +1,239 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" This manpage is Copyright (C) 1996 Austin Donnelly <and1000@cam.ac.uk>,
+.\" with additional material Copyright (c) 1995 Martin Schulze
+.\"     <joey@infodrom.north.de>
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\"   This manpage was made by merging two independently written manpages,
+.\"   one written by Martin Schulze (18 Oct 95), the other written by
+.\"   Austin Donnelly, (9 Jan 96).
+.\"
+.\" Thu Jan 11 12:14:41 1996 Austin Donnelly  <and1000@cam.ac.uk>
+.\"   * Merged two services(5) manpages
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Ottobre 1996
+.\" Aggiornamento a man-pages-1.15 di Alessandro Rubini (rubini@linux.it)
+.\" Febbraio 1998
+.\" Correzioni, Ottavio G. Rizzo, ottobre 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-3.10 di Elisabetta Galli <lab@kkk.it>
+.\" ottobre 2008
+.\"
+.TH SERVICES 5 "23 settembre 2008" "Linux" "Linux Programmer's Manual"
+.SH NOME
+services \- Elenco dei servizi di rete internet
+.SH DESCRIZIONE
+.B services
+è un normale file ASCII che fornisce una mappa tra i nomi comprensibili
+dei servizi internet e i nomi delle porte e i tipi di
+protocolli loro assegnati.
+Ogni programma di rete dovrebbe leggere
+questo file per sapere il numero della porta (e il protocollo) del suo servizio.
+Le routine della libreria C
+.BR getservent (3),
+.BR getservbyname (3),
+.BR getservbyport (3),
+.BR setservent (3)
+e
+.BR endservent (3)
+supportano l'interrogazione di questo file da parte dei programmi.
+
+I numeri di porta sono assegnati da IANA (Internet Assigned Numbers
+Authority), e la loro politica attuale assegna entrambi i protocolli TCP e UDP
+quando si assegna un numero di porta.
+Perciò, molte voci
+avranno due voci, anche per i servizi solo TCP.
+
+I numeri di porta inferiori a 1024 (le cosiddette porte 'low numbered')
+possono essere usate solo da root (si veda
+.BR bind (2),
+.BR tcp (7),
+e
+.BR udp (7)).
+Questo accade perché i client che si connettono a una porta low numbered possano fare affidamento
+sul fatto che il servizio in esecuzione sulla porta sia l'implementazione standard,
+e non un servizio malevolo avviato da un utente della macchina.
+I numeri di porta noti specificati dall'IANA sono normalmente
+localizzati in questo spazio esclusivo per root.
+
+La presenza di una voce per un servizio nel file
+.B services
+non significa necessariamente che il servizio sia attualmente in
+esecuzione sulla macchina.
+Si veda
+.BR inetd.conf (5)
+per la configurazione dei servizi Internet offerti.
+Si noti che non
+tutti i servizi di rete sono avviati da
+.BR inetd (8),
+e dunque questi non appariranno in
+.BR inetd.conf (5).
+In particolare, i server per news (NNTP) e mail (SMTP) spesso sono
+inizializzati dagli script di avvio del sistema.
+
+La posizione del file
+.B services
+è definita da
+.B _PATH_SERVICES
+in
+.IR <netdb.h> "."
+Questa è di solito impostata a
+.IR /etc/services "."
+
+Ogni riga descrive un servizio, ed ha il seguente formato:
+.IP
+\f2nome-servizio\ \ \ porta\f3/\f2protocollo\ \ \ \f1[\f2alias ...\f1]
+.TP
+dove:
+.TP 10
+.I nome-servizio
+è il nome amichevole con il quale il servizio è conosciuto e cercato dai programmi.
+È sensibile alle maiuscole-minuscole.
+Spesso i programmi client prendono il nome dal
+.IR nome-servizio "."
+.TP
+.I porta
+è il numero della porta (in decimale) da usare per questo servizio.
+.TP
+.I protocollo
+è il tipo di protocollo da usare.
+Questo campo deve corrispondere ad
+una voce nel file
+.BR protocols (5).
+Valori tipici includono
+.B tcp
+e
+.BR udp .
+.TP
+.I alias
+è una lista opzionale separata da spazi o tab di altri nomi per questo
+servizio (ma si veda la sezione BUG sotto).
+Ancora, i nomi sono sensibili alle
+maiuscole-minuscole.
+.PP
+Sia spazi che tab possono essere usati per separare i campi.
+
+I commenti inizianoon il carattere # e continuano fino alla
+fine della riga.
+Le righe vuote non vengono considerate.
+
+Il 
+.I nome-servizio
+dovrebbe cominciare nella prima colonna del file, in quanto gli spazi
+iniziali non vengono tolti.
+.I nome-servizio
+può essere composto da qualunque carattere stampabile ad esclusione di spazi e tab,
+comunque dovrebbe essere usata una scelta conservativa di caratteri per minimizzare
+i problemi di interoperabilità.
+Per esempio: a\-z, 0\-9 e trattino (\-) sono
+una scelta sensata.
+
+Nel file non dovrebbero essere presenti righe che non corrispondano a
+questo formato
+(attualmente esse sono scartate silenziosamente da
+.BR getservent (3),
+.BR getservbyname (3),
+e
+.BR getservbyport (3).
+In ogni caso non si dovrebbe far affidamento su questo comportamento).
+
+.\" Quello che segue non è più vero a partire da glibc 2.8 (una riga con una virgola verrà
+.\" ignorata da getservent()); non è chiaro se/quando è stato vero.
+.\"   Per compatibilità all'indietro, lo slash (/) tra il numero di
+.\"   .I porta
+.\"   e il nome del
+.\"   .I protocollo
+.\"   può di fatto essere sia uno slash che una virgola(,).
+.\"   L'uso della virgola
+.\"   nelle installazioni moderne è deprecato.
+.\"
+Questo file potrebbe essere distribuito su una rete che usa un
+servizio di naming valido per tutta la rete come Yellow Pages/NIS o BIND/Hesiod.
+
+Un file
+.B services
+d'esempio potrebbe essere così:
+.RS
+.nf
+.sp
+.ta 3i
+netstat         15/tcp
+qotd            17/tcp          quote
+msp             18/tcp          # message send protocol
+msp             18/udp          # message send protocol
+chargen         19/tcp          ttytst source
+chargen         19/udp          ttytst source
+ftp             21/tcp
+# 22 \- non assegnato
+telnet          23/tcp
+.fi
+.RE
+.SH FILE
+.TP
+.I /etc/services
+L'elenco dei servizi di rete internet
+.TP
+.I <netdb.h>
+Definizione di
+.B _PATH_SERVICES
+.\" .SH BUG
+.\" Non è chiaro quando/se quanto segue fosse vero:
+.\" non lo è a partire da glibc 2.8.
+.\"     Gli alias per un servizio possono essere al massimo 35, a causa del
+.\"     modo in cui è scritto il codice di
+.\"     .BR getservent (3).
+.\"
+.\" Non è chiaro quando/se quanto segue fosse vero:
+.\" non lo è a partire da glibc 2.8.
+.\"     Le righe più lunghe di 
+.\"     .B BUFSIZ
+.\"     caratteri (attualmente 1024) saranno ignorate da
+.\"     .BR getservent (3),
+.\"     .BR getservbyname (3),
+.\"     e
+.\"     .BR getservbyport (3).
+.\"     Tuttavia, ciò causa anche un'analisi sbagliata della riga successiva.
+.SH "VEDERE ANCHE"
+.BR listen (2),
+.BR endservent (3),
+.BR getservbyname (3),
+.BR getservbyport (3),
+.BR getservent (3),
+.BR setservent (3),
+.BR inetd.conf (5),
+.BR protocols (5),
+.BR inetd (8)
+
+Assigned Numbers RFC, il più recente è il documento RFC 1700, anche noto come STD0002.
+.SH COLOPHON
+Questa pagina fa parte del rilascio 3.10 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

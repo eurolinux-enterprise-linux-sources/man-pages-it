@@ -1,0 +1,226 @@
+'\" t
+.\" Copyright (c) 1993 Michael Haardt (michael@cantor.informatik.rwth-aachen.de)
+.\" and 1994,1995 Alain Knaff (Alain.Knaff@imag.fr)
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\"
+.\" Modified, Sun Feb 26 15:00:02 1995, faith@cs.unc.edu
+.\"
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Ottobre 1996
+.\" Aggiornamento alla versione 1.15 di Alessandro Rubini (rubini@linux.it)
+.\" Maggio 1997
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\"
+.TH FD 4 "29 gennaio 1995" "File speciali" "Linux Programmer's Manual"
+.SH NOME
+fd \- dispositivo per dischetti
+.SH CONFIGURAZIONE
+I dispositivi dei dischetti sono dispositivi a blocchi con numeri primari
+2. Tipicamente sono di proprietà di root:floppy (cioè proprietario
+root e gruppo floppy) e hanno modi di accessi 0660
+(accesso con verifica dell'appartenenza al gruppo) oppure 666 (tutti
+hanno l'accesso). Il numero secondario codifica il tipo di dispositivo,
+numero del drive e numero del controller. Per ogni tipo di dispositivo
+(cioè, per ogni combinazione di densità e numero di tracce) esiste un
+numero secondario differente. A questo numero base occorre aggiungere il
+numero del drive sul suo controller e 128 se il drive è collegato
+al secondo controller. Nella seguente tabella di dispositivi, \fIn\fP
+rappresenta il numero del drive.
+.PP
+\fB:Attenzione: se si usano formati con più tracce di quelle
+supportate dal drive su può causare un danno meccanico.\fP Provare
+una volta se sono supportate più delle 40/80 tracce solite non
+dovrebbe danneggiarlo, ma non è data nessuna garanzia. Se non si
+è sicuri, non creare i file speciali per quei formati in modo da
+prevenirne l'uso.
+.PP
+Questi sono i file di periferica  che riconoscono automaticamente il
+formato e la capacità del disco indipendentemente dal drive:
+.PP
+.TS
+l l.
+Nome	numero di base secondario
+_
+\fBfd\fP\fIn\fP	0
+.TE
+.PP
+File speciali per dischetti da 5.25 pollici a doppia densità:
+.PP
+.TS
+lw(1i) l l l l l.
+Nome	Capac.	Cil.	Sett.	Testine	Numero base
+_
+\fBfd\fP\fIn\fP\fBd360\fP	360K	40	9	2	4
+.TE
+.PP
+File speciali per dischetti da 5.25 pollici ad alta densità:
+.PP
+.TS
+lw(1i) l l l l l.
+Nome	Capac.	Cil.	Sett.	Testine	Num second. base
+_
+\fBfd\fP\fIn\fP\fBh360\fP	360K	40	9	2	20
+\fBfd\fP\fIn\fP\fBh410\fP	410K	41	10	2	48
+\fBfd\fP\fIn\fP\fBh420\fP	420K	42	10	2	64
+\fBfd\fP\fIn\fP\fBh720\fP	720K	80	9	2	24
+\fBfd\fP\fIn\fP\fBh880\fP	880K	80	11	2	80
+\fBfd\fP\fIn\fP\fBh1200\fP	1200K	80	15	2	8
+\fBfd\fP\fIn\fP\fBh1440\fP	1440K	80	18	2	40
+\fBfd\fP\fIn\fP\fBh1476\fP	1476K	82	18	2	56
+\fBfd\fP\fIn\fP\fBh1494\fP	1494K	83	18	2	72
+\fBfd\fP\fIn\fP\fBh1600\fP	1600K	80	20	2	92
+.TE
+.PP
+File speciali per dischetti da 3.5 pollici a doppia densità:
+.PP
+.TS
+lw(1i) l l l l l.
+Nome	Capac.	Cil.	Sett.	Testine	Num second. base
+_
+\fBfd\fP\fIn\fP\fBD360\fP	360K	80	9	1	12
+\fBfd\fP\fIn\fP\fBD720\fP	720K	80	9	2	16
+\fBfd\fP\fIn\fP\fBD800\fP	800K	80	10	2	120
+\fBfd\fP\fIn\fP\fBD1040\fP	1040K	80	13	2	84
+\fBfd\fP\fIn\fP\fBD1120\fP	1120K	80	14	2	88
+.TE
+.PP
+File speciali per dischetti da 3.5 pollici ad alta densità:
+.PP
+.TS
+lw(1i) l l l l l.
+Nome	Capac.	Cil.	Sett.	Testine	Num second. base
+_
+\fBfd\fP\fIn\fP\fBH360\fP	360K	40	9	2	12
+\fBfd\fP\fIn\fP\fBH720\fP	720K	80	9	2	16
+\fBfd\fP\fIn\fP\fBH820\fP	820K	82	10	2	52
+\fBfd\fP\fIn\fP\fBH830\fP	830K	83	10	2	68
+\fBfd\fP\fIn\fP\fBH1440\fP	1440K	80	18	2	28
+\fBfd\fP\fIn\fP\fBH1600\fP	1600K	80	20	2	124
+\fBfd\fP\fIn\fP\fBH1680\fP	1680K	80	21	2	44
+\fBfd\fP\fIn\fP\fBH1722\fP	1722K	82	21	2	60
+\fBfd\fP\fIn\fP\fBH1743\fP	1743K	83	21	2	76
+\fBfd\fP\fIn\fP\fBH1760\fP	1760K	80	22	2	96
+\fBfd\fP\fIn\fP\fBH1840\fP	1840K	80	23	2	116
+\fBfd\fP\fIn\fP\fBH1920\fP	1920K	80	24	2	100
+.TE
+.PP
+File speciali per dischetti da 3.5 pollici ad extra densità:
+.PP
+.TS
+lw(1i) l l l l l.
+Nome	Capac.	Cil.	Sett.	Testine	Num second. base
+_
+\fBfd\fP\fIn\fP\fBE2880\fP	2880K	80	36	2	32
+\fBfd\fP\fIn\fP\fBCompaQ\fP	2880K	80	36	2	36
+\fBfd\fP\fIn\fP\fBE3200\fP	3200K	80	40	2	104
+\fBfd\fP\fIn\fP\fBE3520\fP	3520K	80	44	2	108
+\fBfd\fP\fIn\fP\fBE3840\fP	3840K	80	48	2	112
+.TE
+.SH DESCRIZIONE
+I file speciali \fBfd\fP accedono in modo "raw" ai drive dei
+dischetti. Le seguenti chiamate
+.BR ioctl (2)
+sono supportate dai dispositivi \fBfd\fP:
+.IP \fBFDCLRPRM\fP
+azzera le informazioni sul supporto (media information,
+cioè la geometria del disco nel drive) per un drive.
+.IP \fBFDSETPRM\fP
+assegna le informazioni sul supporto di un drive. Tali informazioni
+saranno perse quando il disco viene cambiato.
+.IP \fBFDDEFPRM\fP
+assegna le informazioni sul supporto di un drive (la geometria del
+disco nel drive). Tali informazioni non saranno perse quando il dispositivo
+viene cambiato. Ciò disabiliterà la rilevazione automatica. Per poter
+riabilitare la rilevazione automatica, di deve fare un \fBFDCLRPRM\fP .
+.IP \fBFDGETDRVTYP\fP
+ritorna il tipo di un drive (parametro nome). Per formati che
+funzionano in diversi tipi di drive, \fBFDGETDRVTYP\fP ritorna un nome
+che è appropriato per il più vecchio tipo di drive che supporta questo
+formato.
+.IP \fBFDFLUSH\fP
+invalida la cache dei dati relativi ad un drive.
+.IP \fBFDSETMAXERRS\fP
+assegna la soglia d'errore per riportare gli errori, la terminazione
+dell'operazione, la ricalibrazione, il reset, e la lettura settore per
+settore. 
+.IP \fBFDSETMAXERRS\fP
+restituisce la soglia d'errore corrente.
+.IP \fBFDGETDRVTYP\fP
+restituisce il nome interno del drive.
+.IP \fBFDWERRORCLR\fP
+azzera le statistiche sugli errori di scrittura.
+.IP \fBFDWERRORGET\fP
+legge le statistiche sugli errori di scrittura. Queste comprendono il
+numero totale di errori di scrittura, la posizione e il disco del
+primo errore di scrittura, e la posizione e il disco dell'ultimo
+errore di scrittura. I dischi sono identificati da un numero che viene
+incrementato ogni volta che viene cambiato il disco (o quasi).
+.IP \fBFDTWADDLE\fP
+Spegne il motore del drive per alcuni microsecondi. Ciò potrebbe
+essere necessario per poter accedere ad un disco i cui settori siano
+troppo vicini uno all'altro.
+.IP \fBFDSETDRVPRM\fP
+assegna diversi parametri del drive.
+.IP \fBFDGETDRVPRM\fP
+rilegge questi parametri.
+.IP \fBFDGETDRVSTAT\fP
+restituisce lo stato della cache del drive (disk changed, write
+protected et al.)
+.IP \fBFDPOLLDRVSTAT\fP
+interroga il drive e ritorna il suo stato.
+.IP \fBFDGETFDCSTAT\fP
+restituisce lo stato del controller del dischetto.
+.IP \fBFDRESET\fP
+reimposta il controller del dischetto, sotto certe condizioni.
+.IP \fBFDRAWCMD\fP
+invia un comando nudo al controller del dischetto.
+.PP
+Per informazioni più precise, consultare anche i file include
+<linux/fd.h> e <linux/fdreg.h>, come pure la pagina di manuale di 
+floppycontrol.
+.SH NOTE
+I vari formati permettono la lettura e scrittura di molti tipi di
+dischi. Comunque, se un dischetto ha un intervallo tra i settori (inter
+sector gap) troppo piccolo, le prestazioni possono crollare, fino a
+causare un attesa di alcuni secondi per accedere ad una traccia
+completa. Per evitare ciò, usare i formati "interleaved". Non è
+possibile la lettura di dischetti che sono formattati usando GCR (group
+code recording), formato usato dai computer Apple II e Macintosh
+(dischi da 800k). La lettura di dischetti con "settorizzazione hardware"
+(un buco per settore, e il buoco indice un po' sbilenco) non è
+supportata. La "settorizzazione hardware" era comune con i vecchi
+dischetti da 8 pollici.
+.SH FILE
+/dev/fd*
+.SH AUTORI
+Alain Knaff (Alain.Knaff@imag.fr), David Niemi
+(niemidc@clark.net), Bill Broadhurst (bbroad@netcom.com).
+.SH "VEDERE ANCHE"
+.BR chown (1),
+.BR floppycontrol (1),
+.BR getfdprm (1),
+.BR mknod (1),
+.BR superformat (1),
+.BR mount (8),
+.BR setfdprm (8)

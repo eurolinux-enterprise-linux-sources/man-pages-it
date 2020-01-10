@@ -1,0 +1,258 @@
+.\" Copyright (c) 1993 Michael Haardt (michael@moria.de),
+.\"   Fri Apr  2 11:32:09 MET DST 1993
+.\" and Andries Brouwer (aeb@cwi.nl), Fri Feb 14 21:47:50 1997.
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\" 
+.\" Modified Sun Jul 25 10:45:30 1993 by Rik Faith (faith@cs.unc.edu)
+.\" Modified Sun Jul 21 21:25:26 1996 by Andries Brouwer (aeb@cwi.nl)
+.\" Modified Mon Oct 21 17:47:19 1996 by Eric S. Raymond (esr@thyrsus.com)
+.\" Modified Wed Aug 27 20:28:58 1997 by Nicolás Lichtmaier (nick@debian.org)
+.\" Modified Mon Sep 21 00:00:26 1998 by Andries Brouwer (aeb@cwi.nl)
+.\" Modified Wed Jan 24 06:37:24 2001 by Eric S. Raymond (esr@thyrsus.com)
+.\" Modified Thu Dec 13 23:53:27 2001 by Martin Schulze <joey@infodrom.org>
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Ottobre 1996
+.\" Aggiornamento a man-pages-1.15 di Alessandro Rubini (rubini@linux.it)
+.\" Febbraio 1998
+.\" Aggiornamento a man-pages-1.20 di Ottavio G. Rizzo (rizzo@pluto.linux.it)
+.\" Giugno 1998
+.\" Aggiornamento a man-pages-1.22 di Ottavio G. Rizzo (rizzo@pluto.linux.it)
+.\" Gennaio 1999
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\" Aggiornamento a man-pages-2.62 di Elisabetta Galli <lab@kkk.it>
+.\" luglio 2007
+.\"
+.TH ENVIRON 7 "14 dicembre 2001" "Linux" "Linux Programmer's Manual"
+.SH NOME
+environ \- ambiente dell'utente
+.SH SINTASSI
+.nf
+.BI "extern char **" environ ;
+.br
+.fi
+.SH DESCRIZIONE
+La variabile
+.I environ
+si riferisce ad un vettore di stringhe chiamato l'«ambiente» (questa
+variabile deve essere dichiarata in un programma utente, ma viene
+dichiarata nel file header
+.I unistd.h
+nel caso in cui l'header venga da libc4 o libc5, o nel caso in cui
+venga da glibc e
+.B _GNU_SOURCE
+era stata definita).
+Questo vettore di stringhe è reso disponibile al processo dalla chiamata di sistema 
+.BR exec (3)
+che lo aveva fatto partire.
+Per convenzione queste stringhe sono nella forma
+`\fInome\fP\fB=\fP\fIvalore\fP'.
+Esempi comuni sono:
+.TP
+.B USER
+Il nome dell'utente collegato (usato da programmi derivati da BSD).
+.TP
+.B LOGNAME
+Il nome dell'utente collegato (usato da programmi derivati da System V).
+.TP
+.B HOME
+La directory di login dell'utente, impostata da
+.BR login (1)
+al valore specificato nel file delle password
+.BR passwd (5).
+.TP
+.B LANG
+Il nome della localizzazione da usare per le categorie di localizzazione quando non
+siano specificate altrimenti da \fBLC_ALL\fP o da variabili d'ambiente
+più specifiche come \fBLC_COLLATE\fP, \fBLC_CTYPE\fP, \fBLC_MESSAGES\fP,
+\fBLC_MONETARY\fP, \fBLC_NUMERIC\fP, \fBLC_TIME\fP, cf.
+.BR locale (5).
+.TP
+.B PATH
+La sequenza dei prefissi di directory che
+.BR sh (1)
+e molti altri
+programmi usano per cercare un file noto solo un suo percorso
+incompleto. I prefissi sono separati da «\fB:\fP»
+(allo stesso modo, \fBCDPATH\fP è usato da alcune shell per trovare la destinazione di un
+cambio di directory, \fBMANPATH\fP è usato da
+.BR man (1)
+per trovare
+pagine di manuale, ecc.).
+.TP
+.B PWD
+La directory di lavoro corrente.
+Impostato da alcune shell.
+.TP
+.B SHELL
+Il nome di file della shell di login dell'utente.
+.TP
+.B TERM
+Il tipo di terminale per il quale deve essere preparato l'output.
+.TP
+.B PAGER
+L'utilità preferita dall'utente per visualizzare file di testo.
+.TP
+.BR EDITOR / VISUAL
+L'utilità preferita dall'utente per editare file di testo.
+.\" .TP
+.\" .B BROWSER
+.\" L'utilità preferita dall'utente per vedere gli URL. Sequenze di comandi 
+.\" del browser separati da caratteri ":". Si veda http://www.catb.org/~esr/BROWSER/ .
+.PP
+Ulteriori nomi possono essere messi nell'ambiente dal comando \fBexport\fP
+e da `nome=valore' in
+.BR sh (1),
+o dal comando \fBsetenv\fP se si usa 
+.BR csh (1).
+Argomenti posso essere messi nell'ambiente come
+parametro di un 
+.BR exec (3).
+Un programma in C può modificare il suo ambiente usando le funzioni
+.BR getenv (3),
+.BR putenv (3),
+.BR setenv (3),
+e
+.BR unsetenv (3).
+
+Si noti che il comportamento di molti programmi e routine delle
+librerie è influenzato dalla presenza o dal valore di alcune variabili
+d'ambiente. Una raccolta a caso:
+.LP
+Le variabili
+.BR LANG ", " LANGUAGE ", " NLSPATH ", " LOCPATH ", "
+.BR LC_ALL ", " LC_MESSAGES ", "
+ecc. influenzano l'uso delle localizzazioni, cf.
+.BR locale (5).
+.LP
+.B TMPDIR
+influenza il prefisso del percorso di nomi creati da
+.BR tmpnam (3)
+e altre routine, la directory temporanea usata da
+.BR sort (1)
+e da altri programmi, ecc.
+.LP
+.BR LD_LIBRARY_PATH ", " LD_PRELOAD
+e altre variabili LD_* influenzano il
+comportamento del loader/linker dinamico.
+.LP
+.B POSIXLY_CORRECT
+fa seguire ad alcuni programmi a routine di libreria
+le norme POSIX.
+.LP
+Il comportamento di
+.BR malloc (3)
+è influenzato dalle variabili MALLOC_*.
+.LP
+La variabile
+.B HOSTALIASES
+dà il nome di un file contenente degli alias
+da usare con
+.BR gethostbyname (3).
+.LP
+.BR TZ " e " TZDIR
+dà informazioni sulla zona di fuso orario utilizzata da
+.BR tzset (3)
+e, attraverso questa, da funzioni come
+.IR ctime (3),
+.IR localtime (3),
+.IR mktime (3),
+.IR strftime (3).
+Vedere anche
+.BR tzselect (8).
+.LP
+.B TERMCAP
+dà informazioni su come indirizzare un dato terminale
+(o dà il nome di un file contenente tali informazioni).
+.LP
+.BR COLUMNS " e " LINES
+informa le applicazioni sulla dimensione della finestra, forse sovrascrivendo la dimensione attuale.
+.LP
+.BR PRINTER " o " LPDEST
+può specificare la stampante che si desidera usare.
+Vedere
+.BR lpr (1).
+.LP
+Ecc.
+.SH BACHI
+Qui c'è chiaramente un rischio di sicurezza.
+Molti comandi di sistema 
+sono stati indotti a fare danni da un utente che specificava valori insoliti per
+.BR IFS " o " LD_LIBRARY_PATH .
+
+C'è anche il rischio di un inquinamento dello spazio nome.
+Programmi come
+.I make
+e
+.I autoconf
+permettono la sovrascrittura dei nomi delle utility di default
+dall'ambiente con variabili dal nome simile cambiato in maiuscole/minuscole.
+In questo modo esse usano
+.B CC
+per selezionare il compilatore C desiderato (e similarmente
+.BR MAKE ,
+.BR AR ,
+.BR AS ,
+.BR FC ,
+.BR LD ,
+.BR LEX ,
+.BR RM ,
+.BR YACC ,
+ecc.).
+Tuttavia in alcuni usi tradizionali tale variabile d'ambiente
+dà opzioni al programma invece di un nome di percorso.
+In questo modo uno ha
+.BR MORE ,
+.BR LESS ,
+e
+.BR GZIP .
+Tale uso è considerato scorretto, e deve essere evitato nei nuovi
+programmi.
+Gli autori di
+.I gzip
+devono pensare di rinominare la loro opzione a
+.BR GZIP_OPT .
+.SH "VEDERE ANCHE"
+.BR bash (1),
+.BR csh (1),
+.BR login (1),
+.BR sh (1),
+.BR tcsh (1),
+.BR execve (2),
+.BR clearenv (3),
+.BR exec (3),
+.BR getenv (3),
+.BR putenv (3),
+.BR setenv (3),
+.BR unsetenv (3),
+.BR locale (5)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.76 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

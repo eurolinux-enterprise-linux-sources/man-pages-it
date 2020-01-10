@@ -1,0 +1,65 @@
+===versione 3.15-it, dicembre 2008===
+Molte pagine del pacchetto man-pages sono state aggiornate.
+Creata la nuova pagina umount.2 usando materiale tratto
+dalla pagina mount.2 esistente.
+Nuove traduzioni:
+abc2abc.1
+abc2ly.1
+abc2ps.1
+bash.1
+Nuovi link:
+umount2.2 (link a umount.2)
+utmpx.5 (link a utmp.5)
+
+===versione 2.80-it, giugno 2008===
+Le pagine del pacchetto man-pages e quelle del pacchetto extra sono state
+riunite in questo unico pacchetto.
+Sono state inoltre tolte le pagine POSIX tradotte in italiano, sostituite da quelle
+originali inglesi.
+Molte pagine del pacchetto man-pages sono state aggiornate.
+E' stata aggiunta una nuova pagina (_syscall.2), mentre la pagina fs.5 e' diventata
+un link a filesystems.5
+Altre pagine aggiunte:
+undocumented.3
+ipfw.4 dal pacchetto ipfwadm-2.3.0
+dpkg.cfg.5
+dselect.cfg.5
+tasksel.8
+
+===versione 2.65-it===
+Aggiunte le pagine:
+ar.1p
+awk.1p
+break.1p
+colon.1p
+continue.1p
+dot.1p
+eval.1p
+exit.1p
+link.1p
+return.1p
+shift.1p
+times.1p
+unlink.1p
+
+Aggiornate diverse pagine.
+
+===versione 2.43-it===
+Aggiunte le pagine
+- kill.1p
+- locale.1p
+- adjtimex.2
+- wait.2
+- adjtime.3
+
+===cambiamenti rispetto alla versione 2.21-it===
+Aggiunte le pagine:
+- asa.1p
+- admin.1p
+- assert.0h
+
+Aggiornate diverse pagine
+
+===18 gennaio 2006: prima versione (2.21) delle nuove man pages ristrutturate===
+
+Inviare correzioni e aggiunte a Elisa, lab@kkk.it

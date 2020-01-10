@@ -1,0 +1,226 @@
+.\" Copyright (c) 1999 Andries Brouwer (aeb@cwi.nl), 1 Nov 1999
+.\" 
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\" 
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\" 
+.\" 1999-11-10: Merged text taken from the page contributed by
+.\" Reed H. Petty (rhp@draper.net)
+.\" 
+.\" Traduzione da man-pages-2.26 di Giulio Daprelà <giulio@pluto.it>
+.\" marzo 2006
+.\" Aggiornamento a man pages 2.27 di Giulio Daprelà - aprile 2006
+.\" Aggiornamento a man pages 2.38 di Giulio Daprelà - agosto 2006
+.\" Aggiornamento a man pages 2.41 di Giulio Daprelà - ottobre 2006
+.\" Aggiornamento a man pages 2.44 di Giulio Daprelà - giugno 2007
+.\" Aggiornamento a man pages 2.64 di Elisabetta Galli - agosto 2007
+.\" Aggiornamento a man pages 3.13 di Elisabetta Galli - novembre 2008
+.\" 
+.TH "VFORK" "2" "30 ottobre 2008" "Linux" "Linux Programmer's Manual"
+.SH "NOME"
+vfork \- crea un processo figlio e blocca il genitore
+.SH "SINTASSI"
+.B #include <sys/types.h>
+.br 
+.B #include <unistd.h>
+.sp
+.B pid_t vfork(void);
+.sp
+.in \-4n
+Test delle funzioni e requisiti delle macro per glibc (vedere
+.BR feature_test_macros (7)):
+.in
+.sp
+.BR vfork ():
+_BSD_SOURCE || _XOPEN_SOURCE\ >=\ 500
+.SH "DESCRIZIONE"
+.SS "Descrizione standard"
+(Da POSIX.1)
+La funzione
+.BR vfork ()
+ha lo stesso effetto di
+.BR fork (2),
+con l'eccezione che il comportamento è indefinito se il processo creato da
+.BR vfork ()
+modifica un dato qualsiasi che non sia una variabile di tipo
+.I pid_t
+usata per archiviare il valore restituito da
+.BR vfork () ,
+o torna dalla funzione nella quale
+.BR vfork ()
+è stato chiamato, o chiama qualunque altra funzione prima di chiamare con successo
+.BR _exit (2)
+o una delle funzioni
+della famiglia di
+.BR exec (3) .
+.SS "Descrizione Linux"
+.BR vfork (),
+proprio come
+.BR fork (2),
+crea un processo figlio del processo chiamante.
+Per dettagli sui valori restituiti e sugli errori, vedere
+.BR fork (2).
+.PP 
+.BR vfork ()
+è un caso speciale di
+.BR clone (2).
+Si usa per creare nuovi processi senza copiare le tabelle di pagina del
+processo genitore.
+Può essere utile in applicazioni sensibili alle prestazioni,
+nelle quali verrà creato un figlio che emette immediatamente un
+.BR execve (2) .
+.PP 
+.BR vfork ()
+è diverso da
+.BR fork (2)
+nel senso che il genitore viene sospeso finché il figlio termina
+(sia normalmente,
+chiamando
+.BR exit (2),
+che in modo anormale, dopo aver consegnato un segnale fatal),
+o finchè esegue una chiamata a
+.BR execve (2).
+Fino a quel punto, il figlio condivide la memoria con il genitore,
+incluso lo stack.
+Il figlio non deve tornare dalla funzione attuale o chiamare
+.BR exit (3) ,
+ma può chiamare
+.BR _exit (2).
+.PP 
+I gestori del segnale vengono ereditati, ma non condivisi.
+I segnali al genitore
+arrivano dopo che il figlio ha rilasciato la memoria del genitore
+(cioé dopo che il figlio termina
+o chiama
+.BR execve (2)).
+.SS "Descrizione storica"
+Sotto Linux,
+.BR fork (2)
+è implementato usando pagine copy\-on\-write, così che la sola penalizzazione in cui incorre
+.BR fork (2)
+è il tempo e la memoria richiesti per duplicare le tabelle delle pagine 
+del genitore, e per creare un'unica struttura di task per il figlio.
+Tuttavia, anticamente
+.BR fork (2)
+richiedeva una copia completa dello spazio dati del chiamante, spesso
+senza che ce ne fosse bisogno, di solito immediatamente dopo
+l'esecuzione di
+.BR exec (3).
+Quindi, per una maggiore efficienza, BSD ha introdotto la chiamata di sistema
+.BR vfork () ,
+che non copiava completamente lo spazio di indirizzamento del processo
+genitore, ma prendeva la memoria del genitore e il thread di controllo
+fino a una chiamata a
+.BR execve (2)
+o un exit.
+Il processo genitore era sospeso mentre il figlio utilizzava
+le sue risorse.
+L'uso di
+.BR vfork ()
+era complicato: per esempio, la non modifica dei dati nel processo
+genitore dipendeva dal sapere quali variabili erano conservate in un 
+registro.
+.SH "CONFORME A"
+4.3BSD, POSIX.1\-2001.
+POSIX.1\-2008 rimuove le specifiche per
+.BR vfork() .
+I requisiti indicati per
+.BR vfork ()
+dagli standard sono più deboli di quelli indicati per
+.BR fork (2),
+così un'implementazione dove i due sono sinonimi è conforme.
+In particolare, il programmatore non può contare sul fatto
+che il genitore rimanga bloccato fino al termine del figlio o finché chiama
+.BR execve (2),
+e non può contare su alcuno specifico comportamento riferendosi alla memoria condivisa.
+.\" In AIXv3.1 vfork è equivalente a fork.
+.SH "NOTE"
+.SS Note Linux
+I gestori dei fork stabiliti usando
+.BR pthread_atfork (3)
+non sono chiamati quando un programma multithreaded che impiega le
+chiamate alla libreria di threading NPTL chiama
+.BR vfork ().
+I gestori dei fork sono chiamati in questo caso in un programma che usi la
+libreria di threading LinuxThreads.
+(Vedere
+.BR pthreads (7)
+per una descrizione delle librerie di threading di Linux).
+.SS Storia
+La chiamata di sistema
+.BR vfork ()
+è apparsa nella 3.0BSD.
+.\" Nelle note di rilascio della versione 4.2BSD Sam Leffler ha scritto: `vfork: è
+.\" sempre presente, ma sicuramente non per molto'.
+Nella versione 4.4BSD è diventata sinonimo di
+.BR fork (2)
+ma NetBSD l'ha reintrodotta,
+cf. http://www.netbsd.org/Documentation/kernel/vfork.html .
+In Linux è stata equivalente a
+.BR fork (2)
+fino alla versione 2.2.0\-pre6.
+A partire dalla 2.2.0\-pre9 (su i386, un po' più tardi
+su altre architetture) è una chiamata di sistema indipendente.
+Ne è stato aggiunto il supporto in glibc 2.0.112.
+.SH "BUG"
+È piuttosto sfortunato che Linux abbia richiamato questo spettro dal 
+passato. La pagina di manuale di BSD afferma:
+"Questa chiamata di sistema sarà eliminata quando saranno implementati 
+meccanismi appropriati di condivisione di sistema.
+Gli utenti non devono dipendere dalla semantica della condivisione di memoria di
+.BR vfork ()
+poiché sarebbe, in questo caso, resa sinonimo di
+.BR fork (2).\c
+"
+
+Dettagli sulla gestione del segnale sono oscuri e diversi da sistema a sistema.
+La pagina di manuale di BSD afferma:
+"Per evitare una possibile situazione di stallo, ai processi che sono
+figli nel mezzo di un
+.BR vfork ()
+non vengono mai inviati segnali
+.B SIGTTOU
+o
+.B SIGTTIN ;
+invece, output o
+.I R ioctl s
+sono permessi e i tentativi di input danno come risultato un'indicazione di fine file."
+.\"
+.\" A quanto ne so quanto segue non è vero in 2.6.19:
+.\" Attualmente (Linux 2.3.25),
+.\" .BR strace (1)
+.\" non può seguire
+.\" .BR vfork ()
+.\" e richiede una patch del kernel.
+.SH "VEDERE ANCHE"
+.BR clone (2),
+.BR execve (2),
+.BR fork (2),
+.BR unshare (2),
+.BR wait (2)
+.SH "COLOPHON"
+Questa pagina fa parte del rilascio 3.13 del progetto
+.I man\-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man\-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

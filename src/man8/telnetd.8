@@ -1,0 +1,582 @@
+.\" Copyright (c) 1983, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" Traduzione da inetutils-1.4.2 di Giulio Daprelà <giulio@pluto.it>
+.\" gennaio 2006
+.\"
+.\"	@(#)telnetd.8	8.4 (Berkeley) 6/1/94
+.\"
+.Dd 1 giugno 1994
+.Dt TELNETD 8
+.Os BSD 4.2
+.Sh NOME
+.Nm telnetd
+Protocollo
+.Nd DARPA
+del server
+.Tn TELNET
+.Sh SINTASSI
+.Nm /usr/libexec/telnetd
+.Op Fl BUhlkns
+.Op Fl D Ar debugmode
+.Op Fl I Ns Ar initid
+.Op Fl S Ar tos
+.Op Fl X Ar authtype
+.Op Fl a Ar authmode
+.Op Fl edebug
+.Op Fl r Ns Ar lowpty-highpty
+.Op Fl u Ar len
+.Op Fl debug Op Ar port
+.Sh DESCRIZIONE
+Il comando
+.Nm telnetd
+è un server che supporta il protocollo standard
+.Tn DARPA
+del terminale virtuale
+.Tn TELNET .
+.Nm Telnetd
+è normalmente invocato dal server internet (vedere
+.Xr inetd 8 )
+per richieste di connessione alla porta
+.Tn TELNET
+come indicato dal file
+.Pa /etc/services
+(vedere
+.Xr services 5 ) .
+L'opzione
+.Fl debug
+può essere usata per avviare
+.Nm telnetd
+manualmente invece che attraverso
+.Xr inetd 8 .
+Se avviato in questo modo, la
+.Ar porta
+può essere specificata per far funzionare
+.Nm telnetd
+su un numero di porta
+.Tn TCP
+alternativo.
+.Pp
+Il comando
+.Nm telnetd
+accetta le seguenti opzioni:
+.Bl -tag -width "-a authmode"
+.It Fl a Ar authmode
+Questa opzione può essere usata per specificare quale modo deve essere
+usato per l'autenticazione.
+Notare che questa opzione è utile solo se
+.Nm telnetd
+è stato compilato con il supporto per l'opzione di
+.Dv AUTENTICAZIONE .
+Ci sono molti valori validi per
+.Ar authmode:
+.Bl -tag -width debug
+.It debug
+Attiva il codice di debugging dell'autenticazione.
+.It user
+Permette le connessioni solo quando l'utente remoto può fornire
+informazioni di autenticazione valide per identificare l'utente
+remoto, e gli è concesso l'accesso all'account specificato senza fornire
+una password.
+.It valid
+Permette le connessioni solo quando l'utente remoto può fornire
+informazioni di autenticazione valide per identificare l'utente remoto.
+Il comando
+.Xr login 1
+fornirà ogni verifica aggiuntiva necessaria se all'utente remoto non è
+concesso l'accesso automatico all'account specificato.
+.It other
+Permette solo connessioni che forniscono qualche informazione di 
+autenticazione. Questa opzione attualmente non è supportata da alcun 
+meccanismo di autenticazione esistente, ed è quindi come specificarne
+.Fl una
+.Cm valida .
+.It none
+Questo è lo stato di default.
+Non sono richieste informazioni di autenticazione.
+Se nessuna o insufficienti informazioni di autenticazione è fornita, 
+allora il programma
+.Xr login 1
+fornirà le necessarie verifiche dell'utente.
+.It off
+Quest disabilita il codice di autenticazione.
+Tutte le verifiche utente avverranno attraverso il programma
+.Xr login 1 .
+.El
+.It Fl B
+Specifica mil modo server bftp. In questa modalità,
+.Nm telnetd
+fa avviare al login una sessione
+.Xr bftp 1
+invece della normale shell utente.
+Nella modalità demone bftp i normali login non sono supportati, e devono 
+essere usati su una porta diversa dalla normale porta
+.Tn TELNET .
+.It Fl D Ar debugmode
+Questa opzione può essere usata per scopi di debugging.
+Questo permette a
+.Nm telnetd
+di stampare le infromazioni di debugging alla connessione,
+permettendo all'utente di vedere cosa
+.Nm telnetd
+sta facendo.
+Ci sono numerosi valori possibili per
+.Ar debugmode:
+.Bl -tag -width exercise
+.It Cm options
+Stampa informazioni sulla negoziazione delle opzioni
+.Tn TELNET .
+.It Cm report
+Stampa l'informazione delle
+.Cm opzioni
+più alcune informazioni addizionali su
+quale processo sta funzionando.
+.It Cm netdata
+Visualizza il flusso di dati ricevuto da
+.Nm telnetd.
+.It Cm ptydata
+Visualizza i dati scritti sulla pty.
+.It Cm exercise
+Non è stato ancora implementato.
+.El
+.It Fl debug
+Abilita il debugging su ciascun socket creato da
+.Nm telnetd
+(vedere
+.Dv SO_DEBUG
+in
+.Xr socket 2 ) .
+.It Fl edebug
+Se
+.Nm telnetd
+è stato compilato con il supporto per la crittografia dei dati, allora l'
+opzione
+.Fl edebug
+può essere usata per abilitare il codice di debugging della cifratura.
+.It Fl h
+Disabilita la stampa di informazioni specifiche dell'host prima che il
+login sia stato completato.
+.It Fl I Ar initid
+Questa opzione è applicabile solo ai sistemi
+.Tn UNICOS
+precedenti al 7.0.
+Essa specifica l'
+.Dv ID
+da
+.Pa /etc/inittab
+da usare quando init avvia le sessioni di login. L'
+.Dv ID
+di default è
+.Dv fe.
+.It Fl k
+Questa opzione è utile solo se
+.Nm telnetd
+è stato compilato con entrambi i supporti linemode e kludge linemode.
+Se è specificata l'opzione
+.Fl k
+allora il client remoto non suporta l'opzione
+.Dv LINEMODE ,
+quindi
+.Nm telnetd
+opererà nella modalità a un carattere per volta.
+Esso supporterà ancora il kludge linemode, ma andrà in
+kludge linemode solo se il client remoto lo richiede.
+(Questo è fatto dal client inviando
+.Dv DONT SUPPRESS-GO-AHEAD
+e
+.Dv DONT ECHO . )
+L'opzione
+.Fl k
+è molto utile quando ci sono client remoti che non supportano il
+kludge linemode, ma passa l'euristica
+(se essi rispondono con
+.Dv WILL TIMING-MARK
+in risposta a
+.Dv DO TIMING-MARK)
+per il supporto kludge linemode.
+.It Fl l
+Specifica la modalità linea. Tenta di forzare i client a usare la 
+modalità una-linea-per-volta.
+Se l'opzione
+.Dv LINEMODE
+non è supportata, esso si porterà nel kludge linemode.
+.It Fl n
+Disabilita i keep-alive
+.Dv TCP .
+Normalmente
+.Nm telnetd
+abilita il meccanismo
+.Tn TCP
+keep-alive per provare connessioni che sono state inattive
+per un certo periodo di tempo per determinare se il client
+è ancora lì, in modo che le connessioni inattive di macchine
+andate in crash o che non possono più essere raggiunte possano
+essere cancellate.
+.It Fl r Ar lowpty-highpty
+Questa opzione è abilitata solo quando
+.Nm telnetd
+è compilato per
+.Dv UNICOS.
+Essa specifica un insieme inclusivo di dispositivi pseudo-terminale da
+usare. Se il sistema ha configurato la variabile sysconf
+.Dv _SC_CRAY_NPTY
+il range di ricerca di default delle pty è da 0 a
+.Dv _SC_CRAY_NPTY;
+altrimenti il range di default è da 0 a 128. Uno tra
+.Ar lowpty
+o
+.Ar highpty
+può essere omesso per permettere il cambiamento
+di uno dei due estremi del range di ricerca. Se
+.Ar lowpty
+è omesso il - carattere è sempre necessario in modo che
+.Nm telnetd
+possa differenziare
+.Ar highpty
+da
+.Ar lowpty .
+.It Fl s
+Questa opzione è abilitata solo se
+.Nm telnetd
+p compilato con il supporto per le schede
+.Tn SecurID .
+Essa fa sì che l'opzione
+.Fl s
+sia passata a
+.Xr login 1 ,
+e quindi sia utile solo se
+.Xr login 1
+supporta l'opzione
+.Fl s
+per indicare che solo i login validati da
+.Tn SecurID
+sono permessi, ed è normalmente utile
+per controllare i login remoti dall'esterno di un firewall.
+.It Fl S Ar tos
+.It Fl u Ar len
+Questa opzione è usata per specificare la dimensione del campo
+nella struttura
+.Dv utmp
+che contiene il nome dell'host remoto.
+Se il nome risolto dell'host è più lungo di
+.Ar len ,
+sarà invece usato il valore decimale.
+Questo permette agli host con nomi molto lunghi fuoriescono da
+questo campo di essere ancora identificati univocamente.
+Specificare
+.Fl u0
+indica che solo gli indirizzi decimali
+devono essere messi nel file
+.Pa utmp .
+.ne 1i
+.It Fl U
+Questa opzione fa sì che
+.Nm telnetd
+rifiuti connessioni da indirizzi che non possono
+essere mappati di nuovo in un nome simbolico attraverso la routine
+.Xr gethostbyaddr 3 .
+.It Fl X Ar authtype
+Questa opzione è valida solo se
+.Nm telnetd
+è stato costruito con il supporto per l'opzione di autenticazione.
+Esso disabilita l'uso dell'autenticazione
+.Ar authtype
+e può essere usato per disabilitare temporaneamente uno specifico tipo 
+di autenticazione senza dover ricompilare
+.Nm telnetd .
+.El
+.Pp
+.Nm Telnetd
+opera allocando un dispositivo pseudo-terminale (vedere
+.Xr pty 4 )
+per un client, quindi creando un processo di login che ha il lato
+slave dello pseudo-terminale come
+.Dv stdin ,
+.Dv stdout
+e
+.Dv stderr .
+.Nm Telnetd
+manipola il lato master dello pseudo-terminale,
+implementando il protocollo
+.Tn TELNET
+e passando caratteri tra il client remoto e il processo di login.
+.Pp
+Quando una sessione
+.Tn TELNET
+è avviata,
+.Nm telnetd
+invia opzioni
+.Tn TELNET
+al lato client side indicando una volontà di eseguire le seguenti 
+opzioni
+following
+.Tn TELNET
+che sono descritte in maggior dettaglio sotto:
+.Bd -literal -offset indent
+DO AUTHENTICATION
+WILL ENCRYPT
+DO TERMINAL TYPE
+DO TSPEED
+DO XDISPLOC
+DO NEW-ENVIRON
+DO ENVIRON
+WILL SUPPRESS GO AHEAD
+DO ECHO
+DO LINEMODE
+DO NAWS
+WILL STATUS
+DO LFLOW
+DO TIMING-MARK
+.Ed
+.Pp
+Lo pseudo-terminale allocato al client è configurato per
+operare in modalità \*(lqcooked\*(rq e con
+.Dv XTABS e
+.Dv CRMOD
+abilitati (vedere
+.Xr tty 4 ) .
+.Pp
+.Nm Telnetd
+ha il supporto per abilitare localmente le seguenti opzioni
+.Tn TELNET :
+.Bl -tag -width "DO AUTHENTICATION"
+.It "WILL ECHO"
+Quando l'opzione
+.Dv LINEMODE
+è abilitata, un
+.Dv WILL ECHO
+o
+.Dv WONT ECHO
+verrà inviato al client per indicare lo stato corrente
+del terminale che esegue l'eco.
+Quando un eco del terminale non è desiderato, un
+.Dv WILL ECHO
+è inviato per indicare che
+.Tn telnetd
+si occuperà di fare l'eco di tutti i dati che hanno bisogno
+di essere ripetuti al terminale, e quindi non viene fatto alcun eco.
+Quando l'eco del terminale è desiderato, un
+.Dv WONT ECHO
+è inviato a indicare che
+.Tn telnetd
+non farà alcun eco del terminale, così che il client
+possa fare tutti gli eco del terminale necessari.
+.It "WILL BINARY"
+Indica che il client vuole inviare
+8 bit di dati, invece dei normali 7 bit
+del Network Virtual Terminal.
+.It "WILL SGA"
+Indica che non invierà comandi
+.Dv IAC GA,
+go ahead.
+.It "WILL STATUS"
+Indica la volontà di inviare al client, dietro richiesta,
+lo stato corrente di tutte le opzioni
+.Tn TELNET .
+.It "WILL TIMING-MARK"
+qualora venga ricevuto un comando
+.Dv DO TIMING-MARK
+risponde sempre con un
+.Dv WILL TIMING-MARK
+.ne 1i
+.It "WILL LOGOUT"
+Quando è ricevuto un
+.Dv DO LOGOUT
+viene invieto in risposta un
+.Dv WILL LOGOUT
+e la sessione
+.Tn TELNET
+è chiusa.
+.It "WILL ENCRYPT"
+Inviata solo se
+.Nm telnetd
+è compilato con il supporto per la crittografia dei dati, e
+indica la volontà di decifrare il flusso dei dati.
+.El
+.Pp
+.Nm Telnetd
+ha il supporto per abilitare da remoto le seguenti opzioni
+.Tn TELNET :
+.Bl -tag -width "DO AUTHENTICATION"
+.It "DO BINARY"
+Inviato per indicare che
+.Tn telnetd
+vuole ricevere un flusso di dati a 8 bit.
+.It "DO LFLOW"
+Richiede che il client gestisca remotamente il controllo
+del flusso caratteri.
+.It "DO ECHO"
+Questo non è realmente supportato, ma è inviato per identificare un 
+client
+.Xr telnet 1
+4.2BSD, che risponderà impropriamente con
+.Dv WILL ECHO.
+Se un
+.Dv WILL ECHO
+viene ricevuto, un
+.Dv DONT ECHO
+verrà inviato in risposta.
+.It "DO TERMINAL-TYPE"
+Indica un desiderio di poter richiedere il nome
+del tipo di terminale che è collegato al lato
+client della connessione.
+.It "DO SGA"
+Indica che non ha bisogno di ricevere
+.Dv IAC GA,
+il comando go ahead.
+.It "DO NAWS"
+richiede che il client informi il server quando
+cambia la dimensione della finestra (display).
+.It "DO TERMINAL-SPEED"
+Indica un desiderio di poter richiedere infirmazioni sulla
+velocità della linea seriale a cui il client è collegato.
+.It "DO XDISPLOC"
+Indica un desiderio di poter richiedere il nome del
+display X windows associato con il client telnet.
+.It "DO NEW-ENVIRON"
+Indica un desiderio di poter richiedere informazioni sulle
+variabili d'ambiente, come descritto in RFC 1572.
+.It "DO ENVIRON"
+Indica un desiderio di poter richiedere informazioni sulle
+variabili d'ambiente, come descritto in RFC 1408.
+.It "DO LINEMODE"
+Inviato solo se
+.Nm telnetd
+è compilato con il supporto per il linemode, e richiede
+che il client faccia un processamento linea per linea.
+.It "DO TIMING-MARK"
+Inviato solo se
+.Nm telnetd
+è compilato con il supporto sia per linemode che per
+kludge linemode, e il client ha risposto con
+.Dv WONT LINEMODE.
+Se il client risponde con
+.Dv WILL TM,
+allora si suppone che il client supporti
+kludge linemode.
+Notare che l'opzione
+.Op Fl k
+può essere usata per disabilitare questo.
+.It "DO AUTHENTICATION"
+Inviato solo se
+.Nm telnetd
+è compilato con il supporto per l'autenticazione, e
+indica una volontà di ricevere informazioni di
+autenticazione per il login automatico.
+.It "DO ENCRYPT"
+Inviato solo se
+.Nm telnetd
+è compilato con il supporto per la cifratura dei dati, e
+indica la volontà di decifrare il flusso dei dati.
+.Sh AMBIENTE
+.Sh FILE
+.Pa /etc/services
+.br
+.Pa /etc/inittab
+(solo sistemi UNICOS)
+.br
+.Pa /etc/iptos
+(se supportato)
+.br
+.Pa /usr/ucb/bftp
+(se supportato)
+.Sh "VEDERE ANCHE"
+.Xr telnet 1 ,
+.Xr login 1 ,
+.Xr bftp 1
+(se supportato)
+.Sh STANDARD
+.Bl -tag -compact -width RFC-1572
+.It Cm RFC-854
+.Tn TELNET
+SPECIFICHE DEL PROTOCOLLO
+.It Cm RFC-855
+SPECIFICHE DELLE OPZIONI TELNET
+.It Cm RFC-856
+TRASMISSIONE BINARIA TELNET
+.It Cm RFC-857
+OPZIONE TELNET ECHO
+.It Cm RFC-858
+OPZIONE TELNET SOPPRESSIONE GO AHEAD
+.It Cm RFC-859
+OPZIONE STATO TELNET
+.It Cm RFC-860
+OPZIONE TELNET MARCATURA TEMPORALE
+.It Cm RFC-861
+OPZIONI TELNET ESTESE - ELENCO OPZIONI
+.It Cm RFC-885
+OPZIONE TELNET FINE DEL RECORD
+.It Cm RFC-1073
+Opzione Telnet dimensione finestra
+.It Cm RFC-1079
+Opzione Telnet velocità del terminale
+.It Cm RFC-1091
+Opzione Telnet tipo di terminale
+.It Cm RFC-1096
+Opzione Telnet locazione display X
+.It Cm RFC-1123
+Requisiti degli host Internet -- applicazione e supporto
+.It Cm RFC-1184
+Opzione Telnet Linemode
+.It Cm RFC-1372
+Opzione Telnet controllo remoto del flusso
+.It Cm RFC-1416
+Opzione autenticazione Telnet
+.It Cm RFC-1411
+Autenticazione Telnet: Kerberos Versione 4
+.It Cm RFC-1412
+Autenticazione Telnet: SPX
+.It Cm RFC-1571
+Opzione ambiente Telnet problemi di interoperabilità
+.It Cm RFC-1572
+Opzione ambiente Telnet
+.Sh BUG
+Alcuni comandi
+.Tn TELNET
+sono implementati solo parzialmente.
+.Pp
+A causa dei bug nell'originale
+.Xr telnet 1
+BSD 4.2,
+.Nm telnetd
+esegue alcuni scambi di protocollo dubbi per provare a scoprire se il 
+client remoto è, in effetti, un
+.Xr telnet 1 .
+4.2 BSD
+.Pp
+La modalità binaria
+non ha interpretazioni comuni tranne tra sistemi operativi simili
+(Unix in questo caso).
+.Pp
+Il nome del tipo di terminale ricevuto dal client remoto è convertito in
+minuscole.
+.Pp
+.Nm Telnetd
+non invia mai comandi
+.Tn TELNET
+.Dv IAC GA
+(go ahead).

@@ -1,0 +1,612 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\" 
+.\" Copyright (c) 1993 by Thomas Koenig <ig25@rz.uni-karlsruhe.de>
+.\" and Copyright (c) 2004 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\" 
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\" 
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\" License.
+.\" 
+.\" Modified Sat Jul 24 13:30:06 1993 by Rik Faith <faith@cs.unc.edu>
+.\" Modified Sun Aug 21 17:42:42 1994 by Rik Faith <faith@cs.unc.edu>
+.\" (Thanks to Koen Holtman <koen@win.tue.nl>)
+.\" Modified Wed May 17 15:54:12 1995 by Rik Faith <faith@cs.unc.edu>
+.\" To remove *'s from status in macros (Thanks to Michael Shields).
+.\" Modified as suggested by Nick Duffek <nsd@bbc.com>, aeb, 960426
+.\" Modified Mon Jun 23 14:09:52 1997 by aeb - add EINTR.
+.\" Modified Thu Nov 26 02:12:45 1998 by aeb - add SIGCHLD stuff.
+.\" Modified Mon Jul 24 21:37:38 2000 by David A. Wheeler
+.\" <dwheeler@dwheeler.com> - noted thread issues.
+.\" Modified 26 Jun 01 by Michael Kerrisk
+.\" Added __WCLONE, __WALL, and __WNOTHREAD descriptions
+.\" Modified 2001-09-25, aeb
+.\" Modified 26 Jun 01 by Michael Kerrisk, <mtk-manpages@gmx.net>
+.\" Updated notes on setting disposition of SIGCHLD to SIG_IGN
+.\" 2004-11-11, mtk
+.\" Added waitid(2); added WCONTINUED and WIFCONTINUED()
+.\" Added text on SA_NOCLDSTOP
+.\" Updated discussion of SA_NOCLDWAIT to reflect 2.6 behaviour
+.\" Much other text rewritten
+.\" 2005-05-10, mtk, __W* flags can't be used with waitid()
+.\" 2008-07-04, mtk, removed erroneous text about SA_NOCLDSTOP
+.\" 
+.\" Traduzione da man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.51 di Giulio Daprelà - giugno 2007
+.\" Aggiornamento a man-pages-2.64 di Elisabetta Galli - agosto 2007
+.\" Aggiornamento a man-pages-3.12 di Elisabetta Galli - novembre 2008
+.\" 
+.TH "WAIT" "2" "4 luglio 2008" "Linux" "Linux Programmer's Manual"
+.SH "NOME"
+wait, waitpid, waitid \- aspetta che il processo cambi stato
+.SH "SINTASSI"
+.B #include <sys/types.h>
+.br 
+.B #include <sys/wait.h>
+.sp
+.BI "pid_t wait(int *" "status" );
+
+.BI "pid_t waitpid(pid_t " pid ", int *" status ", int " opzioni );
+
+.BI "int waitid(idtype_t " idtype ", id_t " id \
+", siginfo_t *" infop ", int " opzioni );
+.sp
+.in \-4n
+Test delle funzioni e requisiti delle macro per glibc (vedere
+.BR feature_test_macros (7)):
+.in
+.sp
+.BR waitid ():
+_SVID_SOURCE || _XOPEN_SOURCE
+.SH "DESCRIZIONE"
+Tutte queste chiamate di sistema si usano per attendere cambiamenti di
+stato in un figlio del processo chiamante, e ottenere informazioni
+sul figlio il cui stato è cambiato.
+Un cambiamento di stato avviene quando: il processo figlio è terminato; il figlio
+è stato arrestato da un segnale; il figlio è stato ripristinato da un segnale.
+In caso di un figlio terminato, un'attesa permette al sistema
+di rilasciare le risorse associate al figlio;
+se non viene eseguita un'attesa, allora il figlio terminato rimane in
+uno stato "zombie" (vedere le NOTE sotto).
+
+Se un figlio ha già cambiato stato, allora le chiamate tornano immediatamente.
+Altrimenti esse si bloccano fino a quando un figlio cambia stato o
+un gestore di segnale interrompe la chiamata (supponendo che le chiamate
+di sistema non siano automaticamente riavviate usando il flag
+.B SA_RESTART
+di
+.BR sigaction (2)).
+Nel resto di questa pagina un figlio il cui stato è cambiato,
+e che nessuna di queste chiamate di sistema ha aspettato,
+è definito
+.I R aspettabile .
+.SS "wait() e waitpid()"
+La chiamata di sistema
+.BR wait ()
+sospende l'esecuzione del processo chiamante fino a quando uno dei suoi
+figli termina.
+La chiamata
+.I wait(&status)
+è equivalente a:
+.nf 
+
+    waitpid(\-1, &status, 0);
+.fi 
+
+La chiamata di sistema
+.BR waitpid ()
+sospende l'esecuzione del processo chiamante fino a quando un figlio
+specificato dall'argomento
+.I pid
+ha cambiato stato.
+Il comportamento predefinito di
+.BR waitpid ()
+è attendere solo i figli terminati, ma questo comportamento è modificabile
+attraverso l'argomento
+.I opzioni
+come descritto di seguito.
+
+Il valore di
+.I pid
+può essere:
+.IP "< \-1" ,
+che significa attesa di qualunque processo figlio il cui gruppo ID del processo
+sia uguale al valore assoluto di
+.I R pid .
+.IP \-1 ,
+che significa aspettare qualunque processo figlio.
+.IP 0 ,
+che significa aspettare qualunque processo figlio il cui gruppo ID del
+processo sia uguale a quello del processo chiamante.
+.IP "> 0" ,
+che significa aspettare il figlio il cui ID di processo sia uguale al valore
+di
+.I R pid .
+.PP 
+Il valore di
+.I opzioni
+è un OR di zero o più delle seguenti costanti:
+.TP 12
+.B WNOHANG
+torna immediatamente se nessun figlio è uscito.
+.TP 
+.B WUNTRACED
+torna anche se un figlio si è arrestato
+(ma non tracciato attraverso
+.BR ptrace (2)).
+Lo stato del figlio non
+.I tracciato
+che è stato arrestato è fornito
+anche se l'opzione non è specificata.
+.TP 
+.BR WCONTINUED " (A partire da Linux 2.6.10)
+torna anche se un figlio arrestato è stato riesumato inviando
+.BR SIGCONT .
+.PP 
+(Per le opzioni solo Linux vedere oltre).
+.PP 
+Se
+.I status
+non è NULL ,
+.BR wait ()
+e
+.BR waitpid ()
+memorizzano l'informazione di stato in \fIint\fR a cui punta.
+Questo intero può essere verificato con le seguenti macro (che prendono
+lo stesso intero come argomento, non come un puntatore ad esso,
+come fanno
+.BR wait ()
+e
+.BR waitpid ()!):
+.TP 
+.BI WIFEXITED( stato )
+restituisce true se il figlio è terminato normalmente, ovvero,
+chiamando
+.BR exit (3)
+o
+.BR _exit (2),
+o tornando da main().
+.TP 
+.BI WEXITSTATUS( stato )
+ritorna lo stato di uscita del figlio.
+Esso consiste negli 8 bit meno significativi dell'argomento
+.I status
+che il figlio ha specificato in una chiamata a
+.BR exit (3)
+o
+.BR _exit (2)
+o come argomento per una dichiarazione di ritorno in main().
+Questa macro deve essere impiegata solo se
+.B WIFEXITED
+restituisce true.
+.TP 
+.BI WIFSIGNALED( stato )
+restituisce true se il processo figlio è stato terminato da un segnale.
+.TP 
+.BI WTERMSIG( stato )
+restituisce il numero del segnale che ha causato l'arresto del processo
+figlio.
+Questa macro deve essere impiegata solo se
+.B WIFSIGNALED
+ha restituito true.
+.TP 
+.BI WCOREDUMP( stato )
+restituisce true se il figlio ha prodotto un core dump.
+Questa macro deve essere impiegata solo se
+.B WIFSIGNALED
+ha restituito true.
+Questa macro non è specificata in POSIX.1\-2001 e non è disponibile in
+alcune implementazioni Unix (per esempio AIX, SunOS).
+Usarla solo racchiusa tra #ifdef WCOREDUMP ... #endif.
+.TP 
+.BI WIFSTOPPED( stato )
+restituisce true se il processo figlio è stato arrestato inviando un segnale;
+questo è possibile solo se la chiamata è stata effettuata usando
+.BR WUNTRACED
+o quando il figlio è stato tracciato (vedere
+.BR ptrace (2)).
+.TP 
+.BI WSTOPSIG( stato )
+restituisce il numero del segnale che ha causato l'arresto del processo
+figlio. Questa macro deve essere impiegata solo se
+.B WIFSTOPPED
+ha restituito true.
+.TP 
+.BI WIFCONTINUED( stato )
+(A partire da Linux 2.6.10)
+restituisce true se il processo figlio è stato riesumato inviando
+.BR SIGCONT .
+.SS "waitid()"
+La chiamata di sistema
+.BR waitid ()
+(disponibile a partire da Linux 2.6.9) fornisce un controllo più preciso
+su quale cambiamento di stato del processo figlio aspettare.
+
+Gli argomenti
+.I idtype
+e
+.I id
+selezionano il figlio(i) da aspettare, come segue:
+.IP "\fIidtype\fP == \fBP_PID\fP"
+Aspetta il figlio il cui ID di processo corrisponde a
+.I R id .
+.IP "\fIidtype\fP == \fBP_PGID\fP"
+Aspetta qualunque figlio il cui ID di gruppo del processo corrisponda a
+.I R id .
+.IP "\fIidtype\fP == \fBP_ALL\fP"
+Aspetta qualunque processo figlio;
+.I id
+è ignorato.
+.PP 
+Il cambiamento di stato del processo figlio da aspettare è specificato
+eseguendo un OR su uno o più dei seguenti flag in
+.I R opzioni :
+.TP 12
+.B WEXITED
+Aspetta il figlio che è terminato.
+.TP 
+.B WSTOPPED
+Aspetta il figlio che è stato arrestato con l'invio di un segnale.
+.TP 
+.B WCONTINUED
+Aspetta i figli (precedentemente arrestati) che sono stati riesumati
+inviando
+.BR SIGCONT .
+.PP 
+Si può inoltre eseguire un OR sui seguenti flag in
+.I R opzioni :
+.TP 12
+.B WNOHANG
+Come per
+.BR waitpid ().
+.TP 
+.B WNOWAIT
+Lascia il figlio in uno stato in attesa; una successiva chiamata di
+attesa può essere usata per trovare di nuovo l'informazione sullo stato del figlio.
+.PP 
+In seguito a un ritorno con successo,
+.BR waitid ()
+riempie i seguenti campi della struttura
+.I siginfo_t
+a cui punta
+.I R infop :
+.TP 12
+\fIsi_pid\fP
+L'ID di processo del figlio.
+.TP 
+\fIsi_uid\fP
+L'ID reale dell'utente del figlio.
+(Questo campo non viene impostato nella maggior parte delle altre implementazioni.)
+.TP 
+\fIsi_signo\fP
+Imposta sempre a
+.BR SIGCHLD .
+.TP 
+\fIsi_status\fP
+O lo stato di uscita del figlio, come dato a
+.BR _exit (2)
+(o
+.BR exit (3)),
+o il segnale che ha causato la terminazione, l'arresto o la continuazione del figlio.
+Il campo
+.I si_code
+può essere usato per determinare come interpretare questo campo.
+.TP 
+\fIsi_code\fP
+Imposta a uno tra:
+.B CLD_EXITED
+(figlio chiamato
+.BR _exit (2));
+.B CLD_KILLED
+(figlio terminato da un segnale);
+.B CLD_STOPPED
+(figlio arrestato da un segnale); o
+.B CLD_CONTINUED
+(figlio continuato da
+.BR SIGCONT ).
+.PP 
+Se
+.B WNOHANG
+è stato specificato in
+.I opzioni
+e non c'erano figli in uno stato di attesa, allora
+.BR waitid ()
+restituisce immediatamente 0, e lo
+stato della struttura
+.I siginfo_t
+a cui punta
+.I infop
+non è specificato.
+.\" POSIX.1\-2001 non specifica questa possibilità; la maggior parte
+.\" delle implementazioni (incluso Linux) in questo caso danno
+.\" zero, ma almeno un'implementazione (AIX 5.1)
+.\" non lo fa \-\- MTK Nov 04
+Per distinguere questo caso da quello in cui un figlio era in uno stato
+di attesa, il campo
+.I si_pid
+viene impostato a zero prima della chiamata e, dopo il ritorno della
+chiamata, verifica che in questo campo non ci sia un valore zero.
+.SH "VALORI RESTITUITI"
+.BR wait ():
+in caso di successo, restituisce l'ID del processo del figlio terminato;
+in caso di errore restituisce \-1.
+
+.BR waitpid ():
+in caso di successo, restituisce l'ID del processo del figlio il cui stato è cambiato;
+se
+.B WNOHANG
+era specificato e uno o più figli specificati da
+.I pid
+esiste, ma non ha ancora cambiato stato, allora viene restituito 0.
+In caso di errore restituisce \-1.
+.BR waitid ():
+restituisce 0 in caso di successo
+o se
+.B WNOHANG
+era specificato e nessun figlio(i) specificato da
+.I id
+ha ancora cambiato stato;
+in caso di errore restituisce \-1.
+
+Ciascuna di queste chiamate imposta
+.I errno
+ad un valore appropriato in caso di errore.
+.SH "ERRORI"
+.TP 
+.BR ECHILD
+(per
+.BR wait ())
+Il processo chiamante non ha nessun figlio inaspettato.
+.TP 
+.BR ECHILD
+(per
+.BR waitpid ()
+o
+.BR waitid ())
+Il processo specificato da
+.I pid
+.RB ( waitpid ())
+o
+.I idtype
+e
+.I id
+.RB ( waitid ())
+non esiste o non è un figlio del processo chiamante
+(ciò può accadere per il figlio di un processo se l'azione per
+.B SIGCHLD
+è impostata a
+.BR SIG_IGN.
+Vedere anche la sezione \fINote Linux\fP sui thread).
+.TP 
+.B EINTR
+.B WNOHANG
+non era impostata ed è stato intercettato un segnale sbloccato o un
+.B SIGCHLD:
+vedere
+.BR signal (7).
+.TP 
+.B EINVAL
+Gli argomenti delle
+.I opzioni
+non erano validi.
+.SH "CONFORME A"
+SVr4, 4.3BSD, POSIX.1\-2001.
+.SH "NOTE"
+Un figlio che termina, ma in modo inaspettato, diviene uno "zombie".
+Il kernel mantiene un insieme minimo di informazioni sui processi zombie
+(PID, stato di terminazione, informazioni sull'uso delle risorse)
+allo scopo di permettere al padre di eseguire in seguito un wait per
+ottenere informazioni sul figlio.
+Se uno zombie non viene rimosso dal sistema attraverso un wait,
+esso consumerà uno slot nella tabella dei processi del kernel, e se
+questa tabella si riempie, non sarà possibile creare ulteriori processi.
+Se un processo padre termina, allora i suoi figli "zombie" (se ce ne
+sono) sono adottati da
+.BR init (8),
+che automaticamente esegue un wait per rimuovere gli zombie.
+
+POSIX.1\-2001 specifica che se la disposizione di
+.B SIGCHLD
+è impostata a
+.B SIG_IGN
+o il flag
+.B SA_NOCLDWAIT
+è settato per
+.BR SIGCHLD
+(vedere
+.BR sigaction (2)),
+allora i figli terminati non diventano zombie e una chiamata a
+.BR wait ()
+o
+.BR waitpid ()
+verrà bloccata fino a quando tutti i figli sono terminati, e in seguito fallisce con
+.I errno
+impostato a
+.BR ECHILD .
+(Lo standard POSIX originale lasciava il comportamento di impostare
+.B SIGCHLD
+a
+.B SIG_IGN
+non specificato.
+Si noti che, anche se la disposizione predefinita di
+.B SIGCHILD
+è "ignore", impostarla esplicitamente a
+.B SIG_IGN
+comporterà un diverso trattamento dei processi figlio zombie.
+Linux 2.6 è conforme a questa specifica.
+Tuttavia Linux 2.4 (e precedenti) non lo è:
+se una chiamata
+.BR wait ()
+o
+.BR waitpid ()
+è effettuata mentre
+.B SIGCHLD
+è ignorato, la chiamata si comporta come se
+.B SIGCHLD
+non fosse stato ignorato, ovvero, la chiamata si blocca fino a quando il
+prossimo figlio termina e quindi restituisce l'ID del processo e lo stato di questo figlio.
+.SS Note Linux
+Nel kernel Linux un thread programmato dal kernel non è un costrutto
+distinto da un processo.
+Invece un thread è semplicemente un processo
+creato usando la chiamata esclusiva di Linux
+.BR clone (2);
+altre routine come la chiamata portabile
+.BR pthread_create (3)
+sono implementate usando
+.BR clone (2).
+Prima di Linux 2.4 un thread era solo un caso speciale di un processo,
+e come conseguenza un thread non poteva aspettare il figlio di un altro
+thread, anche se l'ultimo apparteneva allo stesso gruppo del thread.
+Tuttavia POSIX prescrive tale funzionalità, e a partire da Linux 2.4
+un thread può, e in modo predefinito lo fa, aspettare il figlio di un altro
+thread nello stesso gruppo del thread.
+.LP 
+Le seguenti
+.I opzioni
+specifiche di Linux devono essere usate con i figli creati usando
+.BR clone (2);
+esse non possono essere usate con
+.BR waitid ():
+.TP 
+.B __WCLONE
+.\" a partire da 0.99pl10
+Aspetta solo i figli di "clone".
+Se omessa allora aspetta solo i figli "non\-clone".
+(Un figlio "clone" è uno che non invia segnali, o un segnale diverso da
+.B SIGCHLD
+ai suoi genitori quando viene terminato).
+Questa opzione è ignorata se viene
+anche specificato
+.B __WALL.
+.TP 
+.BR __WALL " (a partire da Linux 2.4)"
+Aspetta tutti i figli, qualunque sia il loro tipo
+("clone" o "non\-clone").
+.TP 
+.BR __WNOTHREAD (a partire da Linux 2.4)
+Non aspetta figli di altri thread nello stesso
+gruppo del thread.
+Questo era il comportamento predefinito prima di Linux 2.4.
+.SH "ESEMPIO"
+.\" fork.2 fa riferimento a questo programma di esempio.
+Il seguente programma dimostra l'uso di
+.BR fork(2)
+e
+.BR waitpid (2).
+Il programma crea un processo figlio.
+Se dalla linea di comando non viene fornito alcun argomento al programma,
+allora il figlio sospende la propria esecuzione usando
+.BR pause (2),
+per permettere all'utente di mandare il segnale al figlio.
+Altrimenti, se viene fornito un argomento dalla linea di comando,
+allora il figlio esce immediatamente,
+usando l'intero fornito dalla linea di comando come stato di uscita.
+Il processo genitore esegue un ciclo che controlla il figlio usando
+.BR waitpid (2),
+e usa le macro W*() descritte sopra per analizzare il valore dello stato di attesa.
+
+La seguente sessione di shell dimostra l'uso del programma:
+.in +4n
+.nf 
+
+.RB "$" " ./a.out &"
+Child PID is 32360
+[1] 32359
+.RB "$" " kill \-STOP 32360"
+stopped by signal 19
+.RB "$" " kill \-CONT 32360"
+continued
+.RB "$" " kill \-TERM 32360"
+killed by signal 15
+[1]+  Done                    ./a.out
+$
+.fi 
+.in
+.SS Sorgente del programma
+.R " "
+.nf 
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+
+int
+main(int argc, char *argv[])
+{
+    pid_t cpid, w;
+    int status;
+
+    cpid = fork();
+    if (cpid == \-1) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+
+    if (cpid == 0) {            /* Codice eseguito dal figlio */
+        printf("Child PID is %ld\\n", (long) getpid());
+        if (argc == 1)
+            pause();                    /* Aspetta i segnali */
+        _exit(atoi(argv[1]));
+
+    } else {                    /* codice eseguito dal genitore */
+        do {
+            w = waitpid(cpid, &status, WUNTRACED | WCONTINUED);
+            if (w == \-1) {
+                perror("waitpid");
+                exit(EXIT_FAILURE);
+            }
+
+            if (WIFEXITED(status)) {
+                printf("exited, status=%d\\n", WEXITSTATUS(status));
+            } else if (WIFSIGNALED(status)) {
+                printf("killed by signal %d\\n", WTERMSIG(status));
+            } else if (WIFSTOPPED(status)) {
+                printf("stopped by signal %d\\n", WSTOPSIG(status));
+            } else if (WIFCONTINUED(status)) {
+                printf("continued\\n");
+            }
+        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+        exit(EXIT_SUCCESS);
+    }
+}
+.fi 
+.SH "VEDERE ANCHE"
+.BR _exit (2),
+.BR clone (2),
+.BR fork (2),
+.BR kill (2),
+.BR ptrace (2),
+.BR sigaction (2),
+.BR signal (2),
+.BR wait4 (2),
+.BR pthread_create (3),
+.BR credentials (7),
+.BR signal (7)
+.SH "COLOPHON"
+Questa pagina fa parte del rilascio 2.80 del progetto
+.I man\-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man\-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

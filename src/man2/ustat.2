@@ -1,0 +1,120 @@
+.\" Copyright (C) 1995, Thomas K. Dyas <tdyas@eden.rutgers.edu>
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Created  1995-08-09 Thomas K. Dyas <tdyas@eden.rutgers.edu>
+.\" Modified 1997-01-31 by Eric S. Raymond <esr@thyrsus.com>
+.\" Modified 2001-03-22 by aeb
+.\" Modified 2003-08-04 by aeb
+.\"
+.\" Tradotto da Goffredo Baroncelli 3/4/1998 <kreijack@usa.net>
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.38 di Giulio Daprelà - agosto 2006
+.\"
+.TH USTAT 2 "4 agosto 2003" "Linux 2.4" "Linux Programmer's Manual"
+.SH NOME
+ustat \- riporta statistiche su di un file system
+.SH SINTASSI
+.nf
+.B #include <sys/types.h>
+.br
+.BR "#include <unistd.h>" "    /* libc[45] */"
+.br
+.BR "#include <ustat.h>" "     /* glibc2 */"
+.sp
+.BI "int ustat(dev_t " dev ", struct ustat *" ubuf );
+.fi
+.SH DESCRIZIONE
+.BR ustat ()
+restituisce informazioni circa un file system purchè montato.
+.I dev
+è il numero indentificativo del device su cui è montato il file system.
+.I ubuf
+è un puntatore alla struttura \fIustat\fP che contiene i seguenti
+campi:
+.in +4n
+.nf
+
+daddr_t	f_tfree;	/* Blocchi liberi totali */
+ino_t	f_tinode;	/* Numero di inode liberi */
+char	f_fname[6];	/* Nome filsys */
+char	f_fpack[6];	/* Nome filsys pack */
+.fi
+.in
+.PP
+
+Gli utltimi due campi, f_fname and f_fpack, non sono implementati e saranno
+quindi riempiti con caratteri NUL.
+.SH "VALORI RESTITUITI"
+In caso di successo viene restituito zero e la struttura ustat, puntata da
+.I ubuf
+viene impostata appropiamente. In caso di errore viene restituito \-1, e
+.I errno
+contine il codice di errore verificatosi.
+.SH ERRORI
+.TP
+.B EFAULT
+.I ubuf
+punta al di fuori del proprio spazio di indirizzamento accessibile.
+.TP
+.B EINVAL
+.I dev
+non si riferisce ad un device su cui è montato un file sistem.
+.TP
+.B ENOSYS
+Il file system a cui
+.I dev
+si riferisce, non supporta questa operazione, oppure il kernel è antecedente 
+al 1.3.16.
+.SH "CONFORME A"
+SVr4.
+.\" SVr4 documenta le condizioni di errore aggiuntive ENOLINK, ECOMM,
+.\" e EINTR ma non ha condizione ENOSYS.
+.SH NOTE
+.BR ustat ()
+è mantenuta solo per compatibilità. Tutti i nuovi programmi devono usare
+.BR statfs (2)
+al suo posto.
+.SH "NOTE HP"
+La versione HP di ustat ha un campo aggiuntivo
+.I f_blksize
+che altrove è sconosciuto. HP avverte:
+Per alcuni filesystem, il numero di inode liberi non cambia.
+Questi filesystem restituiranno \-1 nel campo
+.IR f_tinode .
+.\" Alcuni software provano ad usarelo per testare se
+.\" il filesystem sottostante è NFS.
+Per alcuni filesystem, gli inode sono allocati dinamicamente.
+Tali filesystem restituiranno il numero di attuale di inode liberi.
+.SH "VEDERE ANCHE"
+.BR stat (2),
+.BR statfs (2)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.75 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

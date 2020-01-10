@@ -1,0 +1,195 @@
+.\" $Xorg: startx.man,v 1.4 2001/02/09 02:05:49 xorgcvs Exp $
+.\" $XdotOrg$
+.\" Copyright 1993, 1998  The Open Group
+.\" 
+.\" Permission to use, copy, modify, distribute, and sell this software and its
+.\" documentation for any purpose is hereby granted without fee, provided that
+.\" the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation.
+.\" 
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\" 
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\" 
+.\" Except as contained in this notice, the name of The Open Group shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from The Open Group.
+.\" 
+.\" $XFree86: xc/programs/xinit/startx.man,v 1.7 2001/04/19 15:08:32 dawes Exp $
+.\" 
+.TH "STARTX" "1" "xinit 1.0.3" "X Versione 11" ""
+.SH "NOME"
+startx \- inizializza una sessione X
+.SH "SINTASSI"
+.B startx
+[ [
+.I client
+]
+.I opzioni
+\&\.\|.\|. ] [
+.B \-\^\-
+[
+.I server
+]
+.I opzioni
+\&.\|.\|. ]
+.SH "DESCRIZIONE"
+Lo script \fIstartx\fP è un'interfaccia grafica a \fIxinit\fP la
+quale fornisce un qualcosa di più carino all'interfaccia utente per
+l'esecuzione di una sessione singola del X Window System. Spesso è
+eseguito senza argomenti.
+.PP 
+Gli argomenti che seguono immediatamente il comando
+.I startx
+sono usati per avvare un client nella stessa maniera di come fa
+.I R xinit (1).
+L'argomento speciale
+.RB '\-\-'
+segna la fine degli argomenti del client e l'inizio delle opzioni del
+server. Può essere conveniente specificare delle opzioni server con
+startx per modificare una pari\-sessione basata sulla profondità di colore
+di default, il dispositivo di visualizzazione presenta la nozione server del numero
+di punti\-per\-pollice, oppure approfitta di un layout del server differente, come
+permesso dal server
+.I R Xorg (1)
+e specificato nel file
+.I R xorg.conf (5)
+. Seguono alcuni esempi di specificazioni dell'argomento del server;
+consultare la pagina di manuale per il proprio server X per
+determinare quale argomenti sono corretti.
+.RS
+.PP 
+startx \-\- \-depth 16
+.PP 
+startx \-\- \-dpi 100
+.PP 
+startx \-\- \-layout Multihead
+.RE
+.PP 
+Per determinare il client da eseguire,
+.I startx
+prima cerca un file chiamato
+.I .xinitrc
+nella home directory dell'utente. Se questo non viene trovato, usa
+il file
+.I xinitrc
+nella directory della libreria di
+.I xinit
+.
+ Se ci sono opzioni nella riga di comando del client, esse sovrascrivono
+ queste per il comportamento e tornano al comportamento di
+.I R xinit (1)
+.
+Per determinare il server da eseguire,
+.I startx
+prima cerca un file chiamato
+.I .xserverrc
+nella directory home dell'utente. Se questo non viene trovato, esso usa
+il file
+.I xserverrc
+nella directory della libreria di
+.I xinit
+.
+Se sono passate delle opzioni per il server nella riga di comando, esse
+sorascrivono il comportamento e ritornano al comportamento di
+.I R xinit (1)
+Gli utenti difficilmente hanno bisogno di fornire un file
+.I .xserverrc
+.
+Guardare la pagina di manuale di
+.I R xinit (1)
+per maggiori dettagli sull'argomento.
+.PP 
+I file del system\-wide
+.I xinitrc
+e
+.I xserverrc
+si possono trovare nella directory
+.I /etc/X11/xinit
+.
+.PP 
+L'
+.I .xinitrc
+è tipicamente uno script di shell il quale avvia molti client in comune
+accordo con le preferenze dell'utente. Quando questo script di
+shell esiste,
+.I startx
+termina il server e esegue ogni altra chiusura di sessione che occorre.
+La maggior parte dei client aviati da
+.I .xinitrc
+dovrebbero essere eseguiti in back\-ground. L'ultimo client dovrebbe essere
+eseguito in primo piano; quando esiste, la sessione terminerà. Le persone
+spesso scelgono un gestore di sessioni, window manager, o \fIxterm\fP
+come client ''magico''.
+.SH "ESEMPI"
+.PP 
+Di seguito c'è un esempio di \fI\.xinitrc\fP che avvia diverse
+applicazioni e lascia come ''ultima'' applicazione l'esecuzione di un
+window manager. Si presuppone che il window manager sia stato configurato
+propriamente, l'utente poi sceglierà l'elemento ''Exit'' nel menù per
+chiudere X..
+.sp
+.in +4
+.nf 
+xrdb \-load $HOME/.Xresources
+xsetroot \-solid gray &
+xbiff \-geometry \-430+5 &
+oclock \-geometry 75x75\-0\-0 &
+xload \-geometry \-80\-0 &
+xterm \-geometry +0+60 \-ls &
+xterm \-geometry +0\-100 &
+xconsole \-geometry \-0+0 \-fn 5x7 &
+exec twm
+.fi 
+.in \-4
+.SH "VARIABILI D'AMBIENTE"
+.TP 25
+DISPLAY
+Questa variabile memorizza il nome del display al quale i client
+dovrebbero connettersi. Notare che questa tiene l'impostazione
+.I R set ,
+not read.
+.TP 25
+XAUTHORITY
+Questa variabile, se non ancora definita, è impostata a
+.I R $(HOME)/.Xauthority .
+Questo avviene per prevenire che il server X, se non viene dato
+l'argomernto.I \-auth
+, dall'automatica messa in non\-sicurezza dell'autenticazione
+host\-based per l'host locale. Guardare le pagine man di
+.I R Xserver (1)
+e
+.I R Xsecurity (7)
+per maggiori informazioni sull'autenticazione client/server su X.
+.SH "VEDERE ANCHE"
+.I R xinit (1),
+.I R Xserver (1),
+.I R Xorg (1)
+.SH "FILE"
+.TP 25
+.I $(HOME)/.xinitrc
+Il client da eseguire. Tipicamente uno script di shell il quale esegue
+diversi programmi in background.
+.TP 25
+.I $(HOME)/.xserverrc
+Il server da eseguire. Per default è
+.I R X .
+.TP 25
+.I /etc/X11/xinit/xinitrc
+Il client da eseguire se l'utente non ha un file
+.I .xinitrc
+.
+.TP 25
+.I /etc/X11/xinit/xserverrc
+Il server da eseguire se l'utente non ha un file
+.I .xserverrc
+.

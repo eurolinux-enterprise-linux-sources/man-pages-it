@@ -1,0 +1,69 @@
+.\" Copyright (c) 1993 Michael Haardt (michael@moria.de), Fri Apr  2 11:32:09 MET DST 1993
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\"
+.\" Modified Sat Jul 24 17:37:50 1993 by Rik Faith (faith@cs.unc.edu)
+.\" Modified Wed Apr 27 13:33:53 MET DST 1994 by Michael Haardt.
+.\"
+.\" Traduzione di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\" Aggiornamento a man pages 2.36 di Giulio Daprelà - luglio 2006
+.\" Aggiornamento a man pages 2.38 di Giulio Daprelà - agosto 2006
+.\"
+.TH INTRO 3 13 dicembre 1995 "Linux" "Linux Programmer's Manual"
+.SH NOME
+intro \- Introduzione alle funzioni di libreria
+.SH DESCRIZIONE
+Questo capitolo descrive tutte le funzioni di libreria, escluse le 
+funzioni di libreria descritte nel capitolo 2, che implementano le 
+chiamate di sistema.
+.\" Ci sono vari gruppi di funzioni, che possono essere
+.\" identificati da una lettera, che viene aggiunta al numero del capitolo.
+.\" .IP (3C)
+.\" Queste funzioni, le funzioni del capitolo 2 e del capitolo 3S, sono
+.\" nella libreria C standard libc, che per default viene usata da
+.\" .BR cc (1) .
+.\" .IP (3S)
+.\" Queste funzioni sono parte della libreria
+.\" .BR stdio (3) .
+.\" Esse sono contenute nella libreria C standard libc.
+.\" .IP (3M)
+.\" Queste funzioni sono contenute nella libreria aritmetica libm. Esse sono
+.\" usate dal compilatore FORTRAN
+.\" .BR f77 (1)
+.\" per default, ma non dal compilatore C
+.\" .BR cc (1)
+.\" che ha bisogno dell'opzione \fI\-lm\fP.
+.\" .IP (3F)
+.\" Queste funzioni sono parte della libreria FORTRAN libF77. Non sono
+.\" necessari flag speciali del compilatore per usare queste funzioni.
+.\" .IP (3X)
+.\" Varie librerie speciali. Le pagine manuale che documentano le loro
+.\" funzioni specificano i nomi delle librerie.
+.SH AUTORI
+Si vedano le intestazioni delle pagine di manuale per l'autore(i) e le
+condizioni di copyright. Si noti che questi possono differire da
+pagina a pagina!
+.SH "VEDERE ANCHE"
+.BR intro (2),
+.BR errno (3),
+.BR feature_test_macros (7),
+.BR standards (7)

@@ -1,0 +1,326 @@
+.\" Copyright (c) 1985, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\"	This product includes software developed by the University of
+.\"	California, Berkeley and its contributors.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" Traduzione da inetutils-1.4.2 di Giulio Daprelà <giulio@pluto.it>
+.\" gennaio 2006
+.\"
+.\"     @(#)ping.8	8.3 (Berkeley) 4/28/95
+.\"
+.Dd 28 aprile 1995
+.Dt PING 8
+.Os BSD 4.3
+.Sh NOME
+.Nm ping
+.Nd invia
+pacchetti
+.Tn ICMP ECHO_REQUEST
+agli host della rete
+.Sh SINTASSI
+.Nm ping
+.Op Fl Rdfnqrv
+.Op Fl c Ar count
+.Op Fl i Ar wait
+.Op Fl l Ar preload
+.Op Fl p Ar pattern
+.Op Fl s Ar packetsize
+.Ar host
+.Sh DESCRIZIONE
+.Nm Ping
+usa il datagramma imperativo
+.Tn ECHO_REQUEST
+del protocollo
+.Tn ICMP
+per ottenere una
+.Tn ICMP ECHO_RESPONSE
+da un host o gateway.
+I datagrammi
+.Tn ECHO_REQUEST
+(``ping'') hanno un'intestazione IP e
+.Tn ICMP ,
+seguita da un
+.Dq struct timeval
+e quindi un numero arbitrario di byte ``pad'' usati per completare il
+pacchetto.
+Le opzioni sono le seguenti:
+.Bl -tag -width Ds
+.It Fl c Ar count
+Stop l'invio (e ricezione) di pacchetti
+.Ar count
+.Tn ECHO_RESPONSE
+.It Fl d
+imposta l'opzione
+.Dv SO_DEBUG
+sul socket usato.
+.It Fl f
+Flood ping.
+Emette pacchetti alla stessa velocità del loro ritorno o cento volte al 
+secondo, il maggiore tra i due.
+Per ciascun invio
+.Tn ECHO_REQUEST
+viene stampato un punto ``.'', mentre per ogni
+.Tn ECHO_REPLY
+ricevuto viene stampato un backspace.
+Questo fornisce una rapida visualizzazione di quanti pacchetti sono 
+stati scartati.
+Solo il super-utente può usare questa opzione.
+.Bf -emphasis
+Questo può essere molto duro su una rete e deve essere usato con cautela.
+.Ef
+.It Fl i Ar wait
+Aspetta
+.Ar wait
+secondi
+.Em tra gli invii dei pacchetti .
+Il default è di aspettare per unsecondo tra ciascun pacchetto.
+Questa opzione è incompatibile con l'opzione
+.Fl f .
+.It Fl l Ar preload
+Se è specificato
+.Ar preload
+.Nm ping
+invia tutti questi pacchetti il più velocemente possibile prima di 
+tornare al suo normale modo di comportamento.
+.It Fl n
+Solo output numerico.
+Non verrà fatto nessun tentativo di cercare nomi simbolici per gli 
+indirizzi dell'host.
+.It Fl p Ar pattern
+Si possono specificare fino a 16 byte ``pad'' per completare il 
+pacchetto da inviare.
+Questo è utile per diagnosticare i problemi dipendenti dai dati in una 
+rete.
+Per esempio
+.Dq Li \-p ff
+farà sì che il pacchetto inviato venga rimepito con deli uno.
+.It Fl q
+Output silenzioso.
+Non è visualizzato nulla tranne le linee di sommario all'avvio e quando
+termina.
+.It Fl R
+Registra la strada.
+Include l'opzione
+.Tn RECORD_ROUTE
+nel pacchetto
+.Tn ECHO_REQUEST
+e visualizza il buffer dell'instradamento sui pacchetti restituiti.
+Notare che l'intestazione IP è solo abbastanza grande per nove di tali 
+strade.
+Molti host ignorano o scartano questa opzione.
+.It Fl r
+Bypassa le normali tabelle di instradamento e invia direttamente a un 
+host su una rete collegata.
+Se l'host non è su una rete collegata direttamente viene restituito un 
+errore. Questa opzione può essere usata per fare un ping sull'host 
+locale attraverso un'interfaccia che non ha strada attraverso di esso
+(es., dopo che l'interfaccia è stata scartata da .Xr routed 8 ) .
+.It Fl s Ar dimensione pacchetto
+Specifica il numero di byte di dati da inviare.
+Il default è 56, che si traduce in 64 byte di dati
+.Tn ICMP
+quando combinato con gli 8 byte dei dati di intestazione di
+.Tn ICMP .
+.It Fl v
+Output prolisso.
+I pacchetti
+.Tn ICMP
+diversi da
+.Tn ECHO_RESPONSE
+che vengono ricevuti sono elencati.
+.El
+.Pp
+Quando si usa
+.Nm ping
+per isolare i guasti, deve prima essere avviato sull'host locle, per 
+verificare che l'interfaccia della rete locale sia funzionante. Quindi, 
+host e gateways lontani possono venire "pingati". Vengono conteggiate le
+statistiche sui tempi di risposta e i pacchetti persi Se vengono 
+ricevuti pacchetti duplicati essi non sono inclusi nel calcolo dei 
+pacchetti persi, sebbene il tempo di risposta di questi pacchetti sia 
+usato nel calcolare i numeri di minimo/medio/massimo tempo di risposta. 
+Quando il numero specificato di pacchetti è stato inviato (e ricevuto) o 
+se il programma è terminato con un
+.Dv SIGINT ,
+viene visualizzato un breve sommario.
+.Pp
+Questo programma è pensato per l'uso nel test delle reti, misura e 
+gestione.
+A causa del carico che può imporre alla rete, è sconsigliabile usare
+.Nm ping
+durante le normali operazioni o da script automatizzati.
+.Sh ICMP PACKET DETAILS
+Un'intestazione IP senza opzioni è di 20 byte.
+Un pacchetto
+.Tn ICMP
+.Tn ECHO_REQUEST
+contiene un'intestazione addizionale
+.Tn ICMP
+di 8 byte seguita da un ammontare arbitrario di dati.
+Quando viene data una
+.Ar dimensione pacchetto
+questo indica la dimensione di questa parte extra di dati (il
+default è 56).
+Quindi l'ammontare di dati ricevuti in un pacchetto IP di tipo
+.Tn ICMP
+.Tn ECHO_REPLY
+sarà sempre 8 byte in più dello spazio dati richiesto
+(l'intestazione
+.Tn ICMP
+).
+.Pp
+Se lo spazio dati è grande almeno 8 byte,
+.Nm ping
+usa i primi 8 byte di questo spazio per includere data e ora, che
+usa nel computo dei tempi di risposta.
+Se sono specificati meno di otto byte di cuscinetto, non vengono dati 
+tempi di risposta.
+.Sh PACCHETTI DUPLICATI E DANNEGGIATI
+.Nm Ping
+riporterà i pacchetti duplicati e danneggiati.
+Non devono mai esserci pacchetti duplicati, e ciò sembra causato da
+ritrasmissioni inappropriate a livello di connessione.
+Le duplicazioni possono avvenire in molte situazioni e sono raramente 
+(per non dire mai) un buon segno, sebbene la presenza di bassi livelli di
+duplicati potrebbe non sempre essere causa di allarme.
+.Pp
+I pacchetti danneggiati una seria causa di allarme, e spesso indicano
+hardware malfunzionante da qualche parte nel percorso dei pacchetti di
+.Nm ping
+(nella rete o ngeli host).
+.Sh PROVARE DIFFERENTI PATTERN DATI
+Lo strato di (inter)network non deve mai trattare i pacchetti in modo 
+differente in funzione dei dati contenuti nella porzione dati. 
+Sfortunatamente sono noti problemi dipendenti dai dati che si infilano 
+nelle reti e rimangono nascosti per lunghi periodi di tempo.
+In molti casi il particolare schema che avrà problemi è qualcosa che non 
+ha sufficienti "transizioni", come tutti uno o tutti zero, o uno schema 
+al confine, come uno con quasi tutti zero. Non è necessariamente 
+sufficiente specificare uno schema dati di tutti zero (per esempio) 
+sulla linea di comando, perché lo schema di interesse è al livello 
+collegamento dati, e la relazione tra ciò che si digita e ciò che il 
+controller trasmette può essere complessa.
+.Pp
+Ciò significa che se si ha un problema dipendente dai dati bisognerà 
+probabilmente fare molti test per trovarlo. Se si è fortunati si può 
+trovare un file che non può essere inviato attraverso la propria rete o 
+che impiega troppo tempo per trasferirsi di altri file di lunghezza 
+simile.
+Si può quindi esaminare questo file per trovare gli schemi ripetuti, che 
+si possono testare usando l'opzione
+.Fl p
+di
+.Nm ping .
+.Sh TTL DETTAGLI
+Il valore
+.Tn TTL
+di un pacchetto IP rappresenta il numero massimo di router IP che il 
+pacchetto può attraversare prima di essere respinto. Nella pratica 
+corrente ci si può aspettare che ciascun router in Internet decrementi 
+il campo
+.Tn TTL
+esattamente di uno.
+.Pp
+Le specifiche
+.Tn TCP/IP
+stabiliscono che il campo
+.Tn TTL
+per i pacchetti
+.Tn TCP
+deve essere impostato a 60, ma molti sistemi usano valori minori (
+.Tn BSD
+4.3 usa 30, 4.2 usava 15).
+.Pp
+Il massimo valore possibile di questo campo è 255, e molti sistemi Unix 
+impostano il campo
+.Tn TTL
+dei pacchetti
+.Tn ICMP ECHO_REQUEST
+a 255.
+Questa è la ragione per cui si può fare ``ping'' su certi host, ma non 
+li si può raggiungere con
+.Xr telnet 1
+o
+.Xr ftp 1 .
+.Pp
+Nelle operazioni normali ping stampa il valore ttl dal pacchetto che 
+riceve. Quando un sistema remoto riceve un pacchetto ping, esso può fare 
+una tra tre cose con il campo
+.Tn TTL
+in risposta:
+.Bl -bullet
+.It
+Non lo cambia; questo è ciò che i sistemi Berkeley Unix systems facevano 
+prima della release
+.Bx 4.3 tahoe .
+In questo caso il valore
+.Tn TTL
+nel pacchetto ricevuto sarà 255 mano il numero di router nel percorso di 
+ritorno.
+.It
+Impostarlo a 255; questo è ciò che fanno attualmente i sistemi Berkeley Unix.
+In questo caso il valore
+.Tn TTL
+nel pacchetto ricevuto sarà 255 meno il numero di router nel percorso
+.Xr dal
+sistema remoto
+.Em al
+.Nm ping Ns Em ing
+host.
+.It
+Impostarlo su qualche altro valore.
+Alcune macchine usano per i pacchetti
+.Tn ICMP
+lo stesso valore che usano per i pacchetti
+.Tn TCP ,
+per esempio o 30 o 60.
+Altri possono usare valori completamente casuali.
+.El
+.Sh BUG
+Molti Host e Gateway ignorano l'opzione
+.Tn RECORD_ROUTE .
+.Pp
+La lunghezza massima dell'intestazione IP è troppo piccola per opzioni 
+come
+.Tn RECORD_ROUTE
+per essere completamente utile.
+Tuttavia su questo non si può fare molto.
+.Pp
+Il flood pinging in generale non è raccomandato, e il flood pinging su
+indirizzo broadcast deve essere fatto solo sotto condizioni strettamente
+controllate.
+.Sh VEDERE ANCHE
+.Xr netstat 1 ,
+.Xr ifconfig 8 ,
+.Xr routed 8
+.Sh STORIA
+Il comando
+.Nm
+è aparso nella
+.Bx 4.3 .

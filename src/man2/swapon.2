@@ -1,0 +1,174 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" Copyright (c) 1992 Drew Eckhardt (drew@cs.colorado.edu), March 28, 1992
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Modified by Michael Haardt <michael@moria.de>
+.\" Modified 1993-07-24 by Rik Faith <faith@cs.unc.edu>
+.\" Modified 1995-07-22 by Michael Chastain <mec@duracef.shout.net>
+.\" Modified 1995-07-23 by aeb
+.\" Modified 1996-10-22 by Eric S. Raymond <esr@thyrsus.com>
+.\" Modified 1998-09-08 by aeb
+.\" Modified 2004-06-17 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\" Modified 2004-10-10 by aeb
+.\" 2004-12-14 mtk, Anand Kumria: added new errors
+.\" 2007-06-22 Ivana Varekova <varekova@redhat.com>, mtk
+.\"     Update text describing limit on number of swap files.
+.\"
+.\" Tradotto da Goffredo Baroncelli <kreijack@usa.net> il 15/4/1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.65 di Elisabetta Galli <lab@kkk.it>
+.\" settembre 2007
+.\"
+.TH SWAPON 2 "22 giugno 2007" "Linux" "Linux Programmer's Manual"
+.SH NOME
+swapon, swapoff \- start/stop swapping sul file/dispositivo
+.SH SINTASSI
+.B #include <unistd.h>
+.br
+.B #include <asm/page.h>     /* to find PAGE_SIZE */
+.br
+.B #include <sys/swap.h>
+.sp
+.BI "int swapon(const char *" path ", int " swapflags );
+.br
+.BI "int swapoff(const char *" path );
+.SH DESCRIZIONE
+.BR swapon ()
+imposta lo swap sul dispositivo a blocchi o sul file specificato in
+.IR path .
+.BR swapoff ()
+ferma lo swap sul device a blocchi o sul file specificato in
+.IR path .
+.PP
+.BR swapon ()
+prende l'argomento
+.I swapflags.
+Se
+.I swapflags
+ha il bit
+.B SWAP_FLAG_PREFER
+attivato la nuova area di swap avrà una priorità maggiore del default.
+La priorità è codificata in
+.I swapflags
+come:
+.br
+.sp
+.I "    (prio << SWAP_FLAG_PRIO_SHIFT) & SWAP_FLAG_PRIO_MASK"
+.br
+.PP
+Queste funzioni possono essere usate solo da un processo privilegiato
+(uno che ha le funzionalità
+.B CAP_SYS_ADMIN).
+.SH PRIORITÁ
+Ogni area di swap ha una sua priorità, sia essa alta o bassa.
+Quella di default è bassa.
+Tra le aree a bassa priorità le aree più nuove hanno sempre una priorità 
+più bassa delle aree più vecchie.
+.PP
+Tutte le priorità impostate attraverso
+.I swapflags
+sono maggiori rispetto a quella di default.
+Esse possono avere qualunque valore non negativo scelto dal chiamante.
+A numero maggiore corrisponde priorità maggiore.
+.PP
+Le pagine di swap sono allocate in aree in ordine di priorità, prima quelle
+con priorità maggiore. Prima di usare un'area con una certa priorità tutte
+quelle con priorità maggiore sono state utilizzate.
+Se vi sono due o più aree con la stessa priorità, ed è la massima 
+priorità disponibile, le pagine sono allocate secondo uno schema a "round-robin".
+.PP
+Fino al kernel 1.3.6, si seguivano queste regole, ma  con alcune 
+eccezioni ( ?!?! ndt )
+.SH "VALORI RESTITUITI"
+In caso di successo viene restituito 0, altrimenti \-1 ed
+.I errno
+contine il codice di errore.
+.SH ERRORI
+.TP
+.B EBUSY
+(per
+.BR swapon ())
+Il
+.I percorso
+specificato è già stato usato come area di swap.
+.TP
+.B EINVAL
+Il
+.I percorso
+del file esiste, ma non fa riferimento nè a un file regolare, nè a un dispositivo a blocchi;
+o, per
+.BR swapon (),
+il percorso indicato non contiene una firma di swap valida o
+risiede in un file system in memoria come tmpfs; o, per
+.BR swapoff (),
+il
+.I percorso
+attualmente non è un'area di swap.
+.TP
+.B ENFILE
+È stato raggiunto il limite del sistema sul numero totale di file aperti.
+.TP
+.B ENOENT
+Il
+.I percorso
+del file non esiste.
+.TP
+.B ENOMEM
+Il sistema ha memoria insufficiente per iniziare lo swapping.
+.TP
+.B EPERM
+Il chiamante non ha la funzionalità
+.B CAP_SYS_ADMIN .
+
+In alternativa, il numero massimo di file di swap è già in uso;
+vedere le NOTE sotto.
+.SH "CONFORME A"
+Queste funzioni sono specifiche di Linux e non devono essere usate in
+programmi pensati per essere portabili.
+Il secondo argomento
+.I swapflags
+è stato introdotto in Linux 1.3.2.
+.SH NOTE
+La partizione o percorso devono essere preparati con
+.BR mkswap (8).
+
+C'è un limite superiore al numero di file di swap che si possono usare,
+definito dalla costante del kernel
+.br MAX_SWAPFILES.
+Prima del kernel 2.4.10, il valore di
+.b MAX_SWAPFILES
+era 8;
+dal kernel 2.4.10 il valore è 32.
+A partire dal kernel 2.6.18 il limite è sceso di due unità (quindi: 30)
+se nel kernel è integrata l'opzione
+.B CONFIG_MIGRATION
+(che riserva due voci nella tabella di swap per le funzionalità di 
+migrazione di pagina del comando
+.BR mbind (2)
+e
+.BR migrate_pages (2)).
+.SH "VEDERE ANCHE"
+.BR mkswap (8),
+.BR swapoff (8),
+.BR swapon (8)

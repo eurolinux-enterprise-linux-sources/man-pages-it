@@ -1,0 +1,61 @@
+.\" $Id: issue.5,v 1.1.1.1 1999/05/24 15:40:22 sagan Exp $
+.\" Copyright (c) 1993 Michael Haardt (u31b3hs@pool.informatik.rwth-aachen.de), Fri Apr  2 11:32:09 MET DST 1993
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139,
+.\" USA.
+.\" 
+.\" Modified Sun Jul 25 11:06:22 1993 by Rik Faith (faith@cs.unc.edu)
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Ottobre 1996
+.\" Aggiornamento a man-pages-1.15 di Alessandro Rubini (rubini@linux.it)
+.\" Febbraio 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.72 di Elisabetta Galli <lab@kkk.it>
+.\" dicembre 2007
+.\"
+.\" " for hilit19
+.TH ISSUE 5 "24 luglio 1993" "Linux" "Linux Programmer's Manual"
+.SH NOME
+issue \- messaggio visualizzato prima del login e file di identificazione
+.SH DESCRIZIONE
+Il file \fB/etc/issue\fP è un file testo che contiene un messaggio o
+un'identificazione del sistema che viene stampato prima del prompt di login.
+Può contenere diverse sequenze di \fB@\fP\fIcarattere\fP e \fB\e\fP\fIcarattere\fP,
+se supportate dal programma
+.BR tipo-getty
+presente nel sistema.
+.SH FILE
+/etc/issue
+.SH "VEDERE ANCHE"
+.BR motd (5), 
+.BR agetty (8),
+.BR mingetty (8)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.72 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

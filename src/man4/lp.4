@@ -1,0 +1,129 @@
+'\" t
+.\" Copyright (c) Michael Haardt (michael@cantor.informatik.rwth-aachen.de), Sun Jan 15 19:16:33 1995
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\"
+.\" Modified, Sun Feb 26 15:02:58 1995, faith@cs.unc.edu
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Settembre 1996
+.\" Aggiornamento alla versione 1.15 di Alessandro Rubini (rubini@linux.it)
+.\" Maggio 1997
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\"
+.TH LP 4 "15 gennaio 1995" "" "File speciali"
+.SH NOME
+lp \- file speciali per le stampanti
+.SH SINTASSI
+.B #include <linux/lp.h>
+.SH CONFIGURAZIONE
+\fBlp\fP[0\(en2] sono dispositivi a carattere per le stampanti
+connesse sulla porta parallela; hanno numero primario 6 e numero secondario
+0\(en2. I numeri secondari corrispondono agli indirizzi base delle porte
+delle stampante 0x03bc, 0x0378 e 0x0278. Si solito hanno modo di
+accesso 220 e sono di proprietà di root e gruppo lp. Si può
+usare la porta della stampante sia in polling che con interrupt. Gli
+interrupt sono raccomandati quando è previsto molto traffico,
+p.es.\& per le stampanti laser. Per le normali stampanti ad aghi di
+solito è sufficiente il polling. Il default è il polling.
+.SH DESCRIZIONE
+Sono supportate le seguenti chiamate 
+.BR ioctl (2):
+.IP "\fBint ioctl(int \fP\fIfd\fP\fB, LPTIME, int \fP\fIarg\fP\fB)\fP"
+Pone uguale ad \fIarg\fP l'ammontare di tempo che il driver deve
+aspettare prima di ricontrollare la stampante quando il buffer della
+stampante sembra essere pieno. Se si ha un stampante veloce, si può
+diminuire questo numero; se si ha una stampante lenta conviene
+aumentarlo. Il valore È espresso in centesimi di secondo, e il
+default 2 significa 0.02 secondi. Questo valore influenza solo il
+driver di tipo "polling".
+.IP "\fBint ioctl(int \fP\fIfd\fP\fB, LPCHAR, int \fP\fIarg\fP\fB)\fP"
+Assenga ad \fIarg\fP il numero massimo di iterazioni in busy-wait che
+il driver di tipo "polling" effetua aspettando che la stampante sia
+pronta a ricevere un carattere. Se la stampa è troppo lenta, si
+può incrementare questo numero; se il sistema va troppo piano lo si
+decrementi. Il default è 1000. Il valore ha influenza solo sulla 
+sequenza di interrogazione dei driver.
+.IP "\fBint ioctl(int \fP\fIfd\fP\fB, LPABORT, int \fP\fIarg\fP\fB)\fP"
+Se \fIarg\fP è 0, il driver della stampante riproverà a
+trasmettere nel caso si verifichino errori, altrimenti interromperà
+la stampa. Il default è 0.
+.IP "\fBint ioctl(int \fP\fIfd\fP\fB, LPABORTOPEN, int \fP\fIarg\fP\fB)\fP"
+Se \fIarg\fP è 0,
+.BR open (2)
+sarà terminato in caso un errore, altrimenti l'errore sarà
+ignorato. Il default è di ignorarlo.
+.IP "\fBint ioctl(int \fP\fIfd\fP\fB, LPCAREFUL, int \fP\fIarg\fP\fB)\fP"
+Se \fIarg\fP è 0, allora i segnali out-of-paper, offline e error
+devono essere falsi durante tutte le operazioni di scrittura,
+altrimenti vengono ignorati. Il default è di ignorarli.
+.IP "\fBint ioctl(int \fP\fIfd\fP\fB, LPWAIT, int \fP\fIarg\fP\fB)\fP"
+Assegna ad \fIarg\fP il numero di iterazioni in busy-wait da aspettare
+prima di abilitare (strobe) la stampante ad accettare il carattere
+appena scritto, e il numero di iterazioni da attendere prima di
+togliere ancora l'abilitazione. Le specifiche dicono che questo tempo
+dovrebbe essere di 0.5 microsecondi, ma l'esperienza ha mostrato che
+il ritardo causato dal codice è già sufficiente. Per questa
+ragione, il valore di default è 0. Questi valori vengono usati sia
+per la modalità interrogazione che quella con interrupt.
+.IP "\fBint ioctl(int \fP\fIfd\fP\fB, LPSETIRQ, int \fP\fIarg\fP\fB)\fP"
+Questa
+.BR ioctl ()
+richiede i privilegi del superutente. Prende come
+argomento un intero contenente il nuovo numero di IRQ. Come effetto
+collaterale, la stampante sarà reimpostata. Quando \fIarg\fP è 0,
+questa chiamata seleziona il driver di tipo "polling", che è anche
+quello di default.
+.IP "\fBint ioctl(int \fP\fIfd\fP\fB, LPGETIRQ, int *\fP\fIarg\fP\fB)\fP"
+Salva l'IRQ correntemente usato in \fIarg\fP.
+.IP "\fBint ioctl(int \fP\fIfd\fP\fB, LPGETSTATUS, int *\fP\fIarg\fP\fB)\fP"
+Salva il valore della porta di stato della stampante in \fIarg\fP.  I
+bit hanno i seguenti significati:
+.sp
+.TS
+l l.
+LP_PBUSY	input busy invertito, attivo alto
+LP_PACK	acknowledge, attivo basso
+LP_POUTPA	input "out-of-paper" invariato, attivo alto
+LP_PSELECD	input "selected" invariato, attivo alto
+LP_PERRORP	input "error" invariato, attivo basso
+.TE
+.sp
+Si faccia riferimento al manuale della propria stampante per il
+significato dei segnali. Si noti che possono essere impostati anche i
+bit non documentati, ma questo dipende dalla stampante usata.
+.IP "\fBint ioctl(int \fP\fIfd\fP\fB, LPRESET)\fP"
+Reimposta la stampante. Non è necessario alcun argomento.
+.SH FILE
+/dev/lp*
+.SH AUTORI
+Il driver per la stampante è stato scritto originariamente da Jim
+Weigand e Linus Torvalds. È stato ulteriormente migliorato da Michael
+K.\& Johnson. Il codice per gli interrupt è stato scritto da Nigel
+Gamble.  Alan Cox lo ha modularizzato.
+LPCAREFUL, LPABORT, LPGETSTATUS sono state aggiunte da Chris Metcalf.
+.SH "VEDERE ANCHE"
+.BR chmod (1),
+.BR chown (1),
+.BR mknod (1),
+.BR lpcntl (8),
+.BR tunelp (8)

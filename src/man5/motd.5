@@ -1,0 +1,48 @@
+.\" Copyright (c) 1993 Michael Haardt (michael@moria.de), Fri Apr  2 11:32:09 MET DST 1993
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\" 
+.\" Modified Sat Jul 24 17:08:16 1993 by Rik Faith <faith@cs.unc.edu>
+.\" Modified Mon Oct 21 17:47:19 EDT 1996 by Eric S. Raymond <esr@thyrsus.com>
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Agosto 1996
+.\" Traduzione in italiano di Alessandro Rubini (rubini@linux.it)
+.\" Febbraio 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\"
+.TH MOTD 5 "29 dicembre 1992" "Linux" "Linux Programmer's Manual"
+.SH NOME
+motd \- messaggio del giorno
+I contenuti di \fB/etc/motd\fP vengono visualizzati da
+.BR login (1)
+dopo che un utente si è collegato con successo e prima di eseguire
+la shell login.
+
+Il nome "motd" sta per "message of the day", e questo file è
+stato tradizionalmente usato proprio per questo motivo (perché
+richiede molto meno spazio su disco che spedire posta a tutti gli utenti).
+.SH FILE
+/etc/motd
+.SH "VEDERE ANCHE"
+.BR login (1),
+.BR issue (5)

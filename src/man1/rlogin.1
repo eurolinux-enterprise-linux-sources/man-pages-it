@@ -1,0 +1,181 @@
+.\" Copyright (c) 1983, 1990, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" Traduzione da inetutils-1.4.2 di Giulio Daprelà <giulio@pluto.it>
+.\" gennaio 2006
+.\"
+.\"	@(#)rlogin.1	8.2 (Berkeley) 4/29/95
+.\"
+.Dd 29 Aprile 1995
+.Dt RLOGIN 1
+.Os BSD 4.2
+.Sh NOME
+.Nm rlogin
+.Nd login remoto
+.Sh SINTASSI
+.Nm rlogin
+.Op Fl 8EKLdx
+.Op Fl e Ar char
+.Op Fl k Ar realm
+.Op Fl l Ar username
+.Ar host
+.Nm rlogin
+.Op Fl 8EKLdx
+.Op Fl e Ar char
+.Op Fl k Ar realm
+.Ar username@host
+.Sh DESCRIZIONE
+.Nm Rlogin
+avvia una sessione terminale su un host remoto
+.Ar host  .
+.Pp
+.Nm Rlogin
+tenta prima di usare il meccanismo di autenticazione Kerberos, descrito 
+sotto. Se l'host remoto non supporta Kerberos viene usato il meccanismo 
+standard standard Berkeley
+.Pa rhosts
+di autorizzazione.
+Le opzioni sono come segue:
+.Bl -tag -width flag
+.It Fl 8
+L'opzione
+.Fl 8
+consente un percorso di input dati a otto bit; altrimenti i bit di
+parità sono eliminati, ad eccezione di quando i caratteri di stop e 
+start sul lato remoto sono differenti da
+^S/^Q .
+.It Fl E
+L'opzione
+.Fl E
+inibisce il riconoscimento dei caratteri escape.
+Quando usata con l'opzione
+.Fl 8
+questo fornisce una connessione completamente trasparente.
+.It Fl K
+L'opzione
+.Fl K
+disabilita l'autenticazione Kerberos.
+.It Fl L
+L'opzione
+.Fl L
+permette alla sessione rlogin di funzionare in modo ``litout'' (vedere
+.Xr tty 4 ).
+.It Fl d
+L'opzione
+.Fl d
+abilita il socket debugging (vedere
+.Xr setsockopt 2 )
+sui socket TCP usati per la comunicazione con l'host remoto.
+.It Fl e
+L'opzione
+.Fl e
+permette all'utente di specificare il carattere di escape, che per 
+default è ``~''.
+Questa specificazione può essere come carattere letterale, o come valore 
+ottale nella forma \ennn.
+.It Fl k
+L'opzione
+.FL k
+richiede a rlogin di ottenere dei ticket per l'host remoto
+nel regno
+.Ar realm
+invece di determinare il regno dell'host remoto tramite
+.Xr krb_realmofhost  3  .
+.It Fl x
+L'opzione
+.Fl x
+abilita la cifratura
+.Tn DES
+per tutti i dati passati attraverso la sessione
+rlogin.
+Questo può avere un impatto sul tempo di risposta e sull'utilizzo della
+.Tn CPU,
+ma fornisce un incremento di sicurezza.
+.El
+.Pp
+Una linea nella forma ``<escape char>.'' disconnette dall'host remoto.
+Similarmente la linea ``<escape char>^Z'' sospenderà la sessione
+.Nm rlogin,
+e ``<escape char><delayed-suspend char>'' sospende la porzione invio
+di rlogin, ma permette l'output dal sistema remoto.
+Per default, il carattere tilde (``~'') è il carattere di escape, e
+normalmente control-Y (``^Y'') è il carattere delayed-suspend.
+.Pp
+Tutti gli eco avvengono sul sito remoto, in modo che (tranne che per i 
+ritardi)
+.Nm rlogin
+sia trasparente.
+Il controllo del flusso attraverso ^S/^Q e il flusso di input e output 
+sugli interrupts sono gestiti correttamente.
+.Sh AUTENTICAZIONE KERBEROS
+Ciascun utente può avere un elenco privato di autorizzazione nel file
+.Pa .klogin
+nella propria directory home.
+Ciascuna linea in questo file può contenere un nome principale Kerberos 
+nella forma
+.Ar principal.instance@realm  .
+Se l'utente originante è autenticato su uno dei primari nominati in
+.Pa .klogin ,
+viene garantito l'accesso all'account.
+All'
+.Ar accountname.@localrealm
+primario è garantito accesso se non c'è nessun file
+.Pa .klogin .
+Altrimenti apparirà una richiesta di login e password sulla macchina 
+remota come in
+.Xr login  1  .
+Per evitare certi priblemi di sicurezza, il file
+.Pa .klogin
+deve appartenere all'utente remoto.
+.Pp
+Se l'autenticazione Kerberos fallisce viene stampato un messaggio di 
+avviso e in alternativa viene usato il Berkeley
+.Nm rlogin .
+.Sh AMBIENTE
+La seguente variabile d'ambiente è utilizzata da
+.Nm rlogin :
+.Bl -tag -width TERM
+.It Ev TERM
+Determina il tipo di terminale utente.
+.El
+.Sh VEDERE ANCHE
+.Xr rsh 1 ,
+.Xr kerberos 3 ,
+.Xr krb_sendauth 3 ,
+.Xr krb_realmofhost 3
+.Sh HISTORY
+Il comando
+.Nm rlogin
+è apparso in
+.Bx 4.2 .
+.Sh BUG
+.Nm Rlogin
+sarà sostituito da
+.Xr telnet  1
+nel prossimo futuro.
+.Pp
+More of the environment should be propagated.

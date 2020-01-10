@@ -1,0 +1,237 @@
+.\" Traduzione a cura di Vieri Giugni - settembre 2006
+.\"
+.TH GNUMERIC 1 "14 settembre 2003" gnumeric "GNOME"
+.SH NOME
+gnumeric \- Una applicazione di foglio elettronico per GNOME.
+
+.SH SINTASSI
+\fBgnumeric\fR [\fIOPTIONS\fR] [\fIfiles\fR \fI...\fR ]
+
+.SH DESCRIZIONE
+\fBGnumeric\fR è un potente programma di foglio lettronico creato dal
+Progetto GNOME. \fBGnumeric\fR cerca di competere con i fogli
+elettronici commerciali diventando completamente compatibile con
+Microsoft Excel(TM) e attraverso il supporto di molti formati di file di
+fogli elettronici conosciuti quali appunto Excel(TM), Lotus 1-2-3(TM),
+Applix(TM), Sylk(TM), XBase(TM), Oleo(TM) e OpenOffice.org.
+
+\fBGnumeric\fR supporta calcoli avanzati con utilizzo di
+funzioni statistiche, finanziarie e di accesso a basi di dati. La
+stampa dei dati è supportata attraverso un incompleto ma potente sistema
+di stampa. Un sistema a plugin aggiunge nuove funzionalità  a
+\fBgnumeric\fR , per esempio abilitando l'esportazione di dati nel
+formato LaTeX \\longtable. I Plugin possono essere utilizzati per
+definire funzioni personalizzate. E' presente una rudimentale
+interfaccia di script per il linguaggio Python che sarà  potenziata
+in un prossimo futuro. Da quando \fBgnumeric\fR è software
+\fBlibero\fR, \fBgnumeric\fR può anche essere esteso direttamente a
+livello del codice sorgente da ogni programmatore competente.
+
+Il programma può essere avviato da linea di comando come \fBgnumeric\fR
+o da uno dei menu previsti dalla sottostante piattaforma. Quando avviato
+da linea di comando, \fBgnumeric\fR può essere seguito dalle opzioni
+elencate di seguito e possibilmente dal nome di file nei vari formati
+che possono essere aperti immediatamente. Per esempio, il comando:
+
+    gnumeric myfile.gnumeric &
+
+lancerà  \fBgnumeric\fR e aprirà  il file chiamato "myfile.gnumeric".
+Il formato predefinito per i file \fBgnumeric\fR è lo XML (extensible
+markup language) che successivamente è stato compresso con \fBgzip\fR.
+
+.SH OPZIONI UTENTE
+Questo programma segue la tradizionale sintassi a linea di comando
+GNU, con opzioni a lettera singola preceduta da un trattino singolo
+(`-') e opzioni più lunghe precedute da due trattini (`--').
+
+.SS "Opzioni di aiuto"
+.B \-?, \-\-help
+Mostra un messaggio di aiuto.
+.TP
+.B \-\-usage
+Mostra un messaggio di istruzioni sull'utilizzo.
+
+.SS "Opzioni di Gnumeric"
+.TP
+.B \-v, \-\-version
+Mostra il numero di versione installata di
+\fBgnumeric\fR.
+.TP
+.B \-\-no-splash
+Avvia \fBgnumeric\fR senza mostrare la schermata di avvio.
+.TP
+\fB\-L, \-\-lib-dir=\fR\fISTRING\fR
+Imposta la directory principale delle librerie a STRING che può
+essere un percorso (assoluto o relativo).
+.TP
+\fB\-D, \-\-data-dir=\fR\fISTRING\fR
+Imposta la directory principale per i dati a STRING che può essere un
+percorso (assoluto o relativo).
+
+.SS "Opzioni per la disposizione della finestra"
+.TP
+\fB\-g, \-\-geometry=WIDTHxHEIGHT+XOFF+YOFF
+Imposta dimensione e posizione della prima finestra (di lavoro). Tutte
+le unità  sono in pixel. L'origine X parte dalla sinistra dello schermo,
+l'origine Y dalla parte superiore dello schermo: Per esempio,
+\-g=800x600+20+30 avvierà  una finestra gnumeric di larghezza 800 pixel di
+larghezza per 600 pixel di altezza, con origine a 20 pixel dalla sinistra dello
+schermo e a 30 pixel dalla parte superiore dello stesso.
+.TP
+.B \fB\-\-display=\fR\fIDISPLAY\fR
+X display da utilizzare, dove DISPLAY ha la forma
+nome host:Xdisplay.Screen. Prestare attenzione che l'host che
+visualizza gnumeric dovrebbe avere assegnati i diritti di
+visualizzazione dall'host su cui gira gnumeric.
+
+.TP
+.B \fB\-\-screen=\fR\fISCREEN\fR
+Schermo X da usare, una forma più compatta della funzionalità  descritta
+sopra.
+
+.SH OPZIONI AVANZATE
+
+.SS "Opzioni di Gnumeric"
+.TP
+\fB\-\-dump-func-defs=\fR\fIFILE\fR
+Memorizza le definizioni di funzione nel file con nome FILE.
+.TP
+\fB\-\-dump-func-state=\fR\fIFILE\fR
+Memorizza le definizioni di funzione nel file con nome FILE.
+.TP
+\fB\-\-debug=\fR\fILEVEL\fR
+Abilita alcune funzioni di debug.
+.TP
+.BI \-\-debug_deps= LEVEL
+Abilita alcune dipendenze relative a funzioni di debug.
+.TP
+.BI \-\-debug_share= LEVEL
+Abilita alcune dipendenze di funzioni per la condivisione di
+espressioni.
+.TP
+.BI \-\-debug_print= LEVEL
+Abilita alcuni comportamenti di debug della stampa.
+.TP
+.B \-\-quit
+Termina immediatamente dopo avere caricato le librerie selezionate
+(utilizzabile in fase di test).
+
+.SS "Opzioni Oaf"
+.TP
+\fB\-\-oaf-ior-fd=\fR\fIFD\fR
+Descrittore di file sul quale stampare il \fIIOR\fR.
+.TP
+\fB\-\-oaf-activate-iid=\fR\fIIID\fR
+\fIIID\fR da attivare.
+.TP
+.B \-\-oaf-private
+Previene la registrazione di server con OAF.
+
+.SS "Opzioni GNOME"
+.TP
+.B \-\-disable-sound
+Disattiva l'utilizzo del server sonoro.
+.TP
+.B \-\-enable-sound
+Attiva l'utilizzo del server sonoro.
+.TP
+\fB\-\-espeaker=\fR\fIHOSTNAME:PORT\fR
+nome host:porta host sul quale è in funzione il server sonoro da
+usare.
+.TP
+.B \-\-disable-crash-dialog
+Disattiva la comunicazione per la trasmissione di bug che appare se
+Gnumeric va in crash.
+
+.SS "Opzioni GTK"
+.TP
+\fB\-\-gdk-debug=\fR\fIFLAGS\fR
+Flag di debug Gdk da impostare.
+.TP
+\fB\-\-gdk-no-debug=\fR\fIFLAGS\fR
+Flag di debug Gdk debugging da non impostare.
+.TP
+.B \-\-sync
+Sincronizza le chiamate X.
+.TP
+\fB\-\-name=\fR\fINAME\fR
+Nome del programma usato dal gestore di finestre.
+.TP
+\fB\-\-class=\fR\fICLASS\fR
+Categoria di programma usata dal gestore di finestre.
+.TP
+\fB\-\-gxid_host=\fR\fIHOST\fR
+L'host sul quale contattare il demone gxid. Sovrascrive la variabile
+d'ambiente GXID_HOST. Questa opzione è disponibile solo se le GTK+ sono
+state configurate con \-\-gdk-target=x11.
+.TP
+\fB\-\-gxid_port=\fR\fIPORT\fR
+La porta per la connessione a gxid. Sovrascrive la variabile
+d'ambiente GXID_PORT. Questa opzione è disponibile solo se le GTK+ sono
+state configurate con --gdk-target=x11.
+.TP
+\fB\-\-gtk-debug=\fR\fIFLAGS\fR
+Flag di debug Gtk+ da impostare.
+.TP
+\fB\-\-gtk-no-debug=\fR\fIFLAGS\fR
+Flag di debug Gtk+ da non impostare.
+.TP
+\fB\-\-g-fatal-warnings\fR
+Rende fatali tutte le segnalazioni di errore.
+.TP
+\fB\-\-gtk-module=\fR\fIMODULE\fR
+Carica un modulo Gtk addizionale.
+
+.SS "Opzioni di gestione delle sessioni"
+.TP
+\fB\-\-sm-client-id=\fR\fIID\fR
+Specifica l'ID della gestione di sessione.
+.TP
+\fB\-\-sm-config-prefix=\fR\fIPREFIX\fR
+Specifica il prefisso della configurazione salvata.
+.TP
+.B \-\-sm-disable
+Disattiva la connessione al gestore di sessione.
+
+
+.SH VERSIONE
+Questa man page descrive \fBgnumeric\fR versione 1.2.
+
+.SH BUG
+Per l'elenco dei bug di \fBgnumeric\fR consciuti, o per
+segnalarne di nuovi, visitare \fIhttp://bugzilla.gnome.org\fR.
+
+.SH "VEDERE ANCHE"
+.TP
+.B Il Manuale di Gnumeric
+Disponibile attraverso il menu \fBHelp\fR o sul world wide web su
+\fIhttp://www.gnome.org/projects/gnumeric/doc/index.html\fR
+.TP
+.B La homepage di Gnumeric
+.I http://www.gnome.org/projects/gnumeric/
+.TP
+.B La pagina web del Progetto GNOME
+.I http://www.gnome.org/
+
+.SH LICENZA
+
+\fBGnumeric\fR è rilasciato entro i termini della General Public
+License (GPL), versione 2. Per informazioni su questa licenza vedere
+il codice sorgente fornito con il software o vedere la pagina web del
+Progetto GNU su http://www.gnu.org/.
+
+.SH COPYRIGHT
+
+Il copyright dei binari e del codice sorgente di \fBgnumeric\fR è
+stabilito da ogni sviluppatore come documentato nel codice sorgente
+medesimo.
+
+.SH AUTORI
+.SS "Gnumeric"
+Jody Goldberg <jgoldberg@gnome.org>
+.br
+Miguel de Icaza <miguel@gnome.org>
+.SS "Questa man page"
+Jan Schaumann <jschauma@netmeister.org>
+.br
+Adrian Custer <acuster@gnome.org>

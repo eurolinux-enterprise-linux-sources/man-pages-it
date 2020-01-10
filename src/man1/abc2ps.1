@@ -1,0 +1,782 @@
+.TH ABC2PS 1
+.\" NAME should be all caps, SECTION should be 1-8, maybe w/ subsection
+.\" other parms are allowed: see man(7), man(1)
+.SH NOME
+abc2ps \- Traduce il formato ABC in PostScript
+.SH SINTASSI
+.B abc2ps
+.I "[opzioni] file ..."
+.SH "DESCRIZIONE"
+Il programma
+.B abc2ps
+legge un file di input contenente musica in formato abc
+e lo impagina direttamente in PostScript. Può essere usato anche 
+per fornire una lista del contenuto di un file abc.
+.P
+Per una descrizione della sintassi di abc, vedere la guida 
+dell'utente di abc che è una parte del pacchetto abc2mtex.
+.P
+.SS "USO GENERALE"
+Fondamentalmente, l'uso è il seguente:
+.RS
+.sp
+\fBabc2ps\fR \fIfile1 file2\fR ...
+.sp
+.RE
+dove
+\fIfile1, file2 ...\fR sono i file abc di input. Questo fornirà 
+una lista del contenuto dei file. Per generare output Postscript,
+aggiungere l'opzione
+\fB-o\fR:
+.RS
+.sp
+\fBabc2ps\fR \fIfile1 file2\fR ... \fB-o\fR
+.sp
+.RE
+.SS "SELEZIONE MELODIE"
+Per selezionare melodie specifiche dai file, usare:
+.RS
+.sp
+\fBabc2ps\fR \fIfile1 file2\fR ... \fB-e\fR \fIselettore1 selettore2\fR ...
+.sp
+.RE
+dove ogni selettore è un insieme di numeri xref di abc o un modello.
+Senza l'opzione \fB-o\fR, fornirà solo la lista di melodie selezionate
+trovate nei file. Con l'opzione \fB-o\fR, l'output è generato solo per le
+melodie selezionate.
+.P
+Opzionalmente, la ricerca può essere fatta su altri campi usando queste opzioni
+al posto di \fB-e\fR:
+\fB-R\fR cerca il campo `ritmo',
+\fB-C\fR cerca il campo `compositore',
+\fB-S\fR cerca il campo `sorgente'.
+\fB-T\fR cerca il campo `titolo' (questo è il modo predefinito per le
+ricerche di modelli).
+Se è usata l'opzione \fB-C\fR, viene visualizzato anche il campo del 
+compositore quando viene elencato il contenuto dei file. Avviene lo stesso con le opzioni
+\fB-R\fR e \fB-S\fR.
+L'opzione \fB-A\fR seleziona tutte le melodie, sovrascrivendo gli altri selettori.
+.P
+Per filtrare diversi file con lo stesso insieme di selettori,
+il formato è:
+.RS
+.sp
+\fBabc2ps\fR \fIfile1 file2\fR \fB-e\fR \fIselettori\fR ...
+.sp
+.RE
+Per usare un insieme diverso di selettori per ciascun file,
+usare un comando come il seguente:
+.RS
+.sp
+\fBabc2ps\fR \fIfile1\fR \fB-e 1-3 -f\fR \fIfile2 file3\fR \fB-R Jig\fR
+.sp
+.RE
+Questo selezionerà le melodie 1-3 dal \fIfile1\fR e le melodie con 'Jig'
+nel campo ritmo dal \fIfile2\fR e dal \fIfile3\fR.
+Più precisamente, l'opzione \fB-f\fR indica 
+che gli argomenti seguenti (fino alla successiva opzione \fB-e\fR) sono nomi di file.
+Ogni insieme di selettori è applicato ai file che lo precedono. 
+Come precedentemente, le opzioni \fB-C\fR, \fB-S\fR, \fB-R\fR
+possono essere usate al posto di \fB-e\fR per cambiare il campo cercato.
+.P
+Per convenienza, ci sono due convenzioni:
+.IP
+Un argomento con l'estensione \fI.abc\fR è sempre considerato come un
+nome di file ed è trattato come se fosse preceduto da \fB-f\fR.
+.IP
+Un argomento che è ovviamente un insieme di numeri xref è considerato 
+come un selettore ed è trattato come se fosse preceduto da \fB-e\fR. 
+.P
+Per esempio, tutti questi tre comandi selezionano le melodie 1-3 dal
+file A.abc e le melodie 5-7 dal file B.abc:
+.nf
+.RS
+.sp
+\fBabc2ps A.abc -e 1-3 -f B.abc -e 5-7\fR
+\fBabc2ps A.abc -e 1-3 B.abc -e 5-7\fR
+\fBabc2ps A.abc 1-3 B.abc 5-7\fR
+.sp
+.RE
+D'altro canto, questo NON funzionerà nel modo consueto:
+.RS
+.sp
+\fBabc2ps A 1-3 B 5-7 -o\fR
+.sp
+.RE
+perché il programma non ha modo di riconoscere che B è il
+nome di un file di input e non un selettore di modello.
+.P
+Per selezioni complicate su file di input multipli, potrebbe
+essere meglio eseguire il programma in modalità interattiva (vedere
+di seguito).
+.SS "Ottenere output PostScript"
+Aggiungendo l'opzione \fB-o\fR, le melodie selezionate sono 
+impaginate e scritte sul file di output.  
+Per impaginare tutte le melodie nel file \fBbook1.abc\fR:
+.RS
+.sp
+\fBabc2ps book1 -o\fR
+.sp
+.RE
+Per impaginare specifiche melodie, usare un comando come
+.RS
+.sp
+\fBabc2ps book1 -e 1-3 5,20- 'House*' Hall -o\fR
+.sp
+.RE
+L'idea è quella di variare il numero e/o i modelli fino a quando
+i titoli desiderati vengono elencati, poi aggiungere l'opzione
+\fB-o\fR alla lista degli argomenti per ottenere il file di output.
+.P
+In modo predefinito, tutte le melodie selezionate sono scritte nello
+stesso file, con l'aggiunta degli adeguati salti pagina.
+Usando l'opzione \fB-E\fR , si ottiene l'output in EPSF; 
+ogni melodia è allora messa in un file separato con un corretto
+bounding box e nessuna interruzione di pagina.
+.P
+L'opzione \fB-O\fR determina dove viene diretto l'output.
+L'argomento di \fB-O\fR può essere
+sia un nome di file che un \fB=\fR. In quest'ultimo caso si dice a \fBabc2ps\fR
+di scegliere il nome da se stesso.
+.P
+Per le modalità PS e EPS, il nome del file di output è:
+.TP
+modalità PS:
+.nf
+predefinito        \fBOut.ps\fR
+\fB-O\fR NOME        NOME\fB.ps\fR
+\fB-O =\fR           L'output per "foo.abc" è scritto in "foo.ps"
+.fi
+.TP
+modalità EPSF:
+.nf
+predefinito        \fBOut\fInnn\fB.eps\fR, dove \fInnn\fR è un numero progressivo
+\fB-O\fR NOME        NOME\fInnn\fB.eps\fR
+\fB-O =\fR           Il nome del file di output è <titolo_melodia>\fB.eps\fR
+.fi
+.PP
+Nota: se un file output esiste già sarà sovrascritto.
+Ciò accadrà se due melodie hanno lo stesso nome 
+ed è usata l'opzione \fB-O =\fR per l'output EPSF.
+.PP
+L'effettivo formato di output è governato dalle
+impostazioni dei parametri che possono essere messi nei
+\fIfile di formato\fR.
+Il file di formato può essere selezionato usando l'opzione
+\fB-F\fR; i file di formato sono usualmente cercati sia nella 
+directory corrente che nella directory \fB/usr/share/abc2ps\fR.
+Si faccia riferimento alla sezione \fBOutput formating\fR
+nel file \fB/usr/share/doc/abc2ps/New.Features\fR per una
+descrizione dettagliata dei parametri disponibili.
+
+.SS "Modalità interattiva"
+Se la riga di comando contiene l'opzione \fB-i\fR, \fBabc2ps\fR
+viene eseguito in modalità interattiva. Questo rende possibile costruire
+file di output pezzo per pezzo. Lo svantaggio è che si deve 
+riavviare il programma se si fanno degli errori.
+.PP
+La modalità interattiva si avvia con:
+.RS
+.sp   
+\fBabc2ps -i\fR
+.sp
+.RE
+Poi il programma è pronto per un input con la riga
+.RS
+.sp
+select tunes:
+.sp
+.RE
+Si dovrebbe rispondere con una riga di argomenti, che sono
+trattati esattamente nella stessa maniera della modalità non
+interattiva.
+La sola differenza è che l'input non è eseguito prima attraverso
+la shell, cosi` che i caratteri jolly non sono espansi e le virgolette non 
+vengono rimosse. Di conseguenza si dovrebbe usare \fBJig*\fR
+al posto di \fB'Jig*'\fR, ecc.
+quando si specificano le stringhe di selezione e i nomi dei file devono 
+essere scritti per esteso.
+Per uscire dalla modalità interattiva, inserire 'q', 'quit' o un input vuoto.
+.PP
+Per esempio, una "sessione" potrebbe apparire come questa:
+.sp
+.nf
+      abc2ps -i          avvia abc2ps interattivamente
+      book1              elenca le melodie in book1.abc
+      book1 -e 1-10      elenca le melodie con xrefs 1-10 in book1
+      book1 -e 1-10 -o   scrive queste melodie nel file Out.ps
+      book2              elenca le melodie nel file book2.abc
+      book2 -e House -o  scrive le melodie con 'House' nel titolo
+      quit               esce da abc2ps
+.fi
+.PP
+Per rendere le cose più facili, ci sono tre caratteri speciali:
+.sp
+.nf
+      ?   mostra l'ultimo input usato;
+      !   all'inizio della riga è sostituito dagli ultimi
+          file usati;
+      *   all'inizio della riga è sostituito dall'ultimo
+          input.
+.fi
+.PP
+Questo significa che lo stesso effetto dell'esempio precedente può essere 
+ottenuto con la forma abbreviata nel seguente modo:
+.sp
+.nf   
+      abc2ps -i          avvia abc2ps interattivamente
+      book1              elenca le melodie 
+      ! 1-10             equivalente a 'book1 1-10'
+      * -o               equivalente a 'book1 1-10 -o'
+      book2              elenca le melodie nel file book2.abc
+      ! -e House -o      equivalente a 'book2 -e House -o'
+      q                  esce da abc2ps
+.fi
+.PP
+Si noti che l'opzione \fB-e\fR non è necessaria nella riga `* 1-10'
+perché è chiaro che \fB1-10\fR è un selettore (vedere sopra).
+.PP
+Un altro punto è che se sono usate opzioni aggiuntive quando si
+avvia interattivamente, queste funzionano come modo predefinito per la
+modalità interattiva.
+Per esempio, avviando il programma con 
+.RS
+.sp
+\fBabc2ps -io\fR
+.sp
+.RE
+tutte le melodie selezionate sono scritte immediatamente nel file output. 
+L'uso del programma è molto simile a quello di \fBabc2mtex\fR. 
+Naturalmente, non è possibile elencare il contenuto del file (per aiutare
+nella scelta riguardo i titoli) quando si usa il programma in questo modo.
+.PP
+Nella modalità interattiva, \fB-O\fR ed \fB-E\fR possono essere usate prima di
+redirigere l'output. Quando si commuta a un altro file di output, il file
+precedente viene chiuso. Ricommutare successivamente allo stesso file iniziale 
+sovrascriverà il file. 
+.SS "Differenze da abc2mtex"
+Essenzialmente, tutte le caratteristiche descritte nella guida di \fBabc2mtex\fR  
+dovrebbero funzionare. Ci sono un po' di eccezioni:
+.IP
+La notazione delle legature S è stata sostituita dalla sintassi (...) 
+(vedere di seguito).
+.IP
+I segni di chiave HP e Hp probabilmente non sono
+trattati esattamente nel modo giusto.
+.IP
+Non c'è una verifica automatica dei gambi delle note.
+.IP
+In questa versione non c'è il modo per trasporre la musica automaticamente.
+.SS "Alcune caratteristiche extra"
+Per gli esempi, vedere il file
+.BR /usr/share/doc/abc2ps/examples/sample.abc.
+.TP
+Codici per le decorazioni.
+Includendo quelle definite nella
+sintassi standard di abc, sono interpretate le decorazioni seguenti:
+.nf
+.sp
+   .   dot, staccato
+   J   slide
+   M   tenuto (M='em-phasis')
+   H   corona (fermata)
+   ~   abbellimento
+   R   arpeggio
+   T   'tr' sopra la nota 
+   u   archetto verso l'alto
+   v   archetto verso il basso
+   k   >-come accento
+   K   ^-come accento
+.sp
+.fi
+.TP
+Sequenze di escape.
+L'inserzione di una stringa tra due barre inverse
+in una riga di musica delimita una sequenza di escape. Nella
+versione attuale, queste sono trattate come campi di informazione.  
+Ciò rende semplice cambiare la tonalità, il metro o  
+la lunghezza predefintita all'interno di una riga (vedere 
+\fBsample.abc\fR).
+.TP
+Gruppi irregolari (N-uple).
+\fBabc2ps\fR può gestire casi generali di gruppi irregolari usando la
+sintassi:
+.RS
+.sp
+\fB(p:q:r abcd\fR ...
+.sp
+.RE
+.IP
+Questo significa `metti p note nel tempo di q per le successive
+r note.' Se q non è fornito, usa le impostazioni predefinite
+come descritto nella guida dell'utente di abc2mtex. Se r non
+è dato, usa il valore di p in modo predefinito. Per esempio:
+.RS
+.sp
+\fB(3::2\fR = \fB(3:2:2\fR;  \fB(3\fR = \fB(3:2:3\fR
+.RE
+.IP
+Il numero scritto sopra il gruppo irregolare è p. Questa sintassi
+generalizzata è compatibile con il vecchio uso. In realtà,  
+q non è per niente usato qui; è rilevante solo per i programmi che
+riproducono la musica.
+.TP      
+Accordi.
+Il programma accetta la notazione \fB+...+\fR, ma sembra più 
+intuitivo usare un qualche tipo di parentesi per raggruppare 
+insieme le note che formano un accordo. Questo programma  
+accetta le parentesi quadre:
+.RS
+.sp
+\fB[ace][adf]\fR
+.RE
+.IP
+al posto della sintassi \fB+...+\fR.
+La notazione abc permette formalmente note con durate differenti 
+sullo stesso gambo: \fB[a/bc2]\fR e cosi` via. Questo programma
+assegna a tutte le note di un accordo la durata della prima nota 
+nella parentesi. Un accordo con due note identiche realizza un 
+unisono (una testa con due gambi uno in su e l'altro in giù), 
+per esempio, \fB[AA]\fR.
+.TP
+Legature d'espressione e di valore.
+Al posto della sintassi \fBSabcSd\fR per una legatura 
+sopra le note abcd, questo programma usa la notazione
+.RS
+.sp
+\fB(abcd)\fR
+.RE
+.IP   
+per una legatura sopra le note abcd. Permette casi come 
+\fB(ab(cd))\fR  e  \fB((ab)cd)\fR  e  \fB(a(bc)d)\fR
+e legature sopra legature simili. Per collegare tre o quatto 
+note con le legature (per esempio, per una nota
+tenuta su diverse battute) usare \fB(a(b)c)\fR o, con
+le legature di valore, \fBa-b-c\fR.
+.IP
+La regola è che ogni nota da sola all'interno delle parentesi
+come \fB(b)\fR termina una precedente legatura e, allo
+stesso momento, ne inizia una nuova.
+.IP
+Notare che la sintassi della legatura \fB(...)\fR non interferisce  
+con lo stile \fB(3abc\fR per i gruppi irregolari. Se una parentesi '(' è  
+seguita da un numero k, è iterpretata come l'inizio di un  
+gruppo irregolare di k note, altrimenti è l'inizio di una legatura. Per esempio,  
+una legatura è messa sopra le ultime due terzine in questa  
+riga: \fB(3abc ((3cde) ((3efg)\fR.
+.IP
+Una parentesi non bilanciata ')' o '(' indica la continuazione di
+una legatura su una riga vicina. Questo è necessario (per esempio)
+per rendere possibile l'interruzione automatica di righe.
+Essa creerà anche strane e inaspettate legature aggiuntive se il file 
+di input contiene la sintassi scorretta \fB(3abc)\fR invece di \fB(3abc\fR
+per le terzine.
+.TP
+Stanghette.
+.br
+I simboli seguenti denotano una doppia stanghetta all'inizio 
+o alla fine di un pezzo (senza punti di ripetizione):
+\fB[|\fR produce una barra spessa seguita da una sottile, \fB|]\fR una
+barra sottile seguita da una spessa.
+.IP
+Per un miglior risultato quando si usa l'interruzione di riga automatica, 
+il programma dividerà alcuni tipi di stanghette quando queste sono alla
+fine di una riga.
+Per esempio,
+\fB::\fR diventa \fB:|\fR insieme con \fB|:\fR sulla riga successiva,
+\fB|:\fR diventa \fB|\fR insieme con \fB|:\fR sulla riga successiva,
+\fB:|2\fR diventa \fB:|\fR insieme con \fB[2\fR sulla riga successiva
+ecc.
+.TP
+Il Campo E.
+Questo campo può essere usato per impostare alcuni parametri 
+dall'interno del file:
+.nf
+.sp
+   shrink    imposta la modalità "glue" (colla) per comprimere      
+   space     imposta la larghezza naturale di glue 
+   stretch   modalità glue estesa 
+   fill      modalità normale per riempire i pentagrammi
+   break     ignora continuazioni
+   xref      scrive i numeri di xref sull'output
+   one       scrive una melodia per pagina
+   newpage   inizia una nuova pagina per la successiva melodia
+   lw \fIppp\fR  imposta la larghezza del pentagramma locale a \fIppp\fR
+   punti.
+.sp
+.fi
+Per esempio, per ottenere come output una singola melodia in un formato ristretto,
+mettere \fBE:lw 400\fR dentro l'intestazione di questa melodia. Se 
+questo è messo dopo l'intestazione ma dentro il corpo della melodia,  
+solo la musica è impostata con una differente larghezza e il titolo
+è scritto come prima.
+.TP
+Chiave di basso e di contralto.
+La chiave di basso è selezionata accodando la parola \fBbass\fR alla
+specificazione della tonalità. Per esempio, \fBK:G bass\fR. Le note
+sono quindi scritte in modo che \fBC\fR sia sotto il pentagramma e \fBc\fR 
+sia nel terzo spazio dall'alto, il che è uno spostamento in giù di una  
+linea rispetto alla chiave di violino.
+.IP
+Per cambiamenti di chiave in-linea, usare una specificazione in-linea 
+come \fB[K:G bass]\fR (prima era \K:G bass\; questo è ancora 
+supportato). Se la chiave in sè non cambia, è sufficiente scrivere
+\fB[K:bass]\fR e similmente \fR[K:treble]\fB.
+.IP
+Usare similmente \fBalto\fR per la chiave di contralto (viola o C).
+.TP
+Cantato.
+Le parole del testo allineate sotto il rigo sono specificate usando una
+riga direttamente sotto il rigo, facendola iniziare con \fBw:\fR. Per
+esempio:
+.RS
+.nf
+.sp
+\fBedc2 edc2 |
+w: Tre gatti ciechi, tre gatti ciechi\fR
+.fi
+.RE
+.IP
+Ogni parola delimitata da spazi bianchi nella riga \fBw:\fR è
+associata con una nota, in sequenza. I seguenti simboli speciali sono 
+disponibili per modificare questo comportamento:
+.nf
+.sp
+   \fB*\fR  salta una nota
+   \fB-\fR  divide una parola in due sillabe, associate con
+      due note, con un trattino, `-', tra di esse
+   \fB\\-\fR  aggiunge un trattino senza dividere la parola
+   \fB|\fR  si sposta in avanti sino alla linea di battuta successiva.
+   \fB~\fR  viene reso come uno spazio, ma comprime le parole da
+       scrivere sotto un'unica nota. Cioè \fBhey~ho\fR produrrà le due
+       parole `hey' e `ho' sotto un'unica nota.
+   \fB_\fR  traccia un piccolo segno di sottolineatura dalla nota 
+      precedente a questa.
+.fi
+.IP
+Per più di una riga di parole del testo, usare semplicemente diverse 
+righe \fBw:\fR.
+Per tracciare un \fB-\fR senza interrompere la parola in quel punto,
+usare un carattere di escape cosi` \fB\\-\fR.
+.IP
+Si noti che \fB\\\\\fR nella riga di musica in abc ora definisce
+una interruzione di pentagramma. Questo è utile quando si impaginano 
+canzoni, poiché è tedioso dividere la riga esplicitamente quando 
+si sposta un'interruzione di rigo quando sono presenti righe con il testo.
+.IP
+Se una parola inizia con un numero, questo è interpretato come numerazione
+di una stanza e viene rientrato di un po'. In altre parole, usare qualcosa  
+come:
+.RS
+.sp
+\fBw: 1.~~Tre gatti ciechi\fR
+.RE
+.IP
+per mettere un numero prima di "Tre".
+.TP
+Musica a pentagrammi multipli.
+Abc2ps gestisce musica che consiste di diverse voci. Questo è
+fatto usando righe \fBV:\fR, come:
+.RS
+.nf
+.sp
+V:2 name="Clarinet 2" short="Cl.2" clef=treble stems=down
+.fi
+.RE
+.IP
+(Qui il numero \fB2\fR in \fBV:2\fR è una stringa arbitraria, ogni
+identificatore formato da una singola parola  può essere usato al suo posto.) 
+In seguito, si può commutare la voce usando semplicemente \fBV:2\fR. 
+Le varie impostazioni, chiave, durata predefinita, ecc., sono mantenute
+separatamente per ogni voce.
+.IP
+Accordi di chitarra, prima e seconda terminazione e interruzioni di riga
+sono presi solo dalla voce più alta. Ogni voce può avere il suo proprio
+testo.
+.IP
+Ci sono diversi parametri che controllano la sistemazione dei pentagrammi,
+delle graffe, parentesi quadre, lunghe linee di battuta ecc. Fare riferimento a 
+\fB/usr/doc/abc2ps/changelog\fR per maggiori informazioni.
+.IP
+Le singole voci possono essere selezionate da un manoscritto a più
+voci usando l'opzione \fB-V\fR. Per esempio, \fB-V 1-2,4\fR estrarrà
+le prime due voci e la quarta voce. Specificatamente, questo rende
+possibile generare partiture a voce singola per l'uso di singoli
+musicisti.
+
+.TP
+Scrivere testo tra la musica.
+Questo può essere fatto usando i pseudocommenti in tre modi. Primo:
+.RS
+.sp
+\fB%%text Questa è una riga di testo.\fR
+.RE
+.IP
+scrive una riga di testo nell'output. Secondo, 
+.RS
+.sp
+\fB%%center Questa è un'altra riga di testo.\fR
+.RE
+.IP
+scrive ancora una riga, ma centrata. Da ultimo,
+.RS
+.sp
+.nf
+\fB%%begintext
+Prima riga di testo
+Seconda riga
+E ancora un'altra riga.
+%%endtext\fR
+.RE
+.fi
+.IP
+che scriverà un blocco di diverse righe. Per evitare conflitti con altri
+programmi, le righe di testo stesse possono essere precedute con \fB%%\fR.
+.IP
+Vedere \fB/usr/share/doc/abc2ps/New.Features\fR per ulteriori informazioni.
+.TP
+Numeri di battuta ed etichette.
+Usare l'opzione \fB-k\fR per abilitare i numeri di battuta. Per esempio,
+\fB-k 1\fR numererà ogni battuta, \fB-k 5\fR numererà ogni cinque battute,
+ecc.
+L'opzione \fB-k 0\fR numererà la prima battuta in ogni rigo.
+In alternativa, usare il pseudo-commento \fB%%barnumbers\fR.
+.IP
+Il programma conta le battute automaticamente, cercando di fare la cosa giusta
+alla prima e alla seconda conclusione. Cioè, ricorda il numero di battuta
+all'inizio della prima conclusione, poi ritorna a questo valore all'inizio
+della seconda conclusione. Cosi`, se c'è una melodia con 2x8 battute con la
+prima e la seconda conclusione dopo le prime 8 battute, si otterrebbero 
+comunque 16 battute totali.
+.IP
+All'interno di una singola melodia, i numeri di battuta sono contati
+attraversando i limiti delle parti. Tuttavia, se un titolo \fBT:\fR appare dentro 
+una melodia, il numero di battuta è reimpostato a 1. Si può 
+usare una riga \fBT:\fR vuota per resettare il numero di battuta 
+senza scrivere effettivamente un titolo.
+.IP
+Le etichette delle battute sono lettere maiuscole A, B, C, ... per 
+marcare punti specifici all'interno della musica. La loro sintassi
+è simile a quella degli accordi della chitarra, ma sono posizionate
+prima di una linea di battuta al posto di una nota o pausa, per esempio,
+.RS
+.sp
+| abcd "A"| ABCD |
+.RE
+.IP
+posiziona la lettera A sopra la seconda linea di battuta.
+Nel caso in cui qualcuno volesse una etichetta sulla prima battuta
+(che usualmente non è preceduta da una linea di battuta), è stato
+introdotto un nuovo simbolo, \fB[|]\fR, per denotare una linea di
+battuta `invisibile'.
+.IP
+I tipi di carattere per i numeri e le etichette di battuta possono essere 
+impostati usando i pseudo-commenti \fB%%barnumberfont\fR e 
+\fB%%barlabelfont\fR.
+.TP
+Riquadri.
+Nella musica stampata, i numeri delle battute sono resi spesso più 
+visibili mettendo un riquadro attorno ad essi. Anche questo è
+possibile. Infatti, un riquadro può essere messo attorno alla 
+maggior parte dei pezzi di testo aggiungendo la parola
+\fBbox\fR alla specificazione del tipo di carattere, per esempio,
+.RS
+.sp
+%%barnumberfont Times-Italic 11 box
+.RE
+Ciò può essere fatto per il titolo, accordi della chitarra,
+cantato, ecc. Per abilitare il riquadro senza cambiare lo stile e/o
+la dimensione dei caratteri, può essere usato il carattere \fB*\fR,
+come in
+.RS
+.sp
+%%titlefont * * box
+.RE
+
+.SH OPZIONI
+Questo è un breve sommario delle opzioni supportate da
+\fBabc2ps\fR. Per informazioni più dettagliate vedere la
+documentazione in \fB/usr/share/doc/abc2ps\fR.
+.SS "Modi di funzionamento"
+.TP
+.B \-o
+Scrive l'output per le melodie selezionate.
+.TP
+.B \-E
+Produce output EPSF, una melodia per file.
+.TP
+.BI \-O "nomefile"
+Imposta il nome del file di output a \fInomefile\fR (quello 
+predefinito è \fBOut.ps\fR).
+Se \fInomefile\fR è \fB=\fR, crea un nome per il file di output
+a partire dal nome del file in input o dal titolo della melodia (in
+modalità EPSF).
+.TP
+.B \-i
+Funzionamento interattivo.
+.TP
+.BI \-v "n"
+Imposta la verbosità per l'output a schermo a \fIn\fR.
+0 fornisce un output molto piccolo, da 1 a 3 mostra successivamente
+più informazioni. Verbosità più grandi di 10 servono per il debug.
+.TP
+.B \-h
+Rapido aiuto, equivalente all'esecuzione di `\fBabc2ps\fR' senza alcun
+argomento. Mostra anche le impostazioni predefinite per
+alcuni parametri.
+.TP
+.B \-V
+Questa opzione era usata per mostrare il numero di versione ma ora è
+usata per la selezione della voce (vedi sopra). Per visualizzare il numero
+della versione, usare l'opzione \fB\-h\fR.
+
+.SS "Selezione"
+.TP
+.B \-e
+Gli argomenti seguenti sono selettori.
+.TP
+.B \-f
+Gli argomenti seguenti sono nomi di file.
+.TP
+.B \-T
+Cerca il campo Titolo di ABC (predefinito).
+.TP
+.B \-C
+Cerca il campo Compositore di ABC.
+.TP
+.B \-R
+Cerca il campo Ritmo di ABC.
+.TP
+.B \-S
+Cerca il campo Sorgente di ABC.
+.TP
+.BI \-V " str"
+Seleziona voci, per esempio, -fB\-V 1,4-5\fR.
+
+.SS "Formattazione"
+Queste opzioni cambiano l'aspetto dell'output:
+.TP
+.B \-H
+Mostra le impostazioni di tutti i parametri di formattazione.
+.TP
+.B \-p
+Genera un output `pretty' (bello), con più spazi vuoti tra le melodie,
+caratteri più grandi per i titoli e simboli musicali più grandi.
+In modo predefinito, l'impaginazione stringe le melodie per ridurre il 
+il numero delle pagine. Questo usa il contenuto di un'impostazione 
+di parametri chiamata \fBpretty\fR.
+.TP
+.B \-P
+Simile a \fB-p\fR, ma usa un'impostazione di parametri chiamata 
+\fBpretty2\fR.
+.TP
+.BI \-s " xxx"
+Scala l'output della musica con un fattore \fIxxx\fR.
+.TP
+.BI \-w " www"
+Imposta la larghezza del pentagramma a \fIwww\fR punti, inch o
+centimetri.
+.TP
+.BI \-m " mmm"
+Imposta il margine sinistro a \fImmm\fR punti, inch o centimetri.
+.TP
+.BI \-d " xxx"
+Imposta la separazione dei pentagrammi a \fIxxx\fR punti, inch
+o centimetri.
+.TP
+.B \-x
+Include numeri di riferimenti incrociati (l'intestazione X di ABC)
+nell'output.
+.TP
+.BI \-k " n"
+Numera ogni \fIn\fB battute; se \fIn\fR è 0, numera ogni prima 
+battuta di ogni rigo.
+.TP
+.B \-n
+Include note storiche e altre cose al di sotto di ogni melodia.
+.TP
+.B \-N
+Include nell'output i numeri di pagina.
+.TP
+.B \-1
+Scrive ogni melodia su di una pagina separata.
+.TP
+.B \-l
+Opera in modo orizzontale (landscape).
+.TP
+.B \-g shrink|space|stretch|fill
+Imposta la modalità `glue'.
+La modalità predefinita è \fBfill\fR, che riempie il pentagramma.
+.TP
+.BI \-F " format"
+Legge il formato dal file \fIformat\fR.
+.TP
+.BI \-D " directory"
+Cerca i file formato nella directory \fIdirectory\fR.
+.TP
+.BI \-X " x"
+Imposta il rigore nella spaziatura tra le note, 0 < x < 1.
+.SS "Trasposizione"
+.TP
+.BI \-T " n"
+Traspone di \fIn\fR semitoni (usare \fI_n\fR per numeri negativi).
+.TP
+.BI \-T " note"
+Traspone il basso fondamentale su/giù alla nota \fInote\fR.
+.SS "Interruzioni di riga"
+.TP
+.BI \-a " x"
+Imposta il massimo grado di contrazione permesso a \fIx\fR, dove\fIx\fR varia tra
+0.0 e 1.0.
+.TP
+.B \-b
+Forza un'interruzione di pentagramma alla fine di ogni riga, anche se
+la riga ha il simbolo di continuazione \\ alla fine.
+.TP
+.B \-c
+Accoda il simbolo di continuazione a tutte le linee di musica,
+il che porta all'interruzione automatica di riga.
+.TP
+.BI \-B " n"
+Formatta con \fIn\fR battute su ogni pentagramma.
+.SS "Allocazione delle risorse"
+.TP
+.BI \-maxs " n"
+Imposta il numero massimo di simboli (predefinito 800).
+.TP
+.BI \-maxv " v"
+Imposta il numero massimo di voci (predefinito 4).
+
+.SH FILE
+.TP
+\fB/usr/share/abc2ps/*.fmt\fR
+Vari file formato d'esempio.
+.TP
+\fB/usr/share/doc/abc2ps/examples/*\fR
+Vari esempi di file ABC.
+
+.SH "VEDERE ANCHE"
+.TP
+\fB/usr/share/doc/abc2ps/ReadMe.abc2ps\fR
+Una versione più dettagliata delle informazioni contenute in 
+questa pagina di manuale.
+.TP
+\fB/usr/share/doc/abc2ps/New.Features\fR
+Una descrizione delle nuove caratteristiche della versione 1.2.4b
+di questo programma. Alcune informazioni da questo file sono
+state integrate parzialmente in questa pagina di manuale.
+.TP
+\fB/usr/share/doc/abc2ps/changelog\fR
+Una descrizione dei cambiamenti recenti nelle versioni recenti
+di questo programma, includendo l'impaginazione di voci multiple.
+Alcune informazioni da questo file sono state integrate in
+questa pagina di manuale.
+.TP
+\fB/usr/share/doc/abc2ps/layout.txt\fR
+Una descrizione dell'algoritmo di impaginazione usato in \fBabc2ps\fR.
+
+.SH AUTORE
+Questa pagina di manuale è stata scritta da Anselm Lingnau 
+<lingnau@debian.org>, per il sistema Debian GNU/Linux. Traduzione e
+adattamenti in italiano a cura di Hugh Hartmann <hhartmann@fastwebnet.it>.
+Revisione a cura di Beatrice Torracca <beatricet@libero.it>

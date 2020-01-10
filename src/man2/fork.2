@@ -1,0 +1,239 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\" 
+.\" Copyright (C) 2006 Michael Kerrisk <mtk.manpages@gmail.com>
+.\" A few fragments remain from an earlier (1992) page by
+.\" Drew Eckhardt (drew@cs.colorado.edu),
+.\" 
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\" 
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\" 
+.\" Modified by Michael Haardt (michael@moria.de)
+.\" Modified Sat Jul 24 13:22:07 1993 by Rik Faith (faith@cs.unc.edu)
+.\" Modified 21 Aug 1994 by Michael Chastain (mec@shell.portal.com):
+.\" Referenced 'clone(2)'.
+.\" Modified 1995-06-10, 1996-04-18, 1999-11-01, 2000-12-24
+.\" by Andries Brouwer (aeb@cwi.nl)
+.\" Modified, 27 May 2004, Michael Kerrisk <mtk-manpages@gmx.net>
+.\" Added notes on capability requirements
+.\" 2006-09-04, Michael Kerrisk
+.\" Greatly expanded, to describe all attributes that differ
+.\" parent and child.
+.\" 
+.\" Traduzione da man-pages-2.16 di Giulio Daprelà <giulio@pluto.it>
+.\" dicembre 2005
+.\" Aggiornamento a man pages 2.27 di Giulio Daprelà - aprile 2006
+.\" Aggiornamento a man pages 2.38 di Giulio Daprelà - agosto 2006
+.\" Aggiornamento a man pages 2.40 di Giulio Daprelà - ottobre 2006
+.\" Aggiornamento a man pages 2.62 di Elisabetta Galli - luglio 2007
+.\" Aggiornamento a man pages 2.77 di Elisabetta Galli - febbraio 2008
+.\" 
+.TH "FORK" "2" "22 aprile 2008" "Linux" "Linux Programmer's Manual"
+.SH "NOME"
+fork \- crea un processo figlio
+.SH "SINTASSI"
+.B #include <unistd.h>
+.sp
+.B pid_t fork(void);
+.SH "DESCRIZIONE"
+.BR fork ()
+crea un nuovo processo duplicando il processo chiamante.
+Il nuovo processo, che chiameremo \fIfiglio\fP,
+è un esatto duplicato del processo chiamante,
+chiamato \fIgenitore\fP, tranne che per i seguenti punti:
+.IP *
+Il figlio ha il suo ID unico di processo, e questo ID non corrisponde
+all'ID di nessun gruppo di processi esistente
+.RB ( setpgid (2)).
+.IP *
+L'ID di processo del figlio di un genitore è uguale all'ID di processo del genitore.
+.IP *
+Il figlio non eredita i blocchi di memoria del suo genitore
+.RB ( mlock (2),
+.BR mlockall (2)).
+.IP *
+L'utilizzo delle risorse di processo
+.RB ( getrusage (2))
+e i contatori del tempo CPU
+.RB ( times (2))
+sono reimpostati a zero nel figlio.
+.IP *
+Il set di segnali in attesa nel figlio è inizialmente vuoto.
+.RB ( sigpending (2)).
+.IP *
+Il figlio non eredita le regolazioni dei semafori dal suo genitore
+.RB ( semop (2)).
+.IP *
+Il figlio non eredita i blocchi sui record dal genitore
+.RB ( fcntl (2)).
+.IP *
+Il figlio non eredita i temporizzatori dal genitore
+.RB ( setitimer (2),
+.BR alarm (2),
+.BR timer_create (3)).
+.IP *
+Il figlio non eredita le operazioni rilevanti di I/O asincrono dal suo
+genitore
+.RB ( aio_read (3),
+.BR aio_write (3)).
+.PP 
+Gli attributi del processo nel precedente elenco sono tutti specificati in
+POSIX.1\-2001.
+Genitore e figlio inoltre sono differenti tra loro rispetto ai seguenti 
+attributi dei processi specifici di Linux:
+.IP * 4
+Il figlio non eredita le notifiche di cambio directory (dnotify)
+dal suo genitore
+(si veda la descrizione di
+.B F_NOTIFY
+in
+.BR fcntl (2)).
+.IP * 4
+Le impostazioni di
+.BR prctl (2)
+.B PR_SET_PDEATHSIG
+sono azzerate in modo che il figlio non riceva un segnale quando il suo 
+genitore termina.
+.IP * 4
+Le mappe di memoria che sono state marcate con il flag
+.BR madvise (2)
+.B MADV_DONTFORK
+non sono ereditate attraverso un
+.BR fork (2).
+.IP * 4
+Il segnale di termine del figlio è sempre
+.B SIGCHLD
+(vedere
+.BR clone (2)).
+.PP 
+Notare i seguenti punti ulteriori:
+.IP * 4
+Il processo figlio è creato con un thread singolo \(em quello che ha 
+chiamato
+.BR fork (2).
+L'intero spazio di indirizzamento virtuale del genitore è replicato nel 
+figlio, inclusi gli stati dei mutex, variabili condizionali, e altri 
+oggetti pthreads; l'uso di
+.BR pthread_atfork (3)
+può essere di aiuto per trattare i problemi che questo può causare.
+.IP * 4
+Il figlio eredita copie del set di descrittori del file aperto del 
+genitore. Ciascun descrittore di file nel figlio fa riferimento alla 
+stessa descrizione di file aperto (vedere
+.BR open (2))
+come corrispondente descrittore di file nel genitore.
+Questo significa che i due descrittori condividono i flag di stato del 
+file aperto, gli offset correnti del file, e gli attributi degli I/O 
+pilotati dai segnali (vedere la descrizione di
+.B F_SETOWN
+e
+.B F_SETSIG
+in
+.BR fcntl (2)).
+.IP * 4
+Il figlio eredita copie del set di descrittori della coda dei messaggi
+aperti del genitore (vedere
+.BR mq_overview (7)).
+Ciascun descrittore nel figlio fa riferimento alla stessa
+descrizione della coda di messaggi aperti
+del corrispondente descrittore nel genitore.
+Questo significa che i due descrittori condividono gli stessi flag
+.RI ( mq_flags ).
+.IP *
+Il figlio eredita copie del set di flussi di directory aperti dal genitore (vedere
+.BR opendir (3)).
+POSIX.1-2001 dice che i corrispondenti flussi di directory
+nel genitore e nel figlio
+.I potrebbero
+condividere il posizionamento dei flussi di directory;
+in Linux/glicb non lo fanno.
+.SH "VALORE RESTITUITO"
+In caso di successo il PID del processo figlio viene restituito nel genitore,
+e viene restituito 0 nel figlio.
+In caso di fallimento verrà restituito \-1 nel genitore,
+non verrà creato alcun processo figlio, e
+.I errno
+verrà impostata di conseguenza.
+.SH "ERRORI"
+.TP 
+.B EAGAIN
+.BR fork ()
+non può allocare memoria sufficiente per copiare per copiare le tabelle 
+della pagina del genitore e allocare un struttura di task per il figlio.
+.TP 
+.B EAGAIN
+Non è stato possibile creare un nuovo processo, perché è stato raggiunto il limite delle le risorse del
+.B RLIMIT_NPROC
+chiamante.
+Per superare tale limite il processo deve avere capacità
+.BR CAP_SYS_ADMIN
+o
+.BR CAP_SYS_RESOURCE .
+.TP 
+.B ENOMEM
+.BR fork ()
+non è stato possibile allocare le strutture necessarie del kernel perché c'è poca memoria.
+.SH "CONFORME A"
+SVr4, 4.3BSD, POSIX.1\-2001.
+.SH "NOTE"
+.PP 
+Sotto Linux,
+.BR fork ()
+è implementato usando pagine copy\-on\-write, in modo che la penalità nella 
+quale incorre sia il tempo e la memoria necessari per duplicare le page 
+table del genitore, e per creare una struttura di task unica per il figlio.
+
+A partire dalla versione 2.3.3
+.\" nptl/sysdeps/unix/sysv/linux/fork.c
+il wrapper di glibc
+.BR fork ()
+fornito insieme all'implementazione del threading di NPTL,
+anziché invocare la chiamata di sistema del kernel
+.BR fork ()
+chiama
+.BR clone (2)
+con le opzioni necessarie per ottenere lo stesso risultato della chiamata di sistema tradizionale.
+Il wrapper glibc invocherà ogni gestore di fork
+definito usando
+.BR pthread_atfork (3).
+.\" e si assicurerà magicamente che getpid(2) restituisca il giusto valore.
+.SH "ESEMPIO"
+Vedere
+.BR pipe (2)
+e
+.BR wait (2).
+.SH "VEDERE ANCHE"
+.BR clone (2),
+.BR execve (2),
+.BR setrlimit (2),
+.BR unshare (2),
+.BR vfork (2),
+.BR wait (2),
+.BR capabilities (7),
+.BR credentials (7)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.80 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

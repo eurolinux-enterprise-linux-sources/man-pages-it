@@ -1,0 +1,205 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" Copyright (c) 1992 Drew Eckhardt (drew@cs.colorado.edu), March 28, 1992
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Modified by Michael Haardt <michael@moria.de>
+.\" Modified 1993-07-24 by Rik Faith <faith@cs.unc.edu>
+.\" Modified 1995-06-10 by Andries Brouwer <aeb@cwi.nl>
+.\" Modified 2004-06-23 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\" Modified 2004-10-10 by Andries Brouwer <aeb@cwi.nl>
+.\"
+.\" Tradotto da Goffredo Baroncelli 3/4/1998 <kreijack@usa.net>
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.26 di Giulio Daprelà - aprile 2006
+.\" Aggiornamento a man-pages-2.32 di Giulio Daprelà - maggio 2006
+.\" Aggiornamento a man-pages-2.38 di Giulio Daprelà - agosto 2006
+.\" Aggiornamento a man-pages-2.64 di Elisabetta Galli - settembre 2007
+.\" Aggiornamento a man-pages-2.80 di Elisabetta Galli - giugno 2008
+.\" Aggiornamento a man-pages-3.07 di Elisabetta Galli - settembre 2008
+.\"
+.TH UTIME 2 "19 giugno 2008" "Linux" "Linux Programmer's Manual"
+.SH NOME
+utime, utimes \- cambia l'ultimo orario di accesso e di modifica di un file
+.SH SINTASSI
+.nf
+.B #include <sys/types.h>
+.br
+.B #include <utime.h>
+.sp
+.BI "int utime(const char *" filename ", const struct utimbuf *" times );
+.sp
+.B #include <sys/time.h>
+.sp
+.BI "int utimes(const char *" filename ", const struct timeval " times [2]);
+.fi
+.SH DESCRIZIONE
+La chiamata
+di sistema
+.BR utime ()
+cambia le date di accesso e modifica dell'inode specificato da
+.I filename
+rispettivamente con quelle
+contenute nei campi
+.IR actime " e " modtime
+di
+.I times.
+
+Se
+.I times
+è NULL, allora le date di accesso e modifica del file sono impostate
+a quelle correnti.
+
+Cambiare data e ora è permesso quando: o
+il processo ha i privilegi appropriati,
+o la user ID effettiva dell'utente è uguale alla user ID
+del file, o
+.I times
+è NULL e il processo ha permessi di scrittura sul file.
+
+La struttura
+.I utimbuf
+è la seguente:
+
+.in +4n
+.nf
+struct utimbuf {
+    time_t actime;       /* ora di accesso */
+    time_t modtime;      /* ora di modifica */
+};
+.fi
+.in
+
+La chiamata
+di sistema
+.BR utime ()
+permette di specificare data e ora con una risoluzione di 1 secondo.
+
+La chiamata
+di sistema
+.BR utimes ()
+è simile, ma gli argomenti di
+.I times
+fanno riferimento ad un array, non a una struttura.
+Gli elementi di questo array sono strutture
+.I timeval ,
+che permettono una precisione di 1 microsecondo nello specificare data e ora.
+La struttura
+.I timeval
+è la seguente:
+
+.in +4n
+.nf
+struct timeval {
+    long tv_sec;        /* secondi */
+    long tv_usec;       /* microsecondi */
+};
+.fi
+.in
+.PP
+.IR times [0]
+specifica la nuova ora di accesso, e
+.IR times [1]
+specifica la nuova ora di modifica.
+Se
+.I times
+è NULL, analogamente a
+.BR utime (),
+le date di accesso e modifica del file sono impostate
+a quelle correnti.
+.SH "VALORI RESTITUITI"
+In caso di successo viene restituito zero.
+In caso di errore viene restituito \-1 e
+.I errno
+contiene il codice di errore verificatosi.
+.SH ERRORI
+.TP
+.B EACCES
+Il permesso di ricerca è negato per una delle directory nel prefisso del
+percorso di
+.I path
+(vedere anche
+.BR path_resolution (7)).
+.TP
+.B EACCES
+.I times
+è NULL,
+l'ID effettivo dell'utente chiamante non corrisponde a quello del proprietario del file,
+il chiamante non ha accesso in scrittura al file,
+e il chiamante non ha i privilegi necessari
+(Linux: non ha capacità
+.B CAP_DAC_OVERRIDE
+o
+.B CAP_FOWNER).
+.TP
+.B ENOENT
+.I filename
+non esiste.
+.TP
+.B EPERM
+.I times
+non è NULL,
+l'UID effettivo del chiamante non corrisponde al proprietario del file,
+e il chiamante non ha i privilegi necessari
+(Linux: non ha capacità
+.B CAP_FOWNER)
+.TP
+.B EROFS
+.I path
+risiede su un file system in sola lettura.
+.SH "CONFORME A"
+.BR utime ():
+SVr4, POSIX.1-2001.
+POSIX.1-2008 marca
+.BR utime()
+come obsoleto.
+.br
+.BR utimes ():
+4.3BSD, POSIX.1-2001.
+.SH NOTE
+Linux non permette di cambiare data e ora su un file immutabile,
+o di impostarle a qualcosa di diverso dall'ora corrente
+in un file di tipo append-only.
+
+In libc4 e libc5,
+.BR utimes ()
+è solo un wrapper per
+.BR utime ()
+e quindi non permette una risoluzione inferiore al secondo.
+.SH "VEDERE ANCHE"
+.BR chattr (1),
+.BR futimesat (2),
+.BR stat (2),
+.BR utimensat (2),
+.BR futimes (3)
+.BR futimens (3)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 3.01 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

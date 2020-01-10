@@ -1,0 +1,184 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\" 
+.\" This manpage is Copyright (C) 1992 Drew Eckhardt;
+.\" 1993 Michael Haardt, Ian Jackson.
+.\" 
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\" 
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\" 
+.\" Modified 1993-07-24 by Rik Faith
+.\" Modified 1996-04-26 by Nick Duffek <nsd@bbc.com>
+.\" Modified 1996-11-06 by Eric S. Raymond <esr@thyrsus.com>
+.\" Modified 1997-01-31 by Eric S. Raymond <esr@thyrsus.com>
+.\" Modified 2004-06-23 by Michael Kerrisk <mtk-manpages@gmx.net>
+.\" 
+.\" Tradotto da Goffredo Baroncelli Aprile 1998 <kreijack@usa.net>
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.38 di Giulio Daprelà - agosto 2006
+.\" Aggiornamento a man-pages-2.44 di Giulio Daprelà - giugno 2007
+.\" Aggiornamento a man-pages-2.64 di Elisabetta Galli - agosto 2007
+.\" 
+.TH "SYMLINK" "2" "26 luglio 2007" "Linux" "Linux Programmer's Manual"
+.SH "NOME"
+symlink \- crea un nuovo nome per un file
+.SH "SINTASSI"
+.B #include <unistd.h>
+.sp
+.BI "int symlink(const char *" oldpath ", const char *" newpath );
+.sp
+.in \-4n
+Test delle funzioni e requisiti delle macro per glibc (vedere
+.BR feature_test_macros (7)):
+.in
+.sp
+.ad l
+.BR symlink ():
+_BSD_SOURCE || _XOPEN_SOURCE\ >=\ 500 || _POSIX_C_SOURCE\ >=\ 200112L
+.ad b
+.SH "DESCRIZIONE"
+.BR symlink ()
+crea un collegamento simbolico con nome
+.I newpath
+che contiene la stringa
+.I R oldpath .
+
+I collegamenti simbolici sono interpretati all'esecuzione come se il contenuto del 
+collegamento fosse stato sostituito nel percorso seguito per trovare 
+un file o una directory.
+
+Un collegamento simbolico può contenere
+.I ..
+come componente del percorso, che (se usato all'inizio del collegamento) fa 
+riferimento alle directory superiori a quella nella quale risiede il collegamento.
+
+Un collegamento simbolico (conosciuto anche come soft link) può puntare ad un file
+esistente o non esistente: in tal caso è detto dangling
+link.
+
+I permessi di un collegamento simbolico sono irrilevanti. Quando si segue il 
+collegamento il proprietario viene ignorato: viene invece verificato quando si 
+richiede la rimozione o la rinomina del collegamento che si trovi in una directory
+con lo sticky bit
+.RB ( S_ISVTX )
+impostato.
+
+Se
+.I newpath
+esiste
+.I non
+sarà sovrascritto.
+.SH "VALORE RESTITUITO"
+In caso di successo viene restituito zero,
+altrimenti verrà restituito \-1 e
+.I errno
+verrà impostato di conseguenza.
+.SH "ERRORI"
+.TP 
+.B EACCES
+Non è possibile l'accesso in scrittura alla directory contenente
+.I newpath ,
+o una delle directory contenute nel prefisso del percorso di
+.I R newpath
+non ha il permesso di ricerca.
+(Vedere anche
+.BR path_resolution (7).)
+.TP 
+.B EEXIST
+.I newpath
+esiste già.
+.TP 
+.B EFAULT
+.I R oldpath " o " newpath " puntano fuori dallo spazio di indirizzamento accessibile."
+.TP 
+.B EIO
+Si è verificato un errore di I/O.
+.TP 
+.B ELOOP
+Si sono incontrati troppi collegamenti simbolici nella risoluzione di
+.I R newpath .
+.TP 
+.B ENAMETOOLONG
+.I R oldpath " o " newpath " è troppo lungo."
+.TP 
+.B ENOENT
+Una directory contenuta in
+.I newpath
+non esiste o è un link simbolico scollegato, o
+.I oldpath
+è una stringa vuota.
+.TP 
+.B ENOMEM
+Insufficente memoria disponibile per il kernel.
+.TP 
+.B ENOSPC
+Il dispositivo contenente il file non ha spazio per la nuova
+directory.
+.TP 
+.B ENOTDIR
+Un elemento usato come directory in
+.I R newpath
+non è, in effetti, una directory.
+.TP 
+.B EPERM
+Il file system contenente
+.I R newpath
+non supporta la creazione di collegamenti simbolici.
+.TP 
+.B EROFS
+.I newpath
+è contenuto in un file system in sola lettura.
+.SH "CONFORME A"
+SVr4, 4.3BSD, POSIX.1\-2001.  
+.\" SVr4 documenta i codici di errore aggiuntivi EDQUOT e ENOSYS.
+.\" Vedere
+.\" .BR open (2)
+.\" re multiple files with the same name, and NFS.
+.SH "NOTE"
+Non viene effettuato nessun
+controllo su
+.I oldpath.
+
+La cancellazione del nome a cui fa riferimento un collegamento simbolico cancellerà il
+file (a meno che esso non abbia altri hard link).
+Se non si desidera questo comportamento usare
+.BR link (2).
+.SH "VEDERE ANCHE"
+.BR ln (1),
+.BR lchown (2),
+.BR link (2),
+.BR lstat (2),
+.BR open (2),
+.BR readlink (2),
+.BR rename (2),
+.BR symlinkat (2),
+.BR unlink (2)
+.BR path_resolution (7),
+.BR symlink (7)
+.SH "COLOPHON"
+Questa pagina fa parte del rilascio 3.01 del progetto
+.I man\-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man\-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

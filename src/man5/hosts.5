@@ -1,0 +1,121 @@
+.\" Hey, Emacs! This is an -*- nroff -*- source file.
+.\" Copyright (c) 2000 Manoj Srivastava <srivasta@debian.org>
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public Licens&egrave;s references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139,AUTOREAUTORE
+.\" USA.
+.\"
+.\" Limature minori, aeb
+.\" Modificato, 16-06-2002, Mike Coleman
+.\"
+.TH HOSTS 5 16-06-2002 "Linux" "Linux Programmer's Manual"
+.SH NOME
+hosts \- Tabella statica per la ricerca di nomi di host
+.SH SINTASSI
+.B /etc/hosts
+.SH DESCRIZIONE
+Questa pagina di manuale descrive il formato del
+file
+.I /etc/hosts .
+Questo file &egrave; un semplice file di testo che associa indirizzi IP a nomi di
+host, una riga per ogni indirizzo IP.
+Per ogni host deve essere presente una riga contenente le
+seguenti informazioni:
+.RS
+.PP
+indirizzo_IP nomehost_canonico [alias...]
+.RE
+.PP
+I campi di ogni voce sono separati da un numero qualunque di spazi bianchi
+o di tabulazioni.
+Il testo racchiuso tra il carattere "#" e la fine della riga &egrave; un commento,
+e verr&agrave; ignorato.
+I nomi di host possono contenere solo caratteri alfanumerici,
+segni meno ("\-") e punti ("."); devono iniziare e finire con un
+carattere alfanumerico.
+Alias facoltativi forniscono nomi diversi, grafie alternative,
+nomi di host pi&ugrave; corti o generici (per esempio,
+.IR localhost ).
+.PP
+Il server BIND (Berkeley Internet Name Domain) implementa il server dei
+nomi di dominio di Internet per sistemi UNIX: incrementa
+o sostituisce il file
+.I /etc/hosts
+o la ricerca del nome di host, e libera un host dall'obbligo di dover avere il file
+.I /etc/hosts
+sempre aggiornato e completo.
+.PP
+Nei sistemi moderni la tabella degli host, anche se &egrave; stata sostituita dal DNS,
+&egrave; ancora largamente usata per:
+.TP
+.B eseguire il bootstrap
+La maggior parte dei sistemi ha una piccola tabella degli host che contiene informazioni su
+nomi e indirizzi di host importanti sulla rete locale.
+&Egrave; utile quando il DNS non &egrave; attivo,
+per esempio all'avvio del sistema.
+.TP
+.B NIS
+Siti che usano NIS, usano la tabella degli host come input per il 
+database degli host di NIS.
+Anche se NIS pu&ograve; essere usato con il DNS, molti siti che usano NIS
+usano ancora la tabella degli host, con una voce per tutti gli host locali, come backup.
+.TP
+.B nodi isolati
+Siti molto piccoli e isolati dalla rete usano la tabella degli host
+al posto del DNS.
+Se le informazioni locali cambiano raramente e la rete non &egrave; connessa
+a Internet, il DNS offre pochi
+vantaggi.
+.SH FILE
+.I /etc/hosts
+.SH NOTE
+I cambiamenti a questo file solitamente hanno effetto immediato,
+tranne nei casi in cui il file viene messo in cache dalle applicazioni.
+.SS "Note storiche"
+RFC\ 952 ha dato il formato originario alla tabella degli host, anche se
+poi &egrave; cambiato.
+Prima dell'avvento del DNS la tabella degli host era l'unico modo per risolvere
+i nomi di host sull'appena nata Internet.
+Infatti questo file veniva creato dal database ufficiale curato dal NIC
+(Network Information Control Center), anche se spesso erano indispensabili
+cambiamenti locali per mantenerlo aggiornato su alias non ufficiali o
+host sconosciuti.
+Il NIC non cura pi&ugrave; il file hosts.txt,
+anche se guardandosi attorno alla stesura di questo documento (intorno al 2000) si
+trovano file hosts.txt storici sul WWW.
+Ne ho trovati tre, del 92, 
+94 e 95.
+.SH ESEMPI
+.nf
+127.0.0.1       localhost
+192.168.1.10    foo.miodominio.org       foo
+192.168.1.13    bar.miodominio.org       bar
+146.82.138.7    master.debian.org      master
+209.237.226.90  www.opensource.org
+.fi
+.SH "VEDERE ANCHE"
+.BR hostname (1),
+.BR resolver (3),
+.BR resolver (5),
+.BR hostname (7),
+.BR named (8),
+Internet RFC\ 952
+.\" .SH AUTORE
+.\" Questa pagina di manuale &egrave; stata scritta da Manoj Srivastava <srivasta@debian.org>
+.\" per il sistema Debian GNU/Linux.

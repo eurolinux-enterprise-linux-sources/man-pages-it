@@ -1,0 +1,296 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" Copyright (C) Markus Kuhn, 1995, 2001
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\"
+.\" 1995-11-26  Markus Kuhn <mskuhn@cip.informatik.uni-erlangen.de>
+.\"      First version written
+.\" 2001-05-11  Markus Kuhn <mgk25@cl.cam.ac.uk>
+.\"      Update
+.\"
+.\" Traduzione by Ottavio G. Rizzo (otto@mast.queensu.ca)
+.\" Giugno 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.62 di Elisabetta Galli <lab@kkk.it>
+.\" luglio 2007
+.\"
+.TH UNICODE 7 "11 maggio 2001" "GNU" "Linux Programmer's Manual"
+.SH NOME
+Unicode \- l'insieme universale di caratteri
+.SH DESCRIZIONE
+Lo standard internazionale
+.B ISO 10646
+definisce l'
+.BR "Insieme universale di caratteri (Universal Character Set)" .
+UCS contiene tutti i caratteri di tutti gli altri standard per insiemi di
+caratteri. Garantisce anche
+.BR "compatibilità ad andata e ritorno" ,
+cioè è possibile costruire tavole di conversione in modo tale da non
+perdere nessuna informazione passando da una qualsiasi altra codifica a 
+UCS e viceversa.
+
+UCS contiene i caratteri necessari alla rappresentazione di praticamente
+tutte le lingue conosciute. Esso comprende non solo i caratteri romano, 
+greco, cirillico, ebreo, arabo, armeno e georgiano, ma anche alfabeti
+ideografici cinese, giapponese e coreano han, e i caratteri
+hiragana, katakana, hangul, devanagari, bengali, gurmukhi, gujarati,
+oriya, tamil, telugu, kannada, malayalam, thai, lao, khmer, bopomofo,
+tibetano, runico, etiopico, canadese sillabico, cherokee, mongolo,
+ogham, myanmar, sinhala, thaana, yi e altri. Per caratteri non ancora 
+coperti la ricerca su come codificarli al meglio è ancora in corso e 
+prima o poi verranno aggiunti. Ciò potrebbe includere non solo 
+geroglifici e vari linguaggi storici indo-europei, ma anche alcuni 
+caratteri artistici selezionati come tengwar, cirth e klingon. UCS copre 
+anche un grande numero di simboli grafici, tipografici, matematici e 
+scientifici, inclusi quelli forniti da TeX, Postscript, APL, MS-DOS,
+MS-Windows, Macintosh e font OCR, oltra a molti sistemi di elaborazione
+testi e di pubblicazione, e altri ne sono stati aggiunti.
+
+Lo standard UCS (ISO 10646) descrive una
+.I "architettura di caratteri a 31 bit"
+consistente di 128
+.IR grupi
+a 24 bit, ciascuno diviso in 256
+.I piani
+a 16 bit, composti da 256
+.I linee
+a 8 bit, con 256
+.I colonne ,
+una per ciascun carattere. La parte 1 dello standard
+.RB ( "ISO 10646-1" )
+definisce le prime 65534 posizioni (da 0x0000 a 0xfffd),
+che formano il
+.IR "Piano Multi-linguistico di Base (BMP)" ,
+ovvero il piano 0 del gruppo 0. La parte due dello standard
+.RB ( "ISO 10646-2" )
+aggiunge caratteri al gruppo 0 al di fuori del BMP in numerosi
+.I "piani supplementari"
+nel range da 0x10000 a 0x10ffff. Non ci sono piani per l'aggiunta di 
+caratteri allo standard oltre 0x10ffff, quindi, dell'intero spazio  codice,
+solo una piccola frazione del gruppo 0 verrà usata nel prossimo futuro.
+Il BMP contiene tutti i caratteri che si trovano negli altri insiemi di 
+caratteri comunemente usati. I piani supplementari aggiunti da
+ISO 10646-2 coprono solo caratteri esotici per speciali bisogni 
+scientifici, stampa dizionario, industria editoriale, protocolli di
+livello più elevato, e entusiasti.
+.PP
+La rappresentazione di ciascun carattere UCS come parola di 2 byte
+è chiamato forma
+.B UCS-2
+(solo per i caratteri BMP), mentre
+.B UCS-4
+è la rappresentazione di ciascun carattere in una parola a 4 byte.
+In aggiunta esistono due forme di codifica
+.B UTF-8
+per retrocompatibilità con software di processamento ASCII e
+.B UTF-16
+per la gestione della retrocompatibilità dei caratteri non BMP fino a
+0x10ffff del software UCS-2.
+.PP
+I caratteri UCS nelle posizioni da  0x0000 a 0x007f coincidono con 
+quelli classici di
+.B US-ASCII
+e i caratteri da 0x0000 a 0x00ff coincidono con quelli dell'insieme
+.BR "ISO 8859-1 Latin-1" .
+.SS "Caratteri combinanti"
+Alcuni codici di
+.B UCS
+sono stati assegnati a
+.IR "caratteri combinanti" .
+Simile ad un tasto accentato che non avanza in una macchina da
+scrivere, un carattere combinante aggiunge un accento al carattere
+precedente. I caratteri accentati più importanti hanno un loro codice
+in UCS, ma questo meccanismo permette di aggiungere accenti a altri 
+segni diacritici a qualsiasi carattere. I caratteri combinanti seguono
+sempre il carattere che modificano. Ad esempio, il carattere tedesco Ä
+(«A maiuscola romana con dieresi») può essere rappresentato sia col
+codice UCS precomposto 0x00c4, oppure come combinazione di una normale 
+«A maiuscola romana» seguita da una «dieresi combinante»: 0x0041 0x0308.
+.PP
+I caratteri combinanti sono essenziali per esempio nella codifica dei 
+caratteri Thai o per la composizione matematica e per gli utenti
+dell'alfabeto internazionale fonetico.
+.SS "Livelli di implementazione"
+Siccome non ci si aspetta che tutti i sistemi possano supportare
+meccanismi avanzati come i caratteri combinanti, ISO 10646-1 specifica
+tre 
+.I livelli d'implementazione
+per UCS:
+.TP 0.9i
+Livello 1
+I caratteri combinanti 
+.B Hangul Jamo
+(una codifica variante dell'alfabeto coreano, dove le sillabe Hangul 
+sono codificate come trio o coppia di codici vocale/consonante) non sono 
+supportati.
+.TP
+Livello 2
+Come il livello 1, ma alcuni caratteri combinanti sono permessi in
+alcuni alfabeti (per es., ebraico, arabo, devangari, bengalese,
+gurmuco, gugiarato, oriya, tamil, telugo, kannada, malese, tailandese
+e laotiano).
+.TP
+Livello 3
+Tutti i caratteri
+.B UCS
+sono supportati.
+.PP
+Lo
+.B Standard Unicode 3.0
+pubblicato dall'
+.B Unicode Consortium
+contiene esattamente il
+.B piano multi-linguistico di base UCS
+al livello 3 d'implementazione, come descritto in ISO 10646-1:2000.
+.B Unicode 3.1
+ha aggiunto i piani supplementari dell'ISO 10646-2. Lo standard Unicode
+e i raporti tecnici pubblicati dall'Unicode Consortium forniscono molte
+informazioni aggiuntive sulla semantica e sugli usi raccomandati dei
+vari caratteri. Essi forniscono linee guida e algoritmi per editing,
+ordinamento, comparazione, normalizzazione, conversione e 
+visualizzazione delle stringhe Unicode.
+.SS "Unicode sotto Linux"
+Sotto GNU/Linux, il tipo C
+.I wchar_t
+è un tipo intero 32-bit con segno. I suoi valori sono sempre interpretati
+dalla libreria C come valori del codice
+.B UCS
+(in tutte le localizzazioni), una convenzione che è segnalata alle 
+applicazioni dalla libreria C di GNU definendo la costante
+.B __STDC_ISO_10646__
+come specificato nello standard ISO C 99.
+
+UCS/Unicode può essere usato come semplice ASCII nei flussi input/output,
+comunicazioni tra terminali, file di testo, nomi file e variabili d'
+ambiente nella codifica multi-byte
+.B UTF-8
+compatibile ASCII. Per segnalare l'uso di UTF-8 come codifica carattere
+a tutte le applicazioni deve venire selezionata una
+.I localizzazione
+appropriata attraverso variabili d'ambiente (es.,
+"LANG=en_GB.UTF-8").
+.PP
+La funzione
+.B nl_langinfo(CODESET)
+restituisce il nome della codifica selezionata. Le funzioni di libreria
+come
+.BR wctomb (3)
+e
+.BR mbsrtowcs (3)
+possono essere usate per trasformare i caratteri interni e le stringhe
+.B wchar_t
+nella codifica dei caratteri di sistema e viceversa
+e
+.BR wcwidth (3)
+dice di quante posizioni (0\(en2) il cursore viene avanzato dall'output
+di un carattere.
+.PP
+In Linux in generale al momento bisognerebbe usare il BMP solo al 
+livello 1 di implementazione. Alcuni emulatori di terminale UTF-8 e font 
+ISO 10646 (livello 2) supportano anche fino a due caratteri combinanti 
+per base caratteri per certi alfabeti (in particolare thai), ma, in 
+generale, i caratteri precomposti devono essere preferiti ove 
+disponibili (Unicode la chiama
+.BR "Normalization Form C" ).
+.SS "Area privata"
+L'intervallo da 0xe000 a 0xf8ff nel
+.BR BMP ,
+non verrà mai assegnato dallo standard a nessun carattere ed è
+riservato per uso privato. Per la comunità Linux questo intervallo è
+stato ulteriormente suddiviso nell'intervallo da 0xe000 a 0xefff, che
+può essere usato dall'utente finale, e  nell'area Linux nell'intervallo
+da 0xf000 a 0xf8ff, le cui estensioni sono coordinate fra tutti gli utenti di
+Linux. Il registro dei caratteri assegnati all'area Linux è al momento
+mantenuto da H. Peter Anvin <Peter.Anvin@linux.org>.
+.SS "Bibliografia"
+.TP 0.2i
+*
+Information technology \(em Universal Multiple-Octet Coded Character
+Set (UCS) \(em Part 1: Architecture and Basic Multilingual Plane.
+International Standard ISO/IEC 10646-1, International Organization
+for Standardization, Geneva, 2000.
+
+Questa è la specifica ufficiale di
+.BR UCS .
+Disponibile come file PDF su CD-ROM da http://www.iso.ch/.
+.TP
+*
+The Unicode Standard, Version 3.0.
+The Unicode Consortium, Addison-Wesley,
+Reading, MA, 2000, ISBN 0-201-61633-5.
+.TP
+*
+S. Harbison, G. Steele. C: A Reference Manual. Fourth edition,
+Prentice Hall, Englewood Cliffs, 1995, ISBN 0-13-326224-3.
+
+A good reference book about the C programming language. The fourth
+edition covers the 1994 Amendment 1 to the ISO C 90 standard, which
+adds a large number of new C library functions for handling wide and
+multi-byte character encodings, but it does not yet cover ISO C 99,
+which improved wide and multi-byte character support even further.
+.TP
+*
+Unicode Technical Reports.
+.RS
+http://www.unicode.org/unicode/reports/
+.RE
+.TP
+*
+Markus Kuhn: UTF-8 e Unicode FAQ per Unix/Linux.
+.RS
+http://www.cl.cam.ac.uk/~mgk25/unicode.html
+
+Fornisce informazioni sulla sottoscrizione alla mailing list
+.I linux-utf8
+che è il miglior posto in cui guardare per consigli sull'uso di
+Unicode sotto Linux.
+.RE
+.TP
+*
+Bruno Haible: Unicode HOWTO.
+.RS
+ftp://ftp.ilog.fr/pub/Users/haible/utf8/Unicode-HOWTO.html
+.RE
+.SH BACHI
+_Al momento dell'ultima revisione di questa man page, la libreric GNU C 
+di supporto per le localizzazioni
+.B UTF-8
+era matura e il supporto XFree86 era ad uno stadio avanzato, ma il 
+lavoro per rendere le applicazioni (specialmente gli editor) adatte
+all'uso con le localizzazioni
+.B UTF-8
+era ancora in corso. Il supporto generale corrente a
+.B UCS
+sotto Linux di solito fornisce caratteri per CJK a doppia ampiezza, e
+talvolta anche semplici caratteri combinanti, ma solitamente non include
+il supporto per alfabeti con direzione da destra a sinistra o
+requisiti per la sostituzione della legatura come negli alfabeti
+ebraico, arabo, o Indic. Questi alfabeti attualmente sono supportati 
+solo in certe aplicazioni GUI (visualizzatori HTML, word processor)
+con motori sofisticati di disegno del testo.
+.SH AUTORE
+Markus Kuhn <mgk25@cl.cam.ac.uk>
+.SH "VEDERE ANCHE"
+.BR setlocale (3),
+.BR charsets (7),
+.BR utf-8 (7)

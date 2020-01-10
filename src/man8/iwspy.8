@@ -1,0 +1,122 @@
+.\" Jean II - HPLB - 96
+.\" iwspy.8
+.\"
+.TH IWSPY 8 "31 October 1996" "net-tools" "Linux Programmer's Manual"
+.\"
+.\" NOME part
+.\"
+.SH NOME
+iwspy \- Raccoglie statistiche da specifici nodi
+.\"
+.\" SINTASSI part
+.\"
+.SH SINTASSI
+.BI "iwspy " interface
+.br
+.BI "iwspy " interface " [+] " DNSNAME " | " IPADDR " | " HWADDR " [...]"
+.br
+.BI "iwspy " interface " off"
+.br
+.BI "iwspy " interface " setthr " "low high"
+.br
+.BI "iwspy " interface " getthr"
+.\"
+.\" DESCRIZIONE part
+.\"
+.SH DESCRIZIONE
+.B Iwspy
+viene utilizzato per creare una lista di indirizzi in una interfaccia
+di rete wireless e fornire informazioni sulla qualità del segnale per
+ognuno di essi. Queste sono le stesse informazioni che sono disponibili
+in
+.I /proc/net/wireless
+: qualità del segnale, potenza del segnale e livello di rumore.
+.PP
+Questa informazione viene aggiornata ogni volta che un nuovo pacchetto
+viene ricevuto, cosicché ogni indirizzo della lista aggiunga un sovraccarico
+nel driver.
+.PP
+Ricordare che questa funzionalità funziona solo su nodi che fanno parte
+della cella wireless corrente.
+.\"
+.\" PARAMETRI part
+.\"
+.SH PARAMETRI
+È possibile impostare un massimo di 8 indirizzi.
+.TP
+.BR DNSNAME " | " IPADDR
+Imposta un indirizzo, o in alcuni casi un nome DNS (utilizzando
+il name resolver). Siccome l'hardware funziona con gli indirizzi
+fisici,
+.B iwspy
+tradurrà questo indirizzo IP tramite
+.IR ARP .
+In alcuni casi, questo indirizzo potrebbe non essere nella cache ARP e
+.B iwspy
+fallirà. In questi casi, fare un
+.IR ping (8)
+sul nome/indirizzo e riprovare.
+.TP
+.B HWADDR
+Imposta un indirizzo hardware (MAC) (questo indirizzo non è tradotto
+e controllato come quello IP). L'indirizzo deve contenere i due punti
+.RB ( : )
+per essere riconosciuto come un indirizzo hardware.
+.TP
+.B +
+Aggiunge un insieme di indirizzi alla fine della lista attuale invece
+di sostituirla. La lista degli indirizzi è univoca per ogni dispositivo,
+così ogni utente dovrebbe utilizzare questa opzione per evitare
+conflitti.
+.TP
+.B off
+Svuota la lista degli indirizzi e disabilita la funzionalità spy
+.TP
+.B setthr
+Imposta la soglia di potenza del segnale
+.I low
+(minima) e
+.I high
+(massima) per gli eventi di iwspy (per driver che lo supportano).
+.br
+Ogni volta che la potenza del segnale per ognuno degli indirizzi
+controllati risulta inferiore alla soglia minima o risulta
+superiore alla soglia massima, verrà generato un Wireless Event.
+.br
+Questo può essere utilizzato per controllare la stabilità del
+collegamento senza eseguire periodicamente iwspy.
+.TP
+.B getthr
+Recupera le soglie di potenza del segnale
+.I low
+(minime) e
+.I high
+(massime) per gli eventi generati da iwspy.
+.\"
+.\" AUTORE part
+.\"
+.SH AUTORE
+Jean Tourrilhes \- jt[AT]hpl.hp.com
+.\"
+.\" TRADUZIONE part
+.\"
+.SH TRADUZIONE
+Traduzione dall'inglese: Ferronato Claudio (wireless_tools.27)
+.br
+Questa traduzione è migliorabile. Se hai migliorie da proporre, perfavore
+scrivimi all'indirizzo claiudio[AT]libero.it
+.\"
+.\" FILES part
+.\"
+.SH FILE
+.I /proc/net/wireless
+.\"
+.\" VEDERE ANCHE part
+.\"
+.SH VEDERE ANCHE
+.BR iwconfig (8),
+.BR iwlist (8),
+.BR iwevent (8),
+.BR iwpriv (8),
+.BR wireless (7).
+

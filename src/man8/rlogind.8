@@ -1,0 +1,163 @@
+.\" Copyright (c) 1983, 1989, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" Traduzione da inetutils-1.4.2 di Giulio Daprelà <giulio@pluto.it>
+.\" gennaio 2006
+.\"
+.\"     @(#)rlogind.8	8.1 (Berkeley) 6/4/93
+.\"
+.Dd June 4, 1993
+.Dt RLOGIND 8
+.Os BSD 4.2
+.Sh NOME
+.Nm rlogind
+.Nd server di login remoto
+.Sh SINTASSI
+.Nm rlogind
+.Op Fl aln
+.Sh DESCRIZIONE
+.Nm Rlogind
+è il server per il programma
+.Xr rlogin 1 .
+Il server fornisce un servizio di login remoto con autenticazione basata 
+su numeri di porta privilegiati da host di fiducia.
+.Pp
+Opzioni supportate da
+.Nm rlogind :
+.Bl -tag -width Ds
+.It Fl a
+Chiede la verifica del nome host.
+.It Fl l
+Impedisce l'autenticazione basata sul file degli utenti
+.Dq Pa .rhosts
+a meno che l'utente acceda come superutente.
+.It Fl n
+Disabilita i messaggi keep-alive.
+.El
+.Pp
+.Nm Rlogind
+ascolta le richieste di servizi alla porta indicata nella specifica del
+servizio ``login''; vedere
+.Xr services 5 .
+Quando viene ricevuta una richiesta di servizio viene iniziato il 
+seguente protocollo:
+.Bl -enum
+.It
+Il server verifica la porta sorgente del client.
+Se la porta non è nel campo 512-1023, il server abortisce la connessione.
+.It
+Il server verifica l'indirizzo sorgente del client e richiede il
+corrispondente nome host (vedere
+.Xr gethostbyaddr 3 ,
+.Xr hosts 5
+e
+.Xr named 8 ) .
+Il nome host non può essere determinato, è usata la rappresentazione 
+della notazione a punto dell'indirizzo dell'host. Se il nome dell'host
+è nello stesso dominio del server (in accordo alle ultime due componenti
+del nome di dominio), o se viene data l'opzione
+.Fl a ,
+è richiesto l'indirizzo del nome host, verificando che nome e indirizzo 
+corrispondano. L'autenticazione normale è byassata se la verifica dell'
+indirizzo fallisce.
+.El
+.Pp
+Quando porta sorgente e indirizzo sono stati verificati,
+.Nm rlogind
+procede con il processo di autenticazione descritto in
+.Xr rshd 8 .
+Esso quindi alloca uno pseudo terminale (vedere
+.Xr pty 4 ) ,
+e manipola i descrittori file in modo che la metà slave degli 
+pseudoterminali diventa
+.Em stdin ,
+.Em stdout ,
+e
+.Em stderr
+per un processo di login.
+Il processo di login è un'istanza del programma
+.Xr login 1
+invocato con l'opzione
+.Fl f
+se l'autenticazione ha avuto successo.
+Se l'autenticazione automatica fallisce, all'utente è richiesto di
+effettuare il log in come su una linea di terminale standard.
+.Pp
+Il genitore del processo di login manipola il lato principale dello
+pseudoterminale, operando come intermediario tra il processo di login
+e l'istanza del client del programma
+.Xr rlogin .
+In operazioni normali, il protocollo del pacchetto descritto in
+.Xr pty 4
+è invocato per fornire servizi di tipo
+.Ql ^S/^Q
+e propagare i segnali di interrupt ai programmi remoti. Il processo di 
+login propaga il baud rate del terminale del client e il tipo di 
+terminale, come trovato nella variabile d'ambiente
+.Ql Ev TERM ;
+vedere
+.Xr environ 7 .
+La dimensione dello schermo o della finestra terminale è richiesta dal client,
+e le dimensioni della finestra del client sono propagate allo 
+pseudo terminale.
+.Pp
+I messaggi keepalive a livello trasporto sono abilitati a meno che non 
+sia presente l'opzione
+.Fl n .
+L'uso dei messaggi keepalive permette alle sessioni di scadere
+se il client va in crash o diviene non raggiungibile.
+.Sh DIAGNOSTICA
+tutti i messaggi iniziali di diagnostica sono indicati da un byte 
+iniziale con un valore di 1, dopo il quale tutte le connessioni di rete 
+vengono chiuse.
+Se non ci sono errori prima che il
+.Xr login
+sia invocato, è restituito un byte null come indicazione di successo.
+.Bl -tag -width Ds
+.It Sy Try again.
+Un
+.Xr fork
+del server è fallito.
+.El
+.Sh VEDERE ANCHE
+.Xr login 1 ,
+.Xr ruserok 3 ,
+.Xr rshd 8
+.Sh BUG
+La procedura di autenticazione usata qui presume l'integrità di ciascuna
+macchina client e del mezzo di connessione. Questo non è sicuro, ma è 
+utile in un ambiente ``open''.
+.Pp
+Deve essere presente un servizio che permetta la cifratura di tutti gli 
+scambi di dati.
+.Pp
+Dovrebbe essere usato un protocollo più estendibile.
+.Sh STORIA
+Il comando
+.Nm
+è apparso nella
+.Bx 4.2 .

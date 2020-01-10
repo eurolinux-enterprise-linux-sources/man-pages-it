@@ -1,0 +1,314 @@
+.\" Copyright (c) 2002 Andries Brouwer <aeb@cwi.nl>
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" 2007-10-23 mtk Added intro paragraph about section, plus a paragraph
+.\"     about exit status values.
+.\"
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\" Aggiornamento a man-pages-2.68 di Elisabetta Galli <lab@kkk.it>
+.\" novembre 2007
+.\"
+.TH INTRO 1 - 15 novembre 2007 "Linux" "Linux User's Manual"
+.SH NOME
+intro \- Introduzione ai comandi utente
+.SH DESCRIZIONE
+La sezione 1 del manuale descrive i comandi e gli strumenti per l'utente,
+per esempio gli strumenti per manipolare i file, le shell, i compilatori,
+i browser web, i visualizzatori e gli editor di file e di immagini, e così via.
+
+Tutti i comandi producono un valore di stato quando terminano.
+Questo valore può essere testato (per esempio in molte shell la variabile
+.I $?
+contiene lo stato dell'ultimo comando eseguito)
+per controllare se il comando è stato completato con successo.
+Per convenzione uno stato di uscita zero indica il successo,
+mentre uno stato diverso da zero significa che il comando non ha avuto successo.
+(Si possono trovare dettagli sugli stati di uscita in
+.BR wait (2).)
+Uno stato di uscita diverso da zero è compreso tra 1 e 255, e molti comandi
+usano diversi valori per gli stati di uscita per indicare il motivo per cui
+il comando è fallito.
+.SH NOTES
+Linux è una variante di Unix, e come prima approssimazione
+tutti i comandi utente sotto Unix lavorano esattamente nello stesso 
+modo sotto Linux (e FreeBSD e molti altri sistemi tipo Unix).
+.LP
+Sotto Linux ci sono GUI (interfacce grafiche utente), in cui si può
+puntare, cliccare e trascinare, e, si spera, completare il lavoro senza
+leggere prima tonnellate di documentazione.
+L'ambiente Unix tradizionale
+è una CLI (interfaccia a linea di comando), in cui si digitano comandi
+per dire al computer cosa fare.
+Ciò è più rapido e più potente,
+ma è necessario scoprire quali siano i comandi.
+Di seguito il minimo essenziale per partire.
+.SS "Login"
+Per iniziare a lavorare probabilmente bisognerà prima eseguire il login,
+che significa dare i propri nome utente e password.
+Si veda anche
+.BR login (1).
+Il programma
+.I login
+avvia una
+.I shell
+(interprete dei comandi) per l'utente.
+In caso di login grafico si accede a uno schermo con menu o icone
+e un click del mouse avvierà una shell in una finestra.
+Vedere anche
+.BR xterm (1).
+.SS "La shell"
+I comandi si digitano nella
+.IR shell ,
+l'interprete dei comandi.
+La shell non è incorporata nel sistema, è solo un programma,
+e l'utente può cambiare la propria shell.
+Ciascuno ha la sua favorita.
+Quella standard si chiama
+.IR sh .
+Vedere anche
+.BR ash (1),
+.BR bash (1),
+.BR csh (1),
+.BR zsh (1),
+.BR chsh (1).
+.LP
+Una sessione può essere così
+
+.RS
+.nf
+.BI "knuth login: " aeb
+.BI "Password: " ********
+.BI "% " date
+Tue Aug  6 23:50:44 CEST 2002
+.BI "% " cal
+     August 2002
+Su Mo Tu We Th Fr Sa
+             1  2  3
+ 4  5  6  7  8  9 10
+11 12 13 14 15 16 17
+18 19 20 21 22 23 24
+25 26 27 28 29 30 31
+
+.BI "% " ls
+bin  tel
+.BI "% " "ls \-l"
+total 2
+drwxrwxr-x   2 aeb       1024 Aug  6 23:51 bin
+-rw-rw-r--   1 aeb         37 Aug  6 23:52 tel
+.BI "% " "cat tel"
+maja    0501-1136285
+peter   0136-7399214
+.BI "% " "cp tel tel2"
+.BI "% " "ls \-l"
+total 3
+drwxr-xr-x   2 aeb       1024 Aug  6 23:51 bin
+-rw-r--r--   1 aeb         37 Aug  6 23:52 tel
+-rw-r--r--   1 aeb         37 Aug  6 23:53 tel2
+.BI "% " "mv tel tel1"
+.BI "% " "ls \-l"
+total 3
+drwxr-xr-x   2 aeb       1024 Aug  6 23:51 bin
+-rw-r--r--   1 aeb         37 Aug  6 23:52 tel1
+-rw-r--r--   1 aeb         37 Aug  6 23:53 tel2
+.BI "% " "diff tel1 tel2"
+.BI "% " "rm tel1"
+.BI "% " "grep maja tel2"
+maja    0501-1136285
+.B "% "
+.fi
+.RE
+e a questo punto digitando Control-D si termina la sessione.
+Il carattere
+.B "% "
+in questo caso è il prompt dei comandi \(cioè il modo della shell di indicare che è pronta
+per il prossimo comando).
+Il prompt può essere personalizzato in
+moltissimi modi, includendo cose come nome utente,
+nome macchina, directory attuale, ora, ecc.
+Un'assegnazione PS1="Cosa faccio ora, capo? "
+cambierebbe il prompt come indicato.
+.LP
+Vediamo che ci sono comandi
+.I date
+(che fornisce data e ora), e
+.I cal
+(che fornisce un calendario).
+.LP
+Il comando
+.I ls
+elenca i contenuti della directory attuale \(cioè elenca i file
+presenti).
+Con l'opzione \-l fornisce un elenco lungo,
+che include proprietario, dimensione e data del file, e i 
+permessi degli utenti per modificare o cambiare il file.
+Per esempio il file "tel" è lungo 37 byte, il proprietario è aeb
+che può leggerlo e scriverlo, altri possono solo leggerlo.
+Proprietario e permessi possono essere cambiati dai comandi
+.I chown
+e
+.IR chmod .
+.LP
+Il comando
+.I cat
+visualizzerà il contenuto di un file.
+(Il nome viene da "concatenate and print": tutti i file indicati come 
+parametri sono concatenati e inviati allo "standard output", che qui
+è il terminale video.)
+.LP
+Il comando
+.I cp
+(da "copy") copierà un file.
+D'altra parte il comando
+.I mv
+(da "move") si limita a rinominarlo.
+.LP
+Il comando
+.I diff
+elenca le differenze tra due file.
+In questo caso non c'è output perché non ci sono differenze.
+.LP
+Il comando
+.I rm
+(da "remove") cancella il file, e si faccia attenzione: è andato.
+Nessun cestino per la carta straccia o altro.
+Cancellato significa perso.
+.LP
+Il comando
+.I grep
+(da "g/re/p") trova le ricorrenze di una stringa in uno o più file.
+In questo caso trova il numero di telefono di Maja.
+.SS "Nomi di percorso e la directory attuale"
+I file risiedono in un grande albero, la gerarchia dei file.
+Ciascuno ha un
+.I "nome di percorso"
+che descrive il percorso dalla radice dell'albero (che è chiamata /)
+al file.
+Per esempio, un nome di percorso completo potrebbe essere /home/aeb/tel.
+Usare sempre nomi di percorso completi non sarebbe conveniente, e il 
+nome di un file nella directory attuale potrebbe essere abbreviato dando
+solo l'ultimo componente.
+Questa è la ragione per cui "/home/aeb/tel" può essere abbreviato
+in "tel" quando la directory attuale è "/home/aeb".
+.LP
+Il comando
+.I pwd
+stampa la directory attuale.
+.LP
+Il comando
+.I cd
+cambia la directory attuale.
+Si provi "cd /" e "pwd" e "cd" e "pwd".
+.SS "Directory"
+Il comando
+.I mkdir
+crea una nuova directory.
+.LP
+Il comando
+.I rmdir
+rimuove una directory se è vuota, altrimenti si lamenta.
+.LP
+Il comando
+.I find
+(con una sintassi piuttosto barocca) troverà file con il nome indicato
+o con altre proprietà.
+Per esempio "find . \-name tel" troverà
+il file "tel" a partire dalla directory attuale (che è chiamata ".").
+E "find / \-name tel" farà lo stesso, ma partendo dalla radice
+dell'albero.
+Ricerche ampie su un disco di molti GB richiederanno tempo,
+e potrebbe essere meglio usare
+.BR locate (1).
+.SS "Dischi e Filesystem"
+Il comando
+.I mount
+attaccherà il file system presente su un disco (o floppy, o CDROM o altro)
+alla grande gerarchia del file system.
+E
+.I umount
+lo stacca di nuovo.
+Il comando
+.I df
+informerà su quanto spazio è ancora libero sul disco.
+.SS "Processi"
+Su un sistema Unix molti processi degli utenti e di sistema sono in 
+funzione contemporaneamente. Quello che si sta utilizzando funziona in
+.IR primo piano ,
+gli altri sullo
+.IR sfondo .
+Il comando
+.I ps
+visualizzerà i processi attivi e i numeri a loro
+associati.
+Il comando
+.I kill
+permette di sbarazzarsene.
+Senza opzioni è una richiesta
+amichevole: per favore vattene.
+E "kill \-9" seguito dal numero del
+processo terminerà immediatamente il processo stesso.
+I processi in primo piano possono spesso essere interrotti digitando Control-C.
+.SS "Ottenere informazioni"
+Esistono migliaia di comandi, ciascuno con molte opzioni.
+I comandi tradizionali sono documentati nelle
+.IR "pagine di manuale" ,
+(come questa), dunque il comando "man kill" documenterà l'uso
+del comando "kill" (e "man man" documenterà il comando "man").
+Il programma
+.I man
+invia il testo a qualche
+.IR paginatore ,
+di solito
+.IR less .
+Premere la barra spaziatrice per andare alla pagina successiva, premere q per uscire.
+.LP
+Nella documentazione è abitudine fare riferimento alle pagine di manuale
+indicando nome e numero di sezione, come in
+.BR man (1).
+Le pagine di manuale sono concise, e permettono di trovare rapidamente qualche 
+dettaglio dimenticato.
+Per i nuovi arrivati è utile un testo 
+introduttivo con più esempi e spiegazioni.
+.LP
+Molto del software GNU/FSF è fornito con file info.
+Digitare "info info"
+per un'introduzione all'uso del programma "info".
+.LP
+Argomenti speciali sono spesso trattati in HOWTO.
+Si guardi in
+.I /usr/share/doc/howto/en
+usando un browser se vi si trovano file in HTML.
+.\"
+.\" Esempi reali? Sezioni separate per cat, cp, ...?
+.\" gzip, bzip2, tar, rpm
+.SH "VEDERE ANCHE"
+.BR standards (7)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 3.01 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

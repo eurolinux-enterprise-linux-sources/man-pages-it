@@ -1,0 +1,10 @@
+The following text is the description in italian of this package. You can use it
+to describe the package in a repository, inside a distribution and everywhere
+it may be useful.
+
+Questo pacchetto contiene la traduzione a cura dell'Italian Linux Documentation
+Project (ILDP) delle pagine di manuale presenti nel pacchetto mantenuto e distribuito da
+Michael Kerrisk. Contiene inoltre le pagine di manuale distribuite solitamente
+insieme ai relativi software. Il numero di versione è allineato a quello del pacchetto ufficiale: basterà
+verificarne la corrispondenza per essere certi di avere la versione più aggiornata, che
+in caso di necessità può essere scaricata all'indirizzo ftp://ftp.pluto.it/pub/pluto/ildp/man.

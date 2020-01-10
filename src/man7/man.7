@@ -1,0 +1,576 @@
+.\" (C) Copyright 1992-1999 Rickard E. Faith and David A. Wheeler
+.\" (faith@cs.unc.edu and dwheeler@ida.org)
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one.
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Modified Sun Jul 25 11:06:05 1993 by Rik Faith (faith@cs.unc.edu)
+.\" Modified Sat Jun  8 00:39:52 1996 by aeb
+.\" Modified Wed Jun 16 23:00:00 1999 by David A. Wheeler (dwheeler@ida.org)
+.\" Modified Thu Jul 15 12:43:28 1999 by aeb
+.\" Modified Sun Jan  6 18:26:25 2002 by Martin Schulze <joey@infodrom.org>
+.\" Modified Tue Jul 27 20:12:02 2004 by Colin Watson <cjwatson@debian.org>
+.\" 2007-05-30, mtk: various rewrites and moved much text to new man-pages.7.
+.\"
+.\" Traduzione by Michele Dalla Silvestra, dalla@maya.dei.unipd.it
+.\" Luglio 1996
+.\" Aggiornamento a man-pages-1.20 di Ottavio G. Rizzo (otto@mast.queensu.ca)
+.\" Giugno 1998
+.\" Modificato/corretto da Daniele Giacomini (daniele@evo.it) Gennaio 1999
+.\" Aggiornamento a man-pages-1.25 di Ottavio G. Rizzo (rizzo@pluto.linux.it)
+.\" Agosto 1999
+.\" Aggiornamento a man-pages-1.26 di Ottavio G. Rizzo (rizzo@pluto.linux.it)
+.\" Agosto 1999
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\" Aggiornamento a man-pages-2.34 di Giulio Daprelà <giulio@pluto.it>
+.\" giugno 2006
+.\" Aggiornamento a man-pages-2.48 di Giulio Daprelà <giulio@pluto.it>
+.\" giugno 2007
+.\" Aggiornamento a man-pages-2.65 di Elisabetta Galli <lab@kkk.it>
+.\" settembre 2007
+.\"
+.TH MAN 7 "30 maggio 2007" "Linux" "Linux Programmer's Manual"
+.SH NOME
+man \- macro per formattare le pagine di manuale
+.SH SINTASSI
+.B groff \-Tascii \-man
+.I file
+\&...
+.LP
+.B groff \-Tps \-man
+.I file
+\&...
+.LP
+.B man
+.RI [ sezione ]
+.I titolo
+.SH DESCRIZIONE
+Questa pagina illustra il pacchetto di macro
+.B "groff an.tmac" 
+(spesso chiamato pacchetto macro
+.B man ).
+
+Questo pacchetto di macro dovrebbe essere usato dagli sviluppatori quando
+scrivono o fanno il port delle pagine di manuale per Linux.
+È abbastanza compatibile con altre
+versioni di questi pacchetti di macro, quindi fare il port delle pagine di manuale non dovrebbe
+essere un grosso problema (un'eccezione è NET-2 BSD, che usa un pacchetto
+di macro completamente differente chiamato mdoc; si veda
+.BR mdoc (7)).
+.PP
+Si noti che le pagine di manuale NET-2 BSD, in formato mdoc, possono essere usate con
+.B groff
+semplicemente specificando l'opzione
+.B \-mdoc
+invece dell'opzione
+.BR \-man .
+
+Usare l'opzione
+.B \-mandoc
+è, comunque, raccomandato, in quanto rileverà automaticamente quale
+pacchetto macro è in uso.
+.PP
+Per le convenzioni da usare nella scrittura di pagine di manuale per il
+pacchetto \fIman-pages\fP di Linux, si veda
+.BR man-pages (7).
+.SS Riga del titolo
+Il primo comando in una pagina di manuale (dopo le righe di commento,
+cioè le righe che iniziano con \fB.\\"\fP) dovrebbe essere
+.RS
+.sp
+.B \&.TH
+.IR "titolo sezione data sorgente manuale",
+.sp
+.RE
+Per i dettagli degli argomenti da fornire al comando \fBTH\fI
+si veda
+.BR man-pages (7).
+.PP
+Si noti che le pagine formattate con l'mdoc di BSD iniziano col
+comando
+.B Dd
+invece che col comando
+.B TH .
+.SS Sezioni
+Le sezioni iniziano con un
+.B \&.SH
+seguito dall'intestazione.
+.\" Quanto segue non sembra essere obbligatorio (si veda il bug Debian 411303),
+.\" Se il nome contiene spazi e compare
+.\" sulla stessa riga di
+.\" .BR \&.SH ,
+.\" la si racchiuda tra virgolette doppie.
+
+L'unica intestazione obbligatoria è NOME, che dovrebbe essere la prima sezione
+e dovrebbe essere seguita, sulla riga successiva, da una descrizione lunga una riga del programma:
+.RS
+.sp
+\&.SH NOME
+.br
+.sp
+.RE
+È molto importante che venga seguito questo formato e che ci sia una
+barra inversa prima del trattino singolo che segue il nome del comando.
+Questa sintassi viene usata dal programma
+.BR makewhatis (8)
+per creare un database di brevi descrizioni dei comandi per
+i comandi
+.BR whatis (1)
+e
+.BR apropos (1)
+.PP
+Per un elenco di altre sezioni che potrebbero apparire in una pagina di manuale si veda
+.BR man-pages (7).
+.SS Tipi di carattere
+I comandi per selezionare il tipo di carattere sono:
+.TP 4
+.B \&.B
+Grassetto
+.TP
+.B \&.BI
+Grassetto alternato a corsivo
+(molto utile per le specifiche delle funzioni)
+.TP
+.B \&.BR
+Grassetto alternato a tondo
+(molto utile per fare riferimento ad altre
+pagine di manuale)
+.TP
+.B \&.I
+Corsivo
+.TP
+.B \&.IB
+Corsivo alternato a grassetto
+.TP
+.B \&.IR
+Corsivo alternato a tondo
+.TP
+.B \&.RB
+Tondo alternato a grassetto
+.TP
+.B \&.RI
+Tondo alternato a corsivo
+.TP
+.B \&.SB
+Maiuscoletto alternato a grassetto
+.TP
+.B \&.SM
+Maiuscoletto (utile per gli acronimi)
+.LP
+Tradizionalmente, ogni comando può avere fino a sei argomenti, ma l'implementazione
+GNU rimuove questa limitazione (ci si può comunque limitare
+a sei argomenti per compatibilità).
+Gli argomenti sono delimitati da spazi.
+Le virgolette doppie possono essere usate per specificare un argomento che contiene spazi.
+Tutti gli argomenti verranno stampati uno vicino all'altro senza
+spazi, così il comando
+.B \&.BR
+può essere usato per specificare una parola in grassetto seguita da un punto
+in tondo.
+Se non ci sono argomenti, il comando si applica alla successiva riga di
+testo.
+.SS "Altre macro e stringhe"
+.PP
+Seguono altre macro importanti e stringhe predefinite.
+A meno che sia specificato diversamente, ogni macro
+causa un'interruzione (la fine dell'attuale riga di testo).
+Molte di queste macro impostano o usano il «rientro dominante»: il suo valore
+viene impostato da ognuna delle seguenti macro grazie al parametro
+.I i .
+Le macro possono omettere la
+.I i ,
+nel qual caso viene usato il rientro dominante attuale.
+Come risultato, paragrafi rientrati che si susseguano possono usare lo
+stesso rientro senza rispecificarne il valore.
+Un paragrafo normale (cioè non rientrato) reimposta il rientro
+dominante al suo valore predefinito (mezzo pollice).
+A priori, il rientro si misura in quadratini; è meglio utilizzare
+quadratini (en) e quadratoni (em) come unità, perché si adattano
+automaticamente al cambiamento di dimensione dei caratteri.
+Ulteriori definizioni di macro sono:
+.SS "Paragrafi normali"
+.TP 9m
+.B \&.LP
+Lo stesso di
+.B \&.PP
+(inzia un nuovo paragrafo).
+.TP
+.B \&.P
+Lo stesso di
+.B \&.PP
+(inzia un nuovo paragrafo).
+.TP
+.B \&.PP
+Incomincia un nuovo paragrafo e reimposta il rientro dominante.
+.SS "Rientro relativo del margine"
+.TP 9m
+.BI \&.RS " i"
+Inizia un rientro relativo del margine; sposta di
+.I i
+il margine sinistro verso destra (se
+.I i
+è omessa, viene usato il valore del rientro principale).
+Un nuovo rientro principale viene impostato a mezzo pollice; di
+conseguenza, tutti i paragrafi seguenti vengono rientrati fino al
+corrispondente
+.BR \&.RE .
+.TP
+.B \&.RE
+Termina il rientro relativo del margine e ripristina il valore
+precedente del rientro dominante.
+.SS "Macro per paragrafi rientrati"
+.TP 9m
+.BI \&.HP " i"
+Inizia il paragrafo con un rientro a bandiera (la prima riga del
+paragrafo inizia al margine sinistro dei paragrafi normali mentre il
+resto delle righe del paragrafo è indentato).
+.TP
+.BI \&.IP " x i"
+Paragrafo rientrato con un'etichetta opzionale a bandiera. Se
+l'etichetta
+.I x
+è omessa, l'intero paragrafo seguente è rientrato di
+.IR i .
+Se l'etichetta
+.I x
+è presente, viene allineata al margine sinistro prima del paragrafo
+rientrato seguente
+(è la stessa cosa di
+.BR \&.TP
+tranne per il fatto che l'etichetta è inclusa nel comando invece di
+trovarsi sulla riga successiva).
+Se l'etichetta è troppo lunga, il testo che la segue viene spostato
+alla riga seguente (e non verrà né perso né impiastricciato).
+Per gli elenchi puntati, si usi questa macro con \e(bu (pallino) o \e(em (trattino lungo)
+come etichetta; per gli elenchi numerati, si usi il numero o la lettera seguiti da un
+punto come etichetta:
+ciò semplifica la conversione verso altri formati.
+.TP
+.BI \&.TP " i"
+Incomincia il paragrafo con un'etichetta a bandiera: l'etichetta è
+sulla riga seguente, ma il risultato
+è lo stesso del comando
+.B \&.IP .
+.SS "Macro per collegamenti ipertestuali"
+(Caratteristica suportata solo da
+.B groff .)
+Per usare le macro per collegamenti ipertestuali è necessario caricare 
+il pacchetto macro
+.B www.tmac .
+Usare il
+.B .mso www.tmac
+richiesto per farlo.
+.TP 9m
+.BI \&.URL " url link trailer"
+Inserisce un collegamento ipertestuale all'URI (URL)
+.IR url ,
+con
+.I link
+come testo del collegamento.
+Il 
+.I trailer
+verrà stampato immediatamente dopo.
+Quando si genera l'HTML, questo dovrebbe essere tradotto nel comando HTML
+\fB<A HREF="\fP\fIurl\fP\fB">\fIlink\fP\fB</A>\fP\fItrailer\fP.
+.\" Quanto segue è un trucchetto per inserire un paragrafo nel listato.
+.TP
+.B " "
+Questo «macro», e altre ad essa relative, sono nuove e
+molti strumenti non sapranno cosa farsene, ma considerando
+che molti strumenti (troff incluso) ignorano tranquillamente le macro indefinite
+(o, al peggio, inseriscono il loro testo), si possono inserire senza problemi.
+.\" Quanto segue è un trucchetto per inserire un paragrafo nel listato.
+.TP
+.B " "
+Può essere utile definire la propria macro
+.B URL
+nelle pagine di manuale per facilitare coloro che la vedono con un 
+visualizzatore roff piuttosto che con
+.BR groff .
+In questo modo URL, testo del collegamento, e testo collegato (se c'è) saranno ancora visibili.
+.\" Quanto segue è un trucchetto per inserire un paragrafo nel listato.
+.TP
+.B " "
+Ecco un esempio:
+.RS 1.5i
+\&.de URL
+.br
+\\\\$2 \\(laURL: \\\\$1 \\(ra\\\\$3
+.br
+\&..
+.br
+\&.if \\n[.g] .mso www.tmac
+.br
+\&.TH
+.I ...
+.br
+.I (di seguito nella pagina)
+.br
+Questo software viene dal
+.br
+\&.URL "http://www.gnu.org/" "Progetto GNU" " della"
+.br
+\&.URL "http://www.fsf.org/" "Free Software Foundation" .
+.RE
+.\" The following is a kludge to get a paragraph into the listing.
+.TP
+.B " "
+Nell'esempio qui sopra, se è stato usato
+.B groff
+la definizione della macro URL del pacchetto macro
+.B www.tmac
+sostituirà quella definita
+localmente.
+.PP
+È disponibile un certo numero di altri collegamenti macro.
+Si veda
+.BR groff_www (7)
+per maggiori dettagli.
+.SS "Macro varie"
+.TP 9m
+.B \&.DT
+Riporta le tabulazioni al valore di tabulazione predefinito (ogni mezzo pollice);
+non causa un'interruzione.
+.TP
+.BI \&.PD " d"
+Imposta la distanza verticale tra paragrafi a d
+(se omesso, d=0.4v);
+non causa un'interruzione.
+.TP
+.BI \&.SS " t"
+Sottotitolo
+.I t
+(come
+.BR \&.SH ,
+ma usato per una sottosezione in una sezione).
+.SS "Stringhe predefinite"
+Il pacchetto
+.B man
+ha le seguenti stringhe predefinite:
+.IP \e*R
+Simbolo di registrazione: \*R
+.IP \e*S
+Torna alla dimensione predefinita del carattere
+.IP \e*(Tm
+Simbolo del marchio registrato: \*(Tm
+.IP \e*(lq
+Doppie virgolette verso sinistra: \*(lq
+.IP \e*(rq
+Doppie virgolette verso destra: \*(rq
+.SS "Sottoinsieme sicuro"
+Sebbene tecnicamente
+.B man
+sia un pacchetto macro troff, in realtà un grande numero di altri strumenti
+che non implementano tutte le capacità di troff processano file di pagine di manuale.
+Pertanto è bene evitare alcune delle capacità più esotiche di troff 
+quando possibile, per permettere a questi strumenti di funzionare correttamente.
+Evitare di usare i vari preprocessori di troff
+(se si deve, proseguire e usare
+.BR tbl (1),
+ma provare ad usare i comandi
+.B IP
+e
+.B TP
+invece delle tabelle a due colonne).
+Evitare di usare computazioni; molti altri tool non possono processarle.
+Si usino comandi semplici, che siano facili da tradurre in altri formati.
+Le seguenti macro troff sono ritenute sicure (anche se in molti casi
+verranno ignorate dai traduttori):
+.BR \e" ,
+.BR . ,
+.BR ad ,
+.BR bp ,
+.BR br ,
+.BR ce ,
+.BR de ,
+.BR ds ,
+.BR el ,
+.BR ie ,
+.BR if ,
+.BR fi ,
+.BR ft ,
+.BR hy ,
+.BR ig ,
+.BR in ,
+.BR na ,
+.BR ne ,
+.BR nf ,
+.BR nh ,
+.BR ps ,
+.BR so ,
+.BR sp ,
+.BR ti ,
+.BR tr .
+.PP
+Si possono anche usare molte sequenze di escape di troff (queste 
+sequenze iniziano con \e).
+Quando si ha la necessità di includere il carattere backslash come testo 
+normale usare \ee.
+Altre sequenze che si possono usare, dove x o xx sono caratteri qualsiasi
+e N è un numero qualunque, includono:
+.BR \e' ,
+.BR \e` ,
+.BR \e- ,
+.BR \e. ,
+.BR \e" ,
+.BR \e% ,
+.BR \e*x ,
+.BR \e*(xx ,
+.BR \e(xx ,
+.BR \e$N ,
+.BR \enx ,
+.BR \en(xx ,
+.BR \efx ,
+e
+.BR \ef(xx .
+Evitare di usare sequenze di escape per disegni grafici.
+.PP
+Non usare il parametro opzionale per
+.B bp
+(interruzione pagina).
+Usare solo valori positivi per
+.B sp
+(spazio verticale).
+Non definire una macro
+.RB ( de )
+con lo stesso nome di una macro in questo o nel pacchetto macro
+mdoc con un diverso significato; è facile che queste ridefinizioni 
+vengano ignorate.
+Ogni rientro positivo
+.RB ( in )
+deve essere accompagnato da un corrispondente rientro negativo
+(anche se si dovrebbero usare le macro
+.B RS
+e
+.B RE
+al loro posto).
+Il test condizionale
+.RB ( if,ie )
+deve avere solo 't' o 'n' come condizione.
+Solo le traduzioni
+.RB ( tr )
+che possono essere ignorate devono essere usate.
+I cambiamenti del tipo di carattere
+.RB ( ft
+e la sequenza di escape \fB\ef\fP )
+devono avere solo i valori 1, 2, 3, 4, R, I, B, P, o CW
+(il comando ft può anche non avere parametri).
+.PP
+Se si usano potenzialità oltre a queste, si verifichino attentamente
+i risultati con diversi strumenti.
+Una volta confermato che la capacità aggiuntiva è sicura mettete a 
+conoscenza il curatore di questo documento
+del comando o sequenza sicura che deve essere aggiunta
+a questo elenco.
+.SH FILE
+.IR /usr/share/groff/ [*/] tmac/an.tmac
+.br
+.I /usr/man/whatis
+.SH NOTE
+.PP
+Certamente includere URL (o URI) completi nello stesso testo;
+alcuni tool come
+.BR man2html (1)
+possono trasformarli automaticamente in collegamenti ipertestuali.
+Si può anche usare la nuova macro
+.B URL
+per identificare collegamenti a informazioni correlate.
+Se si includono URL usare l'URL completo
+(es., <http://www.kernelnotes.org>) per assicurarsi che gli strumenti
+possano trovare automaticamente gli URL.
+.PP
+Gli strumenti che processano questi file devono aprire il file ed esaminare il 
+primo carattere che non sia uno spazio.
+Un punto (.) o virgoletta singola (')
+all'inizio di una riga indicano un file basato su troff (come man o mdoc).
+Una parentesi angolare sinistra (<) indica un file basato su SGML/XML
+(come HTML o Docbook).
+Qualsiasi altra cosa suggerisce semplice testo ASCII
+(per esempio un risultato "catman").
+.PP
+Molte pagine di manuale cominciano con '\e" seguito
+da uno spazio e un elenco di caratteri,
+che indicano come la pagina deve essere preprocessata.
+Per ragioni di portabilità verso traduttori non troff si raccomanda di 
+evitare cose diverse da
+.BR tbl (1),
+e Linux lo può rilevare automaticamente.
+Tuttavia si possono includere queste informazioni in modo che le proprie 
+pagine di manuale possano essere gestite da altri (meno capaci) sistemi.
+Queste sono le definizioni dei preprocessori invocate da questi caratteri:
+.TP 3
+.B e
+eqn(1)
+.TP
+.B g
+grap(1)
+.TP
+.B p
+pic(1)
+.TP
+.B r
+refer(1)
+.TP
+.B t
+tbl(1)
+.TP
+.B v
+vgrind(1)
+.SH BACHI
+.PP
+La maggior parte delle macro descrivono la formattazione (per esempio, tipo di carattere e 
+spaziatura) invece di marcare il contenuto semantico (per esempio, questo testo è un riferimento ad un'altra pagina),
+rispetto a formati come mdoc e DocBook (anche HTML ha più marcatori
+semantici).
+Questa situazione rende difficile variare il formato di
+.B man
+per media differenti,
+per rendere la formattazione consistente per un dato media, e 
+inserire automaticamente riferimenti incrociati.
+Bloccandosi sul sottoinsieme sicure descritto prima, dovrebbe essere più facile automatizzare
+la transazione ad un diverso formato di riferimento delle pagine in futuro.
+.LP
+La macro di Sun
+.B TX
+non è implementata.
+.\" .SH AUTORI
+.\" .IP \(em 3m
+.\" James Clark (jjc@jclark.com) ha scritto l'implementazione del pacchetto macro.
+.\" .IP \(em
+.\" Rickard E. Faith (faith@cs.unc.edu) ha scritto la versione iniziale
+.\" di questa pagina di manuale.
+.\" .IP \(em
+.\" Jens Schweikhardt (schweikh@noc.fdn.de) ha scritto il Linux Man-Page Mini-HOWTO
+.\" (che ha influenzato questa pagina di manuale).
+.\" .IP \(em
+.\" David A. Wheeler (dwheeler@ida.org) ha modificato pesantemente questa
+.\" pagina di manuale aggiungendo informazioni dettagliate su sezioni e macro.
+.SH VEDERE ANCHE
+.BR apropos (1),
+.BR groff (1),
+.BR man (1),
+.BR man2html (1),
+.BR whatis (1),
+.BR groff_man (7),
+.BR groff_www (7),
+.BR man-pages (7),
+.BR mdoc (7),
+.BR mdoc.samples (7)

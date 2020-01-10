@@ -1,0 +1,77 @@
+.\" Copyright (c) 1993 Michael Haardt (michael@moria.de),
+.\"     Fri Apr  2 11:32:09 MET DST 1993
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\" 
+.\" Modified Sat Jul 24 17:06:03 1993 by Rik Faith (faith@cs.unc.edu)
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Agosto 1996
+.\" Aggiornamento a man-pages-1.15 di Alessandro Rubini (rubini@linux.it)
+.\" Febbraio 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\"
+.\" "
+.TH GROUP 5 "29 dicembre 1992" "Linux" "Linux Programmer's Manual"
+.SH NOME
+group \- file dei gruppi utenti
+.SH DESCRIZIONE
+\fB/etc/group\fP è un file ASCII che definisce i gruppi ai quali 
+appartengono gli utenti. Contiene una voce per riga, ed ogni riga ha
+il seguente formato:
+.sp
+.RS
+group_name:passwd:GID:user_list
+.RE
+.sp
+Il significato dei campi è il seguente:
+.IP group_name
+il nome del gruppo.
+.IP password
+la password (criptata) del gruppo. Se questo campo è vuoto, non è
+necessaria alcuna password.
+.IP GID
+l'identificativo numerico del gruppo (GID = Group IDentifier).
+.IP user_list
+tutti i nomi utente dei membri del gruppo, separati da virgole.
+.SH BACHI
+Come dice la man page 4.2BSD di
+.BR initgroups (3):
+Sembra che n essuno tenga aggiornato /etc/group.
+.SH FILE
+/etc/group
+.SH "VEDERE ANCHE"
+.BR login (1),
+.BR newgrp (1),
+.BR getgrent (3),
+.BR getgrnam (3),
+.BR passwd (5)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 3.03 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

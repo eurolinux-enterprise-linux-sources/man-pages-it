@@ -1,0 +1,293 @@
+.\" From Henry Spencer's regex package (as found in the apache
+.\" distribution). The package carries the following copyright:
+.\"
+.\"  Copyright 1992, 1993, 1994 Henry Spencer.  All rights reserved.
+.\"  This software is not subject to any license of the American Telephone
+.\"  and Telegraph Company or of the Regents of the University of California.
+.\"  
+.\"  Permission is granted to anyone to use this software for any purpose
+.\"  on any computer system, and to alter it and redistribute it, subject
+.\"  to the following restrictions:
+.\"  
+.\"  1. The author is not responsible for the consequences of use of this
+.\"     software, no matter how awful, even if they arise from flaws in it.
+.\"  
+.\"  2. The origin of this software must not be misrepresented, either by
+.\"     explicit claim or by omission.  Since few users ever read sources,
+.\"     credits must appear in the documentation.
+.\"  
+.\"  3. Altered versions must be plainly marked as such, and must not be
+.\"     misrepresented as being the original software.  Since few users
+.\"     ever read sources, credits must appear in the documentation.
+.\"  
+.\"  4. This notice may not be removed or altered.
+.\"
+.\" In order to comply with `credits must appear in the documentation'
+.\" I added an AUTHOR paragraph below - aeb.
+.\"
+.\" In the default nroff environment there is no dagger \(dg.
+.\"
+.\" 2005-05-11 Removed discussion of `[[:<:]]' and `[[:>:]]', which
+.\" 	appear not to be in the glibc implementation of regcomp
+.\"
+.\" Traduzione by Ottavio G. Rizzo (otto@mast.queensu.ca)
+.\" Luglio 1998
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" ottobre 2005
+.\" Aggiornamento a man-pages-2.40 di Giulio Daprelà - ottobre 2006
+.\"
+.\" Aggiornamento a man-pages-2.71 di Elisabetta Galli - dicembre 2007
+.\"
+.ie t .ds dg \(dg
+.el .ds dg (!)
+.TH REGEX 7 "12 dicembre 2007" "Linux Programmer's Manual"
+.SH NOME
+regex \- espressioni regolari POSIX.2
+.SH DESCRIZIONE
+Le espressioni regolari (dette "ER"), così come definite
+da POSIX.2, appaiono in due forme: ER moderne
+(approssimativamente, quelle di
+.IR egrep ;
+POSIX.2 le definisce ER "estese")
+e ER obsolete (approssimativamente quelle di
+.BR ed (1);
+ER di "base" in POSIX.2).
+Le ER obsolete esistono per compatibilità con
+alcuni vecchi programmi, e verranno discusse alla fine.
+POSIX.2 lascia aperti alcuni aspetti della sintassi e della semantica delle ER:
+`\*(dg' denota scelte che potrebbero non essere completamente portabili
+ad altre implementazioni di POSIX.2.
+.PP
+Una ER (moderna) è una\*(dg diramazione o più diramazioni non vuote*\(dg,
+\fIdiramazioni\fR, separati da `|'.
+L'ER corrisponde a qualsiasi cosa che corrisponda ad una delle diramazioni.
+.PP
+Una diramazione è formata da uno\*(dg o più \fIpezzi\fR concatenati.
+Corrisponde ad una corrispondenza per il primo pezzo, seguita da una corrispondenza per il secondo, ecc.
+.PP
+Un pezzo è formato da un \fIatomo\fR, eventualmente seguito
+da un singolo\*(dg `*', `+', `?' o \fIlimite\fR.
+Un atomo seguito da `*' corrisponde ad una successione di 0 o più corrispondenze dell'atomo.
+Un atomo seguito da `+' corrisponde ad una successione di 1 o più corrispondenze dell'atomo.
+Un atomo seguito da `?' corrisponde ad una successione di 0 o 1 corrispondenza dell'atomo.
+.PP
+Un \fIlimite\fR [NdT: il termine è non-standard, \fIRegular
+Expressions\fR di Jeffrey E F Friedl, O'Reilly, 1997, usa
+\fIintervallo\fR] è formato da `{' seguito da un intero decimale senza
+segno, eventualmente seguito da `,' eventualmente seguito da un altro
+intero decimale senza segno, obbligatoriamente seguito da `}'.
+Gli interi devono essere compresi fra 0 e
+.B RE_DUP_MAX
+(255\*(dg) inclusi, e
+se ce ne sono due, il primo non deve essere maggiore del secondo.
+Un atomo seguito da un limite contenente un intero \fIi\fR e nessuna
+virgola corrisponde ad una successione di esattamente \fIi\fR
+corrispondenze dell'atomo. Un atomo seguito da un limite contenente
+un intero \fIi\fR e una virgola corrisponde ad una successione di
+\fIi\fR o più corrispondenze dell'atomo.
+Un atomo seguito da un limite
+contenente due interi \fIi\fR e \fIj\fR corrisponde ad una
+successione di \fIi\fR fino a \fIj\fR (inclusi) corrispondenze dell'atomo.
+.PP
+Un atomo è formato da un'espressione regolare racchiusa fra `()' (corrispondente ad una
+corrispondenza per l'espressione regolare),
+un insieme vuoto di `()' (corrispondente alla stringa nulla)\(dg,
+un'\fIespressione parentetica\fR (vedi sotto), `.'
+(corrispondente ad un qualsiasi carattere singolo), `^' (corrispondente alla stringa nulla a
+inizio riga), `$' (corrispondente alla stringa nulla
+a fine riga), una `\e' seguita da uno dei caratteri
+`^.[$()|*+?{\e'
+(corrispondente a quel carattere interpretato come un carattere normale),
+una `\e' seguita da un qualsiasi altro carattere\*(dg
+(corrispondente a quel carattere interpretato come un carattere normale,
+come se la `\e' non fosse presente\*(dg),
+oppure un singolo carattere privo di ulteriori significati (interpretato come se stesso).
+Una `{' seguita da un carattere che non sia una cifra è un carattere
+normale, non l'inizio di un limite\*(dg.
+È vietato terminare un'ER con `\e'.
+.PP
+Un'\fIespressione parentetica\fR è un elenco di caratteri racchiusi da `[]'.
+Corrisponde di norma ad un qualsiasi singolo carattere fra quelli della lista (ma vedi oltre).
+Se l'elenco inizia con `^',
+l'espressione corrisponde ad un qualsiasi singolo carattere \fInon\fR fra quelli della lista (ma vedi oltre).
+Due caratteri nell'elenco separati da un `\-' formano un'abbreviazione
+per l'intera \fIserie\fR di caratteri compresi nella sequenza di collazione fra i due caratteri
+(inclusi).
+Per esempio, `[0-9]' corrisponde, in ASCII, ad una qualsiasi cifra decimale.
+Due serie non possono\*(dg condividere un estremo, per
+esempio `a-c-e'.
+Le serie dipendono particolarmente dalla sequenza di collazione,
+e un programma, per essere portabile, non dovrebbe dipenderne.
+.PP
+Se si vuole includere una `]' nell'elenco, bisogna metterla al primo
+posto (dopo un eventuale `^').
+Se si vuole includere un `\-' nell'elenco, bisogna metterlo al primo o all'ultimo posto, o come
+estremo destro di una serie.
+Se si vuole usare un `\-' come estremo sinistro di una serie,
+bisogna trasformarlo in un elemento di collazione racchiudendolo fra `[.' e `.]' (vedi sotto).
+Eccetto queste combinazioni, e alcune altre con `[' (vedi il prossimo paragrafo),
+tutti gli altri caratteri speciali, inclusa la `\e', perdono il loro
+significato speciale quando all'interno di un'espressione parentetica.
+.PP
+All'interno di un'espressione parentetica, un elemento di collazione (un carattere
+o una sequenza di più caratteri che viene ordinata come se fosse un carattere singolo
+o una sequenza di collazione che sta per uno dei due)
+racchiuso fra `[.' e `.]' rappresenta la sequenza di
+caratteri dell'elemento di collazione.
+La sequenza è un unico argomento dell'elenco nell'espressione parentetica. Pertanto,
+un'espressione che contiene un elemento di collazione a più caratteri
+può corrispondere a più di un carattere. Per esempio, se la sequenza di
+collazione include l'elemento di collazione `ch', allora l'ER
+`[[.ch.]]*c' corrisponde ai primi cinque caratteri
+di `chchcc'.
+.PP
+All'interno di un'espressione parentetica, un elemento di collazione racchiuso fra `[=' e
+`=]' è una classe di equivalenza, cioè la sequenza di caratteri
+di tutti gli elementi di collazione equivalenti, lui incluso
+(se non ci sono altri elementi di collazione equivalenti,
+il risultato è lo stesso che ci sarebbe se i segni di delimitazione fossero `[.' e `.]').
+Per esempio, se o e \o'o^' appartengono ad una classe di equivalenza,
+allora `[[=o=]]', `[[=\o'o^'=]]' e `[o\o'o^']' sono tutti sinonimi.
+Una classe di equivalenza non può essere un estremo di
+una serie.
+.PP
+All'interno di un'espressione parentetica, il nome di una \fIclasse di caratteri\fR racchiusa
+fra `[:' e `:]' rappresenta l'elenco di tutti i caratteri
+di quella classe.
+I nomi delle classi standard di caratteri sono: 
+.PP
+.RS
+.nf
+.ta 3c 6c 9c
+alnum	digit	punct
+alpha	graph	space
+blank	lower	upper
+cntrl	print	xdigit
+.fi
+.RE
+.PP
+Questi rappresentano le classi di carattere definite in
+.BR wctype (3).
+Una localizzazione potrebbe fornirne altre.
+Una classe di caratteri non può essere usata come estremo di una serie.
+.\" Come da http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=295666
+.\" Quanto segue non sembra che si applichi nell'implementazione di glibc
+.\" .PP
+.\" Ci sono due casi speciali\*(dg di espressioni parentetiche: le
+.\" espressioni `[[:<:]]' e `[[:>:]]' corrispondono alla stringa nulla
+.\" rispettivamente all'inizio e alla fine di una parola.
+.\" Una parola è definita come una sequenza
+.\" di caratteri di parola
+.\" non seguita né preceduta da
+.\" un carattere di parola.
+.\" Un carattere di parola è un carattere alfanumerico
+.\" .I alnum
+.\" (come definito in
+.\" .IR wctype (3))
+.\" oppure un «underscore».
+.\" Questa è un'estensione,
+.\" compatibile ma non .\" specificata in POSIX.2,
+.\" che dovrebbe essere usata con cautela in
+.\" software che s'intende portare ad altri sistemi.
+.PP
+Nel caso che un'ER possa corrispondere a più di una sotto-stringa di
+una data stringa,
+l'ER corrisponde a quella che inizia per prima nella stringa.
+Se l'ER può corrispondere a più sotto-stringhe che iniziano
+nello stesso punto, l'ER corrisponde a quella più lunga.
+Le sottoespressioni corrispondono anche alle sottostringhe più lunghe possibile, 
+a patto che l'intera corrispondenza sia la più lunga possibile,
+con le sottoespressioni che iniziano prima nell'ER hanno priorità
+su quelle che iniziano dopo.
+Si noti che in particolare, le sottoespressioni ad alto livello hanno la precedenza sulle loro
+espressioni componenti, che sono di livello più basso.
+.PP
+La lunghezza di una corrispondenza è misurata in caratteri, non in elementi di collazione.
+Una stringa nulla è considerata più lunga di una corrispondenza mancata.
+Per esempio,
+`bb*' corrisponde ai tre caratteri di mezzo di `abbbc',
+`(wee|week)(knights|nights)' corrisponde a tutti e dieci i caratteri di `weeknights',
+se `(.*).*' è corrisposto a `abc' la sottoespressione fra parentesi corrisponde ai
+tre caratteri, e
+se `(a*)*' è corrisposto a `bc' sia l'intera ER che l'espressione tra parentesi
+corrispondono alla stringa nulla.
+.PP
+Se viene richiesta una corrispondenza indipendente da maiuscole e
+minuscole, l'effetto è essenzialmente lo stesso che si avrebbe togliendo ogni differenza fra maiuscole e
+minuscole nell'alfabeto.
+Quando un carattere alfabetico che esiste sia come maiuscola che come minuscola appare come
+carattere ordinario al di fuori di un'espressione parentetica, viene, in pratica, trasformato
+nell'espressione parentetica comprendente entrambi i casi: per esempio,
+`x' diventa `[xX]'.
+Quando un simile carattere appare all'interno di un'espressione parentetica, la controparte viene aggiunta
+all'espressione: ad esempio,
+`[x]' diventa `[xX]', e `[^x]' diventa `[^xX]'.
+.PP
+Non viene imposto nessun limite particolare alla lunghezza delle ER\*(dg.
+I programmi, per essere portabili, non dovrebbero impiegare ER
+più lunghe di 256 byte,
+in quanto un'implementazione potrebbe rifiutare una simile ER e rimanere
+conforme a POSIX.
+.PP
+Le espressioni regolari obsolete si differenziano in diversi modi.
+`|', `+' e `?' sono caratteri ordinari e non hanno nessun equivalente
+per le loro funzionalità.
+I delimitatori dei limiti sono `\e{' e `\e}',
+mentre `{' e `}' sono caratteri ordinari.
+Le parentesi delle sottoespressioni annidate sono `\e(' e `\e)',
+mentre `(' e `)' sono caratteri ordinari.
+`^' è un carattere normale tranne che all'inizio
+dell'ER o\*(dg all'inizio di un'espressione parentetica,
+`$' è un carattere normale tranne che alla fine
+dell'ER o\*(dg alla fine di un'espressione parentetica, e
+`*' è un carattere normale se appare all'inizio
+dell'ER o all'inizio di un'espressione parentetica
+(eventualmente preceduto da un `^' iniziale).
+.PP
+Infine, c'è un nuovo tipo di atomo, una \fIreferenza all'indietro\fR:
+`\e' seguita da una cifra decimale \fId\fR
+diversa da zero corrisponde alla stessa sequenza di caratteri
+a cui corrisponde la \fId\fR-esima espressione parentetica
+(contando, da sinistra verso destra, le sottoespressioni in base alla posizione
+della loro parentesi di destra),
+in modo che, ad esempio, `\e([bc]\e)\e1' corrisponda a `bb` o `cc` ma non a `bc`.
+.SH BACHI
+Avere due tipi di ER è un pasticcio.
+.PP
+Le specifiche attuali in POSIX.2 dicono che `)' è un carattere normale
+in mancanza di un corrispondente `(':
+questo è un risultato non voluto di una scelta sbagliata di vocaboli,
+e sarebbe meglio cambiarlo.
+Non fare affidamento su questo.
+.PP
+Le referenze all'indietro sono un casino incredibile, e rendono molto
+difficile un'implementazione efficiente.
+La loro definizione è pure
+ambigua: `a\e(\e(b\e)*\e2\e)*d' corrisponde a `abbbd' o no? È meglio
+non usarle.
+.PP
+Le specifiche in POSIX.2 sulle corrispondenze indipendenti da maiuscole/minuscole sono approssimative.
+La definizione data sopra di «un caso implica tutti i casi» è quella al momento considerata
+corretta dagli implementatori.
+.\" Come da http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=295666
+.\" Quanto segue non sembra applicarsi all'implementazione di glibc
+.\" .PP
+.\" La sintassi per i limiti delle parole è terribile.
+.\" .SH AUTORE
+.\" Questa pagina è tratta dal pacchetto sulle espressioni regolari di Henry Spencer.
+.SH VEDERE ANCHE
+.BR grep (1),
+.BR regex (3)
+.PP
+POSIX.2, sezione 2.8 (Notazione per le espressioni regolari).
+.PP 
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.79 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

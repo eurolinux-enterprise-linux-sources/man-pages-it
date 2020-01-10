@@ -1,0 +1,46 @@
+.\" Questa pagina è nel pubblico dominio
+.\"
+.\" Traduzione italiana di Ottavio G. Rizzo, marzo 1999
+.\" Aggiornamento a man pages 2.34 di Giulio Daprelà, giugno 2006
+.\"
+.TH ZDUMP 8
+.SH NOME
+zdump \- informa sui fusi orari
+.SH SINTASSI
+.B zdump
+[
+.B \-v
+] [
+.B \-c
+annolimite ] [ fuso ... ]
+.SH DESCRIZIONE
+.I Zdump
+stampa l'ora attuale in ciascun
+.I fuso
+menzionato sulla riga di comando.
+.PP
+Sono disponibili queste opzioni:
+.TP
+.B \-v
+Per ogni
+.I fuso
+sulla riga di comando,
+stampa l'ora all'orario più basso possibile,
+l'ora un giorno dopo l'orario più basso possibile,
+l'ora un secondo prima ed esattamente al momento
+di ciascuna discontinuità temporale nota,
+l'ora un giorno prima dell'orario più alto possibile
+e l'ora all'orario più alto possibile.
+Ogni riga termina con
+.B isdst=1
+se vale l'ora legale,
+.B isdst=0
+se vale l'ora solare.
+.TP
+.BI "\-c " annolimite
+In modalità prolissa taglia i dati nei pressi dell'inizio del dato
+anno.
+.SH "VEDERE ANCHE"
+.BR tzfile (5),
+.BR zic (8)
+.\" @(#)zdump.8	7.3

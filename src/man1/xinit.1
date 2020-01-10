@@ -1,0 +1,205 @@
+.\" $Xorg: xinit.man,v 1.4 2001/02/09 02:05:49 xorgcvs Exp $
+.\" Copyright 1988, 1998  The Open Group
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and its
+.\" documentation for any purpose is hereby granted without fee, provided that
+.\" the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation.
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of The Open Group shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from The Open Group.
+.\"
+.\" $XFree86: xc/programs/xinit/xinit.man,v 3.9 2001/02/07 23:25:56 dawes Exp $
+.\"
+.TH "XINIT" "1" "xinit 1.0.3" "X Versione 11" ""
+.SH "NOME"
+xinit \- Inizializzatore del X Window System
+.SH "SINTASSI"
+.B xinit
+[ [
+.I client
+]
+.I opzioni
+] [
+.B \-\^\-
+[
+.I server
+] [
+.I display
+]
+.I opzioni
+]
+.SH "DESCRIZIONE"
+Il programma \fIxinit\fP è utilizzato per aviare il server X Window System e
+un primo programma client su sistemi che non possono avviare X direttamente da
+\fI/etc/init\fP o in ambienti che usano molti sistemi window. Quando esiste
+questo primo client,
+\fIxinit\fP terminerà il server X e poi terminerà.
+.PP
+Se non si passa alla riga di comando nessun programma specifico,
+\fIxinit\fP cercherà un file nella directory home dell'utente
+chiamato \fI.xinitrc\fP per eseguirlo come uno script di shell per avviare
+programmi client.
+Se tale file non esiste, \fIxinit\fP userà il seguente come default:
+.sp
+	xterm  \-geometry  +1+1  \-n  login  \-display  :0
+.sp
+.PP
+Se non si fornisce sulla riga di comando nessun programma server,
+\fIxinit\fP cercherà un file nella directory home dell'utente
+chiamato \fI.xserverrc\fP per eseguirlo come uno script di shell per avviare il
+server. Se tale file non esiste, \fIxinit\fP userà il seguente come default:
+.sp
+	X  :0
+.sp
+Notare che si presuppone che ci sia un programma chiamato \fIX\fP nell'attuale
+percorso di ricerca. Comunque, i server sono usualmente chiamati \fIXdisplaytype\fP
+dove \fIdisplaytype\fP è il tipo di display grafico che è supportato da
+questo server. L'aministratore del sito dovrebbe, perciò, fare un link
+all'appropriato tipo di server sulla macchina, o creare uno script di shell che
+esegua \fIxinit\fP con il server appropriato.
+.PP
+Notare, quando si usa uno script \fI.xserverrc\fP assicurarsi di ``eseguire''
+il vero server X. Sbagliando nel far questo si può rendere X lento nell'avvio e
+farlo chiudere subito. Per esempio:
+.sp
+	exec Xdisplaytype
+.PP
+Un punto importante è che i programmi che sono eseguiti da \fI\.xinitrc\fP
+dovrebbero essere eseguiti in background per non farli terminare subito, così che
+essi non prevengano l'apertura di altri programi. Comunque, l'ultimo programma a
+lunga\-vita avviato (usualmente un window manager o un emulatore di terminale)
+dovrebbe essere lasciato in foreground così che lo script non termini (ciò
+indicherebbe che l'utente ha finito e che \fIxinit\fP dovrebbe terminare).
+.PP
+Un client e/o un server alternativo può essere specificato sulla riga di
+comando. Il programma client desiderato e i suoi argomenti dovrebbero essere
+passati come argomenti a \fIxinit\fP sulla prima riga di comando. Per specificare
+un particulare servere dalla riga di comando, aggiungere un doppio trattino (\-\-)
+alla linea di comando di \fIxinit\fP
+(dopo eventuali client e argomenti) seguiti dal comando del server desiderato.
+.PP
+Entrambi i nomi dei programmi client e server devono iniziare con una barra (/) o
+un punto (.). Diversamente, sono trattati come argomenti da essere aggiunti alle
+rispettive righe di avvio. Questo rende possibile aggiungere argomenti (per
+esempio, colori foreground e background) senza dover ridigitare l'intera riga di
+comando.
+.PP
+Se un nome server esplicito non viene dato e il primo argomento dopo le doppie
+lineette (\-\-) sono i duepunti seguiti da un numero, \fIxinit\fP utilizzerà quel
+numero come numero di display al posto di zero. Tutti i rimanenti argomenti sono
+aggiunti alla line di comando del server.
+.PP
+.SH "ESEMPI"
+Di seguito alcuni esempi di come sono usati gli argomenti della riga di comando
+in \fIxinit\fP.
+.TP 8
+.B "xinit"
+Questo avvierà un server chiamato \fIX\fP e eseguirà il \fI\.xinitrc\fP
+dell'utente,
+se esiste, o altrimenti avvierà un \fIxterm\fP.
+.TP 8
+.B "xinit \-\^\- /usr/X11R6/bin/Xqdss  :1"
+Questo è come si possa avviare uno specifico tipo di server su un display
+alternativo.
+.TP 8
+.B "xinit \-geometry =80x65+10+10 \-fn 8x13 \-j \-fg white \-bg navy"
+Questo avvierà un server chiamato \fIX\fP, e aggiungerà gli argomenti indicati al
+comando \fIxterm\fP. Ignorerà \fI\.xinitrc\fP.
+.TP 8
+.B "xinit \-e widgets \-\^\- ./Xsun \-l \-c"
+Questo userà il comando \fI\.\/Xsun \-l \-c\fP per avviare il server e
+aggiungerà gli argomenti \fI\-e widgets\fP al comando di default \fIxterm\fP
+.
+.TP 8
+.B "xinit /usr/ucb/rsh fasthost cpupig \-display ws:1 \-\^\-  :1 \-a 2 \-t 5"
+Questo avvierà un server chiamato \fIX\fP sul display 1 con gli
+argomenti \fI\-a 2 \-t 5\fP. Esso avvierà poi una shell remota sulla
+macchina \fBfasthost\fP sulla quale eseguirà il comando \fIcpupig\fP,
+che dice di visualizzare sulla workstation locale.
+.PP
+Di seguito è un esempio di \fI\.xinitrc\fP che avvia un orologio, divesi
+terminali, e lascia in esecuzione un window manager per ``ultima''
+applicazione. Presupposto che il window manager sia stato configurato
+propriamente, l'utente poi sceglierà la voce ``Exit'' del menu  per chiudere
+X.
+.sp
+.in +8
+.nf
+xrdb \-load $HOME/.Xresources
+xsetroot \-solid gray &
+xclock \-g 50x50\-0+0 \-bw 0 &
+xload \-g 50x50\-50+0 \-bw 0 &
+xterm \-g 80x24+0+0 &
+xterm \-g 80x24+0\-0 &
+twm
+.fi
+.in \-8
+.sp
+In siti dove si vuole avere un ambiente di avvio comune potrebbero
+semplicemente creare un default \fI\.xinitrc\fP che faccia riferimento un
+file di avvio d'ambiente\-allargato:
+.sp
+.in +8
+.nf
+\&#!/bin/sh
+\&. /usr/local/lib/site.xinitrc
+.fi
+.in \-8
+.sp
+Un'altro approccio è di scrivere uno script che avvii \fIxinit\fP con uno
+specifico script di shell. Tali script sono usualmente denominati \fIx11\fP,
+\fIxstart\fP, o \fIstartx\fP e sono un modo conveniente per provvedere
+una semplice interfaccia per gli utenti novizi:
+.sp
+.in +8
+.nf
+\&#!/bin/sh
+xinit /usr/local/lib/site.xinitrc \-\^\- /usr/X11R6/bin/X bc
+.fi
+.in \-8
+.sp
+.SH "VARIABILI D'AMBIENTE"
+.TP 15
+.B DISPLAY
+Questa variabile imposta il nome del display al quale i client dovrebbero
+connettersi.
+.TP 15
+.B XINITRC
+Questa variabile specifica un file init contenente comandi di shell per avviare
+the le finestre iniziali. Di default, sarà utilizzato \fI\.xinitrc\fP nella
+directory home.
+.SH "FILE"
+.TP 15
+.I .xinitrc
+script client di default
+.TP 15
+.I xterm
+client da eseguire se \fI.xinitrc\fP non esiste
+.TP 15
+.I .xserverrc
+script server di default
+.TP 15
+.I X
+server da eseguire se \fI.xserverrc\fP non esiste
+.SH "VEDERE ANCHE"
+.I R X (7),
+.I R startx (1),
+.I R Xserver (1),
+.I R xterm (1)
+.SH "AUTORE"
+Bob Scheifler, MIT Laboratory for Computer Science

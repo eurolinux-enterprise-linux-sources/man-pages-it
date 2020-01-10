@@ -1,0 +1,110 @@
+.\" Copyright (c) 1994 Andries Brouwer (aeb@cwi.nl), Mon Oct 31 21:03:19 MET 1994
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" Modified, Sun Feb 26 14:58:45 1995, faith@cs.unc.edu
+.\"
+.\" Traduzione in italiano di Giovanni Bortolozzo <borto@dei.unipd.it>
+.\" Ottobre 1996
+.\" Aggiornamento alla versione 1.15 di Alessandro Rubini (rubini@linux.it)
+.\" Maggio 1997
+.\" Aggiornamento a man-pages-2.11 di Giulio Daprelà <giulio@pluto.it>
+.\" novembre 2005
+.\"
+.TH CONSOLE 4 "31 ottobre 1994" "Linux" "Linux Programmer's Manual"
+.SH NOME
+console \- terminali console e console virtuali
+.SH DESCRIZIONE
+Il sistema Linux ha fino a 63 \fIconsole virtuali\fP (dispositivo a
+caratteri con numero primario 4 e numero secondario da 1 a 63),
+solitamente chiamate \fB/dev/tty\fP\fIn\fP con 1 \(<= \fIn\fP \(<= 63.
+La console attuale è indirizzata anche da 
+\fB/dev/console\fP o \fB/dev/tty0\fP, il dispositivo a caratteri con
+numero primario 4 e numero secondario 0.
+I file device /dev/* sono di solito creati usando lo script MAKEDEV,
+o usando
+.BR mknod (1),
+solitamente con modo 0622 e proprietario root:tty.
+.LP
+Prima della versione 1.1.54 del kernel il numero di console virtuali
+era compilato dentro il kernel (in tty.h: #define NR_CONSOLES 8) e
+poteva essere cambiato modificando il file e ricompilando il
+kernel. Dalla versione 1.1.54, le console virtuali sono create al volo
+appena servono.
+.LP
+I metodi comuni per far partire un processo in una console sono:
+(a) tell
+.BR init (8)
+(in
+.BR inittab (5))
+per avviare
+.BR mingetty (8)
+(o
+.BR agetty (8))
+sulla console;
+(b) ask
+.BR openvt (1)
+per avviare un processo sulla console;
+(c) start X \(esso troverà la prima console non utilizzata,
+e su di essa visualizzerà il proprio output.
+(c'è anche il vecchio
+.BR doshell (8).)
+.LP
+I metodi comuni per passare da una console all'altra sono: (a) usare Alt+F\fIn\fP o
+Ctrl+Alt+F\fIn\fP per passare alla console \fIn\fP; AltGr+F\fIn\fP
+dovrebbe passare alla console \fIn\fP+12 [qui Alt e AltGr si riferiscono
+ai tasti Alt sinistro e destro, rispettivamente];
+(b) usare Alt+FrecciaDestra o Alt+FrecciaSinistra per fare un ciclo
+attraverso le console attualmente allocate; (c) usare il programma
+.BR chvt (1).
+(la mappatura dei tasti è configurabile dall'utente, si veda
+.BR loadkeys (1);
+le combinazioni di tasti menzionate qui sopra si riferiscono alla configurazione di default).
+.LP
+Il comando
+.BR deallocvt (1)
+(in precedenza \fBdisalloc\fP)
+libererà la memoria occupata dai buffer dello schermo per le console
+che non hanno più nessun processo associato.
+.SS Proprietà
+Le console hanno associati molti stati.
+Spero di documentarne qualcuno un'altra volta.
+Il fatto più importante è che le console simulano i terminali vt100.
+In particolare, una console è reimpostata al suo stato iniziale premendo i due
+caratteri Esc c.
+Tutte le sequenze di escape sono descritte in
+.BR console_codes (4).
+.SH FILE
+.I /dev/console
+.br
+.I /dev/tty*
+.SH "VEDERE ANCHE"
+.BR chvt (1),
+.BR deallocvt (1),
+.BR loadkeys (1),
+.BR mknod (1),
+.BR openvt (1),
+.BR console_codes (4),
+.BR console_ioctl (4),
+.BR tty (4),
+.BR ttyS (4),
+.BR charsets (7),
+.BR agetty (8),
+.BR init (8),
+.BR mingetty (8),
+.BR mapscrn (8),
+.BR resizecons (8),
+.BR setfont (8)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.72 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/

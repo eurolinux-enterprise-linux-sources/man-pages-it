@@ -1,0 +1,178 @@
+.\"
+.\" Copyright (c) 1993 Michael Haardt (michael@moria.de),
+.\"   Fri Apr  2 11:32:09 MET DST 1993
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111,
+.\" USA.
+.\"
+.\" Tue Jul  6 12:42:46 MDT 1993 <dminer@nyx.cs.du.edu>
+.\" Added "Calling Directly" and supporting paragraphs
+.\"
+.\" Modified Sat Jul 24 15:19:12 1993 by Rik Faith <faith@cs.unc.edu>
+.\"
+.\" Modified 21 Aug 1994 by Michael Chastain <mec@shell.portal.com>:
+.\"   Added explanation of arg stacking when 6 or more args.
+.\"
+.\" Modified 10 June 1995 by Andries Brouwer <aeb@cwi.nl>
+.\"
+.\" 2007-10-23 mtk: created as a new page, by taking the content
+.\" specific to the _syscall() macros from intro(2).
+.\"
+.\" Tradotto da man-pages-2.68 da Elisabetta Galli <lab@kkk.it>
+.\" novembre 2007
+.TH _SYSCALL 2 19 dicembre 2007 "Linux" "Linux Programmer's Manual"
+.SH NOME
+_syscall \- invoca una chiamata di sistema senza supporto di libreria (OBSOLETO)
+.SH "SINTASSI"
+.B #include <linux/unistd.h>
+
+Una macro _syscall
+
+la chiamata di sistema desiderata
+.SH DESCRIZIONE
+La cosa importante da sapere sulle chiamate di sistema è il loro prototipo.
+Bisogna conoscere il numero di argomenti, il loro tipo, e
+il tipo di ritorno della funzione.
+Ci sono sette macro che rendono più facile la reale chiamata nel sistema.
+Hanno il formato:
+.sp
+.RS
+.RI _syscall X ( tipo , nome , tipo1 , arg1 , tipo2 , arg2 ,...)
+.RE
+.PP
+Dove
+.IP
+\fIX\fP è tra 0 e 6, che sono il numero di argomenti presi dalla 
+chiamata di sistema
+.IP
+\fItipo\fP è il tipo di ritorno della chiamata di sistema
+.IP
+\fInome\fP è il nome della chiamata di sistema
+.IP
+\fItipoN\fP è il tipo dell'N-esimo argomento
+.IP
+\fIargN\fP è il nome dell'N-esimo argomento
+.PP
+Queste macro creano una funzione chiamata \fInome\fP con gli argomenti
+specificati.
+Una volta inclusa la _syscall() nel proprio file sorgente,
+si può chiamare la chiamata di sistema con \fInome\fP.
+.SH FILE
+.I /usr/include/linux/unistd.h
+.SH "CONFORME A"
+L'uso di queste macro è specifico di Linux, ed è deprecato.
+.SH NOTE
+A partire dal kernel 2.6.18 le macro di _syscall sono state rimosse
+dai file di intestazione messi a disposizione nello spazio utente.
+Si usi
+.BR syscall (2)
+al loro posto.
+(Alcune architetture, in particolare la ia64, non ha mai messo a disposizione le macro _syscall:
+su queste architetture è sempre
+stato richiesto
+.BR syscall (2) ).
+
+Le macro _syscall() \fInon\fP producono un prototipo. 
+Occorrerà quindi crearne uno,
+specialmente per chi usa C++.
+
+Le chiamate di sistema non devono per forza restituire solo codici di errore
+positivi o negativi.
+Occorrerà leggere il sorgente per essere sicuri di come ognuna di esse riporta gli errori.
+Solitamente, il valore di ritorno è il negato di un codice di errore standard,
+per esempio \-\fBEPERM\fP.
+Le macro _syscall() restituiranno il risultato \fIr\fP della chiamata di sistema
+quando \fIr\fP è non-negativo, ma restituiranno -1 e imposteranno la variabile
+.I errno
+a \-\fIr\fP quando \fIr\fP è negativo.
+Per i codici di errore si veda
+.BR errno (3).
+
+Quando si definisce una chiamata di sistema, gli argomenti \fIDEVONO\fP
+essere passati per valore o per puntatore (per gli aggregati come le strutture).
+.\" Il modo migliore di invocare chiamate di sistema che glibc ancora non
+.\" conosce è attraverso
+.\" .BR syscall (2).
+.\" Tuttavia questo meccanismo può essere usato solo se si usa una libc
+.\" (come glibc) che supporta
+.\" .BR syscall (2), 
+.\" e se il file header
+.\" .I <sys/syscall.h>
+.\" contiene la definizione SYS_foo necessaria.
+.\" Altrimenti è necessario l'uso di una macro _syscall.
+.\" 
+.SH ESEMPIO
+.nf
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <linux/unistd.h>	/* per cose relative alle macro _syscallX */
+#include <linux/kernel.h>	/* per sysinfo struct */
+
+_syscall1(int, sysinfo, struct sysinfo *, info);
+
+/* Nota: se si copia direttamente dal sorgente nroff, ricordarsi di
+TOGLIERE i caratteri `\' in più nell'espressione di printf. */
+
+int
+main(void)
+{
+	struct sysinfo s_info;
+	int error;
+
+	error = sysinfo(&s_info);
+	printf("code error = %d\\n", error);
+        printf("Uptime = %lds\\nLoad: 1 min %lu / 5 min %lu / 15 min %lu\\n"
+                "RAM: total %lu / free %lu / shared %lu\\n"
+                "Memory in buffers = %lu\\nSwap: total %lu / free %lu\\n"
+                "Number of processes = %d\\n",
+		s_info.uptime, s_info.loads[0],
+		s_info.loads[1], s_info.loads[2],
+		s_info.totalram, s_info.freeram,
+		s_info.sharedram, s_info.bufferram,
+		s_info.totalswap, s_info.freeswap,
+		s_info.procs);
+	exit(EXIT_SUCCESS);
+}
+.fi
+.SS "Esempio di Output"
+.nf
+code error = 0
+uptime = 502034s
+Load: 1 min 13376 / 5 min 5504 / 15 min 1152
+RAM: total 15343616 / free 827392 / shared 8237056
+Memory in buffers = 5066752
+Swap: total 27881472 / free 24698880
+Number of processes = 40
+.fi
+.SH "VEDERE ANCHE"
+.BR intro (2),
+.BR syscall (2),
+.BR errno (3)
+.SH COLOPHON
+Questa pagina fa parte del rilascio 2.75 del progetto
+.I man-pages
+di Linux.
+Si può trovare una descrizione del progetto,
+e informazioni su come riportare bachi,
+presso
+http://www.kernel.org/doc/man-pages/.
+Per la traduzione in italiano si può fare riferimento a
+http://www.pluto.it/ildp/collaborare/
