@@ -1,7 +1,7 @@
 Summary: Italian man (manual) pages from the Linux Documentation Project
 Name: man-pages-it
 Version: 3.15
-Release: 1%{?dist}
+Release: 2%{?dist}
 # inherit the license tags from the man-pages package
 License: GPL+ and GPLv2 and GPLv2+ and LGPLV2+ and GPLv3+ and BSD and MIT and Copyright only and IEEE
 Group: Documentation
@@ -68,6 +68,9 @@ done
 
 
 %changelog
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 3.15-2
+- Mass rebuild 2013-12-27
+
 * Wed Jan 30 2013 Mike FABIAN <mfabian@redhat.com> - 3.15-1
 - Resolves: #906215 - man-pages-it package contains many man-pages
   which are not translated to Italian but are in English
